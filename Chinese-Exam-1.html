@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國二上第1次段考(國字注音題庫)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Import Map to handle ES Modules for React and Lucide -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "lucide-react": "https://esm.sh/lucide-react@0.263.1",
+            "canvas-confetti": "https://esm.sh/canvas-confetti@1.9.2"
+        }
+    }
+    </script>
+    
+    <style>
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fff7ed; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fdba74; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #fb923c; 
+        }
+        /* Hide scrollbar for clean horizontal scroll if needed */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Progress bar transition */
+        .progress-bar {
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* Heart animation */
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.2); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .heart-click {
+            animation: heartbeat 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-orange-50">
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useMemo, useCallback } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { BookOpen, HelpCircle, CheckCircle, XCircle, ArrowRight, RefreshCcw, List, Sun, User, LogOut, Zap, Heart, BookX } from 'lucide-react';
+        import confetti from 'canvas-confetti';
+
+        // STORAGE KEYS (變更 Prefix 確保不會與舊的 282 題進度衝突)
+        const STORAGE_PREFIX = 'Chinese-Exam-1';
+        const KEY_USERS = `${STORAGE_PREFIX}_users`;
+        
+        // Helper to get dynamic keys
+        const getKeyFavorites = (user) => `${STORAGE_PREFIX}_fav_${user}`;
+        const getKeyMistakes = (user) => `${STORAGE_PREFIX}_mistake_${user}`;
+        const getKeyProgress = (user) => `${STORAGE_PREFIX}_progress_${user}`;
+
+        // 完整資料庫: 100題
+        const rawData = [
+            { id: 1, question: "「悼」念", answer: "ㄉㄠˋ", distractors: ["ㄉㄧㄠˋ", "ㄓㄠˋ", "ㄉㄠ"] },
+            { id: 2, question: "點燃火「ㄐㄩˋ」", answer: "炬", distractors: ["鉅", "距", "拒"] },
+            { id: 3, question: "提「ㄔㄤˋ」運動", answer: "倡", distractors: ["唱", "暢", "悵"] },
+            { id: 4, question: "行事「ㄔㄤ」狂", answer: "猖", distractors: ["昌", "倡", "錩"] },
+            { id: 5, question: "盛極必「衰」", answer: "ㄕㄨㄞ", distractors: ["ㄙㄨㄞ", "ㄘㄨㄟ", "ㄕㄨㄟ"] },
+            { id: 6, question: "陶「ㄓㄨˋ」人才", answer: "鑄", distractors: ["築", "柱", "駐"] },
+            { id: 7, question: "論語八「佾」篇", answer: "ㄧˋ", distractors: ["ㄧ", "ㄧˊ", "ㄧˇ"] },
+            { id: 8, question: "拱手作「揖」", answer: "ㄧ", distractors: ["ㄧˊ", "ㄐㄧˊ", "ㄑㄧˋ"] },
+            { id: 9, question: "「ㄑㄧㄣˊ」捕凶手", answer: "擒", distractors: ["禽", "琴", "勤"] },
+            { id: 10, question: "揖讓而升，下而「飲」", answer: "ㄧㄣˋ", distractors: ["ㄧㄣˇ", "ㄧㄣ", "ㄧㄥˇ"] },
+            { id: 11, question: "「雍」容華貴", answer: "ㄩㄥ", distractors: ["ㄩㄥˊ", "ㄩㄥˇ", "ㄩㄥˋ"] },
+            { id: 12, question: "眾目「睽」睽", answer: "ㄎㄨㄟˊ", distractors: ["ㄎㄨㄟ", "ㄎㄨㄟˇ", "ㄎㄨㄟˋ"] },
+            { id: 13, question: "新任閣「ㄎㄨㄟˊ」", answer: "揆", distractors: ["葵", "睽", "魁"] },
+            { id: 14, question: "暗「ㄐㄧㄢˋ」傷人", answer: "箭", distractors: ["劍", "健", "漸"] },
+            { id: 15, question: "恥「辱」", answer: "ㄖㄨˇ", distractors: ["ㄖㄨˋ", "ㄖㄨ", "ㄖㄨˊ"] },
+            { id: 16, question: "響徹雲「ㄒㄧㄠ」", answer: "霄", distractors: ["宵", "蕭", "簫"] },
+            { id: 17, question: "「ㄔㄨㄥ」刺", answer: "衝", distractors: ["充", "沖", "忡"] },
+            { id: 18, question: "通「ㄒㄧㄠ」達旦", answer: "宵", distractors: ["霄", "蕭", "銷"] },
+            { id: 19, question: "一筆勾「ㄒㄧㄠ」", answer: "銷", distractors: ["消", "宵", "霄"] },
+            { id: 20, question: "懸崖「ㄑㄧㄠˋ」壁", answer: "峭", distractors: ["俏", "竅", "鞘"] },
+            { id: 21, question: "無動於「ㄓㄨㄥ」", answer: "衷", distractors: ["中", "終", "鐘"] },
+            { id: 22, question: "「悻」悻然", answer: "ㄒㄧㄥˋ", distractors: ["ㄒㄧㄥ", "ㄒㄧㄥˊ", "ㄒㄧㄥˇ"] },
+            { id: 23, question: "貫「ㄔㄜˋ」始終", answer: "徹", distractors: ["澈", "撤", "轍"] },
+            { id: 24, question: "說理「剴」切", answer: "ㄎㄞˇ", distractors: ["ㄎㄞ", "ㄎㄞˊ", "ㄎㄞˋ"] },
+            { id: 25, question: "言簡意「賅」", answer: "ㄍㄞ", distractors: ["ㄏㄞ", "ㄍㄞˊ", "ㄍㄞˋ"] },
+            { id: 26, question: "「擲」地有聲", answer: "ㄓˊ", distractors: ["ㄓ", "ㄓˇ", "ㄓˋ"] },
+            { id: 27, question: "榮「ㄩˋ」", answer: "譽", distractors: ["預", "御", "遇"] },
+            { id: 28, question: "官「署」", answer: "ㄕㄨˋ", distractors: ["ㄕㄨˇ", "ㄕㄨ", "ㄕㄨˊ"] },
+            { id: 29, question: "朔氣傳金「柝」", answer: "ㄊㄨㄛˋ", distractors: ["ㄊㄨㄛ", "ㄊㄨㄛˊ", "ㄊㄨㄛˇ"] },
+            { id: 30, question: "「ㄇㄨˋ」色蒼茫", answer: "暮", distractors: ["幕", "慕", "墓"] },
+            { id: 31, question: "損兵「ㄓㄜˊ」將", answer: "折", distractors: ["哲", "浙", "蜇"] },
+            { id: 32, question: "露「ㄙㄨˋ」街頭", answer: "宿", distractors: ["訴", "肅", "塑"] },
+            { id: 33, question: "出「征」", answer: "ㄓㄥ", distractors: ["ㄓㄥˊ", "ㄓㄥˇ", "ㄓㄥˋ"] },
+            { id: 34, question: "坐「ㄉㄧㄢˋ」", answer: "墊", distractors: ["店", "殿", "奠"] },
+            { id: 35, question: "「ㄒㄧˋ」念家鄉", answer: "繫", distractors: ["係", "戲", "細"] },
+            { id: 36, question: "軍「帖」", answer: "ㄊㄧㄝˇ", distractors: ["ㄊㄧㄝ", "ㄊㄧㄝˊ", "ㄊㄧㄝˋ"] },
+            { id: 37, question: "兩兔「ㄅㄤˋ」地走", answer: "傍", distractors: ["磅", "榜", "棒"] },
+            { id: 38, question: "流水「濺」濺", answer: "ㄐㄧㄢ", distractors: ["ㄐㄧㄢˋ", "ㄐㄧㄢˇ", "ㄐㄧㄢˊ"] },
+            { id: 39, question: "出郭相扶「將」", answer: "ㄐㄧㄤ", distractors: ["ㄐㄧㄤˋ", "ㄐㄧㄤˇ", "ㄐㄧㄤˊ"] },
+            { id: 40, question: "「啾」啾聲", answer: "ㄐㄧㄡ", distractors: ["ㄐㄧㄡˋ", "ㄐㄧㄡˇ", "ㄐㄧㄡˊ"] },
+            { id: 41, question: "撲「朔」迷離", answer: "ㄕㄨㄛˋ", distractors: ["ㄕㄨㄛ", "ㄙㄨㄛˋ", "ㄕㄨㄛˇ"] },
+            { id: 42, question: "髮「ㄅㄧㄣˋ」", answer: "鬢", distractors: ["賓", "髕", "濱"] },
+            { id: 43, question: "鞍「韉」", answer: "ㄐㄧㄢ", distractors: ["ㄐㄧㄢˋ", "ㄑㄧㄢ", "ㄐㄧㄢˇ"] },
+            { id: 44, question: "彩「ㄓㄨㄤ」", answer: "妝", distractors: ["裝", "莊", "樁"] },
+            { id: 45, question: "兵「ㄖㄨㄥˊ」相見", answer: "戎", distractors: ["容", "融", "絨"] },
+            { id: 46, question: "巾「ㄍㄨㄛˊ」英雄", answer: "幗", distractors: ["國", "郭", "馘"] },
+            { id: 47, question: "自出機「ㄓㄨˋ」", answer: "杼", distractors: ["柱", "注", "駐"] },
+            { id: 48, question: "「ㄙㄨˋ」造形象", answer: "塑", distractors: ["訴", "宿", "肅"] },
+            { id: 49, question: "「佚」事", answer: "ㄧˋ", distractors: ["ㄧ", "ㄧˊ", "ㄧˇ"] },
+            { id: 50, question: "駱「駝」", answer: "ㄊㄨㄛˊ", distractors: ["ㄊㄨㄛ", "ㄊㄨㄛˇ", "ㄊㄨㄛˋ"] },
+            { id: 51, question: "不「溯」既往", answer: "ㄙㄨˋ", distractors: ["ㄕㄨㄛˋ", "ㄙㄨ", "ㄙㄨˇ"] },
+            { id: 52, question: "軍書十二「卷」", answer: "ㄐㄩㄢˋ", distractors: ["ㄐㄩㄢ", "ㄐㄩㄢˇ", "ㄑㄩㄢˋ"] },
+            { id: 53, question: "爺「孃」", answer: "ㄋㄧㄤˊ", distractors: ["ㄋㄧㄤ", "ㄋㄧㄤˇ", "ㄋㄧㄤˋ"] },
+            { id: 54, question: "策「勳」十二轉", answer: "ㄒㄩㄣ", distractors: ["ㄒㄩㄣˊ", "ㄒㄩㄣˇ", "ㄒㄩㄣˋ"] },
+            { id: 55, question: "分崩離「ㄒㄧ」", answer: "析", distractors: ["淅", "晰", "皙"] },
+            { id: 56, question: "征「戍」生活", answer: "ㄕㄨˋ", distractors: ["ㄒㄩˋ", "ㄨˋ", "ㄖㄨㄥˊ"] },
+            { id: 57, question: "「雌」雄莫辨", answer: "ㄘ", distractors: ["ㄘˊ", "ㄘˇ", "ㄘˋ"] },
+            { id: 58, question: "「唧」唧聲", answer: "ㄐㄧ", distractors: ["ㄐㄧˊ", "ㄐㄧˇ", "ㄐㄧˋ"] },
+            { id: 59, question: "買「ㄆㄟˋ」頭", answer: "轡", distractors: ["佩", "配", "霈"] },
+            { id: 60, question: "可「汗」", answer: "ㄏㄢˊ", distractors: ["ㄏㄢ", "ㄏㄢˇ", "ㄏㄢˋ"] },
+            { id: 61, question: "披戰「ㄆㄠˊ」", answer: "袍", distractors: ["跑", "砲", "泡"] },
+            { id: 62, question: "「燕」山", answer: "ㄧㄢ", distractors: ["ㄧㄢˋ", "ㄧㄢˊ", "ㄧㄢˇ"] },
+            { id: 63, question: "反「ㄈㄨˋ」吟詠", answer: "覆", distractors: ["復", "複", "腹"] },
+            { id: 64, question: "東市買「駿」馬", answer: "ㄐㄩㄣˋ", distractors: ["ㄐㄩㄣ", "ㄐㄩㄣˊ", "ㄐㄩㄣˇ"] },
+            { id: 65, question: "「驍」勇善戰", answer: "ㄒㄧㄠ", distractors: ["ㄒㄧㄠˊ", "ㄒㄧㄠˇ", "ㄒㄧㄠˋ"] },
+            { id: 66, question: "「煽」動", answer: "ㄕㄢ", distractors: ["ㄕㄢˊ", "ㄕㄢˇ", "ㄕㄢˋ"] },
+            { id: 67, question: "道聽「ㄊㄨˊ」說", answer: "塗", distractors: ["途", "徒", "圖"] },
+            { id: 68, question: "肌「ㄐㄧㄢˋ」", answer: "腱", distractors: ["健", "劍", "箭"] },
+            { id: 69, question: "踢「ㄐㄧㄢˋ」子", answer: "毽", distractors: ["鍵", "健", "腱"] },
+            { id: 70, question: "愚蠢昏「聵」", answer: "ㄎㄨㄟˋ", distractors: ["ㄎㄨㄟ", "ㄎㄨㄟˊ", "ㄎㄨㄟˇ"] },
+            { id: 71, question: "赤「ㄌㄨㄛˇ」ㄌㄨㄛˇ", answer: "裸", distractors: ["臝", "裹", "果"] },
+            { id: 72, question: "范「雎」", answer: "ㄐㄩ", distractors: ["ㄐㄩˊ", "ㄐㄩˇ", "ㄐㄩˋ"] },
+            { id: 73, question: "叱「吒」風雲", answer: "ㄓㄚˋ", distractors: ["ㄓㄚ", "ㄓㄚˊ", "ㄔㄚˋ"] },
+            { id: 74, question: "「縱」橫家", answer: "ㄗㄨㄥ", distractors: ["ㄗㄨㄥˋ", "ㄗㄨㄥˊ", "ㄗㄨㄥˇ"] },
+            { id: 75, question: "縱橫「捭」闔", answer: "ㄅㄞˇ", distractors: ["ㄅㄞ", "ㄅㄞˋ", "ㄅㄟ"] },
+            { id: 76, question: "「睥」睨", answer: "ㄅㄧˋ", distractors: ["ㄆㄧˋ", "ㄅㄧ", "ㄅㄧˇ"] },
+            { id: 77, question: "「ㄅㄞˋ」官野史", answer: "稗", distractors: ["敗", "拜", "唄"] },
+            { id: 78, question: "「誣」枉", answer: "ㄨ", distractors: ["ㄨˊ", "ㄨˇ", "ㄨˋ"] },
+            { id: 79, question: "別來無「恙」", answer: "ㄧㄤˋ", distractors: ["ㄧㄤ", "ㄧㄤˊ", "ㄧㄤˇ"] },
+            { id: 80, question: "便「溺」", answer: "ㄋㄧㄠˋ", distractors: ["ㄋㄧˋ", "ㄋㄧㄠ", "ㄋㄧㄠˇ"] },
+            { id: 81, question: "「ㄌㄠˋ」骨", answer: "烙", distractors: ["酪", "駱", "洛"] },
+            { id: 82, question: "巧舌如「簧」", answer: "ㄏㄨㄤˊ", distractors: ["ㄏㄨㄤ", "ㄏㄨㄤˇ", "ㄏㄨㄤˋ"] },
+            { id: 83, question: "出「ㄑㄧˊ」", answer: "奇", distractors: ["騎", "祈", "棋"] },
+            { id: 84, question: "「暢」快", answer: "ㄔㄤˋ", distractors: ["ㄔㄤ", "ㄔㄤˊ", "ㄔㄤˇ"] },
+            { id: 85, question: "「ㄈㄢˊ」籠", answer: "樊", distractors: ["繁", "凡", "帆"] },
+            { id: 86, question: "「懲」惡", answer: "ㄔㄥˊ", distractors: ["ㄔㄥ", "ㄔㄥˇ", "ㄔㄥˋ"] },
+            { id: 87, question: "話「ㄒㄧㄚˊ」子", answer: "匣", distractors: ["俠", "峽", "狹"] },
+            { id: 88, question: "「ㄓㄨㄥˋ」門", answer: "眾", distractors: ["重", "種", "仲"] },
+            { id: 89, question: "一言「喪」邦", answer: "ㄙㄤˋ", distractors: ["ㄙㄤ", "ㄙㄤˊ", "ㄙㄤˇ"] },
+            { id: 90, question: "挑「剔」", answer: "ㄊㄧ", distractors: ["ㄊㄧˊ", "ㄊㄧˇ", "ㄊㄧˋ"] },
+            { id: 91, question: "尊「鑒」", answer: "ㄐㄧㄢˋ", distractors: ["ㄐㄧㄢ", "ㄐㄧㄢˊ", "ㄐㄧㄢˇ"] },
+            { id: 92, question: "「署」名", answer: "ㄕㄨˋ", distractors: ["ㄕㄨ", "ㄕㄨˊ", "ㄕㄨˇ"] },
+            { id: 93, question: "「繕」寫格式", answer: "ㄕㄢˋ", distractors: ["ㄕㄢ", "ㄕㄢˊ", "ㄕㄢˇ"] },
+            { id: 94, question: "吊「唁」", answer: "ㄧㄢˋ", distractors: ["ㄧㄢ", "ㄧㄢˊ", "ㄧㄢˇ"] },
+            { id: 95, question: "敬「稟」者", answer: "ㄅㄧㄥˇ", distractors: ["ㄅㄧㄥ", "ㄅㄧㄥˊ", "ㄅㄧㄥˋ"] },
+            { id: 96, question: "賢「ㄎㄤˋ」儷", answer: "伉", distractors: ["抗", "亢", "炕"] },
+            { id: 97, question: "賢喬「梓」", answer: "ㄗˇ", distractors: ["ㄗ", "ㄗˊ", "ㄗˋ"] },
+            { id: 98, question: "「緘」封詞", answer: "ㄐㄧㄢ", distractors: ["ㄐㄧㄢˊ", "ㄐㄧㄢˇ", "ㄐㄧㄢˋ"] },
+            { id: 99, question: "申「悃」語", answer: "ㄎㄨㄣˇ", distractors: ["ㄎㄨㄣ", "ㄎㄨㄣˊ", "ㄎㄨㄣˋ"] },
+            { id: 100, question: "信「箋」", answer: "ㄐㄧㄢ", distractors: ["ㄐㄧㄢˊ", "ㄐㄧㄢˇ", "ㄐㄧㄢˋ"] }
+        ];
+
+        // --- Helper Functions ---
+        
+        const shuffleArray = (array) => {
+          const newArray = [...array];
+          for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+          }
+          return newArray;
+        };
+
+        const playSound = (type) => {
+            const audioPath = type === 'success' ? 'sounds/correct.mp3' : 'sounds/fail.mp3';
+            const audio = new Audio(audioPath);
+            audio.play().catch(err => console.log('Audio play error:', err));
+        }
+
+        const App = () => {
+          const [mode, setMode] = useState('menu'); // menu, study, quiz, favorites, mistakes
+          const [currentUser, setCurrentUser] = useState(null);
+          const [users, setUsers] = useState([]);
+          const [favorites, setFavorites] = useState(new Set());
+          const [mistakes, setMistakes] = useState(new Set());
+
+          // Load users on mount
+          useEffect(() => {
+            try {
+                const storedUsers = JSON.parse(localStorage.getItem(KEY_USERS)) || [];
+                setUsers(storedUsers);
+            } catch (e) {
+                console.error("Error loading users", e);
+            }
+          }, []);
+
+          // Load user data when currentUser changes
+          useEffect(() => {
+            if (currentUser) {
+                try {
+                    // Load Favorites
+                    const favs = JSON.parse(localStorage.getItem(getKeyFavorites(currentUser))) || [];
+                    setFavorites(new Set(favs));
+
+                    // Load Mistakes
+                    const mists = JSON.parse(localStorage.getItem(getKeyMistakes(currentUser))) || [];
+                    setMistakes(new Set(mists));
+                } catch (e) {
+                    console.error("Error loading user data", e);
+                }
+            } else {
+                setFavorites(new Set());
+                setMistakes(new Set());
+            }
+          }, [currentUser]);
+
+          const handleLogin = (name) => {
+            if (!name.trim()) return;
+            const newUsers = Array.from(new Set([name, ...users])); // Add to front, unique
+            setUsers(newUsers);
+            localStorage.setItem(KEY_USERS, JSON.stringify(newUsers));
+            setCurrentUser(name);
+            setMode('menu'); // Ensure we are on menu after login
+          };
+
+          const handleLogout = () => {
+            setCurrentUser(null);
+            setMode('menu');
+          };
+
+          const toggleFavorite = useCallback((id) => {
+            if (!currentUser) return;
+            
+            const newFavorites = new Set(favorites);
+            if (newFavorites.has(id)) {
+                newFavorites.delete(id);
+            } else {
+                newFavorites.add(id);
+            }
+            
+            setFavorites(newFavorites);
+            localStorage.setItem(getKeyFavorites(currentUser), JSON.stringify([...newFavorites]));
+          }, [favorites, currentUser]);
+
+          const addMistake = useCallback((id) => {
+            if (!currentUser) return;
+            
+            const newMistakes = new Set(mistakes);
+            if (!newMistakes.has(id)) {
+                newMistakes.add(id);
+                setMistakes(newMistakes);
+                localStorage.setItem(getKeyMistakes(currentUser), JSON.stringify([...newMistakes]));
+            }
+          }, [mistakes, currentUser]);
+
+          // If no user is logged in, show Login Screen
+          if (!currentUser) {
+            return <LoginView users={users} onLogin={handleLogin} />;
+          }
+          
+          return (
+            <div className="min-h-screen bg-orange-50 text-stone-800 font-sans">
+              {/* Header */}
+              <header className="bg-orange-600 text-white p-4 shadow-lg sticky top-0 z-20">
+                <div className="max-w-4xl mx-auto flex justify-between items-center">
+                  <div 
+                    className="flex items-center space-x-2 cursor-pointer"
+                    onClick={() => setMode('menu')}
+                  >
+                    <BookOpen size={28} />
+                    <h1 className="text-xl md:text-2xl font-bold tracking-wider">國二上第1次段考(國字注音題庫)</h1>
+                  </div>
+                  
+                  <div className="flex items-center space-x-4">
+                    <div className="hidden md:flex items-center bg-orange-700 px-3 py-1 rounded-full text-sm">
+                        <User size={16} className="mr-2"/>
+                        <span className="font-bold truncate max-w-[100px]">{currentUser}</span>
+                    </div>
+                    {mode !== 'menu' && (
+                        <button 
+                        onClick={() => setMode('menu')}
+                        className="text-orange-100 hover:text-white transition font-medium"
+                        >
+                        回首頁
+                        </button>
+                    )}
+                    <button 
+                        onClick={handleLogout}
+                        className="flex items-center text-orange-200 hover:text-white transition"
+                        title="登出"
+                    >
+                        <LogOut size={20} />
+                    </button>
+                  </div>
+                </div>
+              </header>
+
+              {/* Main Content */}
+              <main className="max-w-4xl mx-auto p-4 md:p-6">
+                {mode === 'menu' && (
+                  <div className="flex flex-col items-center justify-center space-y-8 py-12 animate-in fade-in duration-500">
+                    <div className="text-center space-y-4">
+                      <div className="bg-orange-100 p-4 rounded-full inline-block mb-2">
+                        <Sun size={48} className="text-orange-500" />
+                      </div>
+                      <h2 className="text-3xl font-bold text-orange-900">歡迎回來，{currentUser}</h2>
+                      <p className="text-stone-600 text-lg max-w-md">
+                        請選擇下列功能開始學習
+                      </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
+                      <button 
+                        onClick={() => setMode('study')}
+                        className="flex flex-col items-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl hover:bg-orange-50 transition border-2 border-orange-100 hover:border-orange-300 group"
+                      >
+                        <div className="bg-orange-100 p-4 rounded-full mb-4 group-hover:scale-110 transition">
+                          <List size={40} className="text-orange-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-orange-900">全表瀏覽</h3>
+                        <p className="text-stone-500 mt-2">完整檢視 {rawData.length} 題國字注音對照表</p>
+                      </button>
+
+                      <button 
+                        onClick={() => setMode('quiz')}
+                        className="flex flex-col items-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl hover:bg-orange-50 transition border-2 border-orange-100 hover:border-orange-300 group"
+                      >
+                        <div className="bg-orange-100 p-4 rounded-full mb-4 group-hover:scale-110 transition">
+                          <Zap size={40} className="text-orange-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-orange-900">閃電刷題</h3>
+                        <p className="text-stone-500 mt-2">瀑布流式 {rawData.length} 題快速挑戰</p>
+                      </button>
+
+                      <button 
+                        onClick={() => setMode('favorites')}
+                        className="flex flex-col items-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl hover:bg-orange-50 transition border-2 border-orange-100 hover:border-orange-300 group"
+                      >
+                        <div className="bg-red-50 p-4 rounded-full mb-4 group-hover:scale-110 transition">
+                          <Heart size={40} className="text-red-500 fill-red-500" />
+                        </div>
+                        <h3 className="text-xl font-bold text-orange-900">我的最愛</h3>
+                        <p className="text-stone-500 mt-2">複習您收藏的重點題目</p>
+                      </button>
+
+                      <button 
+                        onClick={() => setMode('mistakes')}
+                        className="flex flex-col items-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl hover:bg-orange-50 transition border-2 border-orange-100 hover:border-orange-300 group"
+                      >
+                        <div className="bg-stone-100 p-4 rounded-full mb-4 group-hover:scale-110 transition">
+                          <BookX size={40} className="text-stone-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-orange-900">錯題複習</h3>
+                        <p className="text-stone-500 mt-2">針對答錯的題目加強練習</p>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {mode === 'study' && (
+                    <TableView 
+                        data={rawData} 
+                        favorites={favorites} 
+                        onToggleFavorite={toggleFavorite} 
+                        title="國字注音一覽表"
+                    />
+                )}
+                
+                {mode === 'favorites' && (
+                    <TableView 
+                        data={rawData.filter(item => favorites.has(item.id))} 
+                        favorites={favorites} 
+                        onToggleFavorite={toggleFavorite} 
+                        title="我的最愛清單"
+                        emptyMessage="您還沒有加入任何最愛題目喔！"
+                    />
+                )}
+
+                {mode === 'mistakes' && (
+                    <TableView 
+                        data={rawData.filter(item => mistakes.has(item.id))} 
+                        favorites={favorites} 
+                        onToggleFavorite={toggleFavorite} 
+                        title="錯題複習本"
+                        emptyMessage="太棒了！目前沒有錯題紀錄。"
+                    />
+                )}
+
+                {mode === 'quiz' && (
+                    <WaterfallQuizView 
+                        data={rawData} 
+                        currentUser={currentUser} 
+                        favorites={favorites}
+                        onToggleFavorite={toggleFavorite}
+                        onAddMistake={addMistake}
+                        onExit={() => setMode('menu')} 
+                    />
+                )}
+              </main>
+            </div>
+          );
+        };
+
+        // --- Login View Component ---
+        const LoginView = ({ users, onLogin }) => {
+            const [inputName, setInputName] = useState("");
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if(inputName.trim()) onLogin(inputName.trim());
+            }
+
+            return (
+                <div className="min-h-screen bg-orange-50 flex items-center justify-center p-4">
+                    <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border-2 border-orange-100">
+                        <div className="text-center mb-8">
+                            <div className="bg-orange-100 p-3 rounded-full inline-block mb-4">
+                                <BookOpen size={40} className="text-orange-600" />
+                            </div>
+                            <h1 className="text-2xl font-bold text-orange-900">國字注音學習App</h1>
+                            <p className="text-stone-500 mt-2">請輸入姓名以開始學習</p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <input 
+                                    type="text" 
+                                    value={inputName}
+                                    onChange={(e) => setInputName(e.target.value)}
+                                    placeholder="輸入您的名字"
+                                    className="w-full px-4 py-3 rounded-xl border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-lg"
+                                    autoFocus
+                                />
+                            </div>
+                            <button 
+                                type="submit" 
+                                disabled={!inputName.trim()}
+                                className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold text-lg transition disabled:opacity-50"
+                            >
+                                開始使用
+                            </button>
+                        </form>
+
+                        {users.length > 0 && (
+                            <div className="mt-8">
+                                <div className="relative mb-4">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <div className="w-full border-t border-stone-200"></div>
+                                    </div>
+                                    <div className="relative flex justify-center text-sm">
+                                        <span className="px-2 bg-white text-stone-500">快速登入</span>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap gap-2 justify-center">
+                                    {users.map((user, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => onLogin(user)}
+                                            className="px-4 py-2 bg-stone-100 hover:bg-orange-100 text-stone-700 hover:text-orange-700 rounded-full text-sm font-medium transition"
+                                        >
+                                            {user}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Table View Component ---
+        const TableView = ({ data, favorites, onToggleFavorite, title, emptyMessage = "沒有找到符合的資料" }) => {
+          const [searchTerm, setSearchTerm] = useState("");
+
+          const filteredData = data.filter(item => 
+            item.question.includes(searchTerm) || 
+            item.answer.includes(searchTerm) ||
+            item.id.toString().includes(searchTerm)
+          );
+
+          return (
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-orange-200 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="p-4 border-b border-orange-100 bg-orange-50 flex flex-col md:flex-row justify-between items-center gap-4">
+                <h2 className="text-xl font-bold text-orange-900 flex items-center">
+                  <List className="mr-2" size={24} />
+                  {title}
+                </h2>
+                <input 
+                  type="text" 
+                  placeholder="搜尋題目或解答..." 
+                  className="px-4 py-2 rounded-lg border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400 w-full md:w-64 bg-white"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              
+              <div className="overflow-x-auto max-h-[70vh]">
+                <table className="w-full text-left">
+                  <thead className="bg-orange-100 sticky top-0 z-10 shadow-sm">
+                    <tr>
+                      <th className="p-4 font-black text-orange-900 border-b-2 border-orange-200 w-16 text-center">收藏</th>
+                      <th className="p-4 font-black text-orange-900 border-b-2 border-orange-200 w-24">編號</th>
+                      <th className="p-4 font-black text-orange-900 border-b-2 border-orange-200">題目</th>
+                      <th className="p-4 font-black text-orange-900 border-b-2 border-orange-200 w-80">正確解答</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-orange-50">
+                    {filteredData.length > 0 ? filteredData.map((item) => {
+                      const isFav = favorites.has(item.id);
+                      return (
+                        <tr key={item.id} className="hover:bg-orange-50 transition-colors group">
+                          <td className="p-4 text-center">
+                            <button 
+                                onClick={() => onToggleFavorite(item.id)}
+                                className={`transition transform active:scale-90 p-1 rounded-full hover:bg-orange-100 ${isFav ? 'text-red-500' : 'text-stone-300 hover:text-red-400'}`}
+                            >
+                                <Heart size={20} className={isFav ? "fill-current heart-click" : ""} />
+                            </button>
+                          </td>
+                          <td className="p-4 text-stone-500 font-mono font-medium">{item.id}</td>
+                          <td className="p-4 text-stone-800 text-lg font-medium">{item.question}</td>
+                          <td className="p-4 text-orange-700 text-xl font-bold">{item.answer}</td>
+                        </tr>
+                      );
+                    }) : (
+                      <tr>
+                        <td colSpan="4" className="p-12 text-center text-stone-400 flex flex-col items-center justify-center">
+                            <div className="mb-2 bg-stone-100 p-4 rounded-full">
+                                <List size={32} />
+                            </div>
+                            <p>{emptyMessage}</p>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className="p-3 bg-orange-50 border-t border-orange-200 text-center text-sm text-stone-500">
+                顯示 {filteredData.length} 筆資料
+              </div>
+            </div>
+          );
+        };
+
+        // --- Waterfall Quiz View Component ---
+        const WaterfallQuizView = ({ data, currentUser, favorites, onToggleFavorite, onAddMistake, onExit }) => {
+          const [quizData, setQuizData] = useState([]);
+          const [selections, setSelections] = useState({});
+          
+          const userProgressKey = getKeyProgress(currentUser);
+
+          useEffect(() => {
+            const preparedData = data.map(item => {
+              const options = shuffleArray([item.answer, ...item.distractors]);
+              return { ...item, options };
+            });
+            setQuizData(preparedData);
+
+            try {
+                const savedProgress = localStorage.getItem(userProgressKey);
+                if (savedProgress) {
+                    setSelections(JSON.parse(savedProgress));
+                }
+            } catch (e) {
+                console.error("Failed to load progress", e);
+            }
+          }, [data, userProgressKey]);
+
+          const handleSelect = (questionId, option) => {
+            const newSelections = {
+              ...selections,
+              [questionId]: option
+            };
+            setSelections(newSelections);
+            localStorage.setItem(userProgressKey, JSON.stringify(newSelections));
+
+            const currentQuestion = data.find(item => item.id === questionId);
+            const isCorrect = option === currentQuestion.answer;
+
+            if (isCorrect) {
+                playSound('success');
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            } else {
+                playSound('error');
+                onAddMistake(questionId);
+            }
+          };
+          
+          const completedCount = Object.keys(selections).length;
+          const progress = Math.round((completedCount / data.length) * 100);
+
+          return (
+            <div className="max-w-4xl mx-auto pb-20">
+              <div className="sticky top-16 z-10 bg-orange-50/95 backdrop-blur-sm pt-4 pb-2 border-b border-orange-200 mb-6 shadow-sm">
+                 <div className="flex justify-between items-center mb-2 px-2">
+                    <div>
+                        <h2 className="text-xl font-bold text-orange-900 flex items-center gap-2">
+                            <Zap size={24} className="fill-orange-500 text-orange-600"/>
+                            閃電刷題
+                        </h2>
+                        <p className="text-xs text-stone-500 mt-1">作答者: {currentUser} | 已完成: {completedCount} / {data.length} 題</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <button 
+                            onClick={() => {
+                                if(window.confirm('確定要重新開始嗎？您將遺失目前的作答紀錄。')) {
+                                    if(window.confirm('再次確認：真的要清空所有進度重來嗎？(此動作無法復原)')) {
+                                        setSelections({});
+                                        localStorage.removeItem(userProgressKey);
+                                        window.scrollTo(0,0);
+                                    }
+                                }
+                            }}
+                            className="px-3 py-1.5 bg-white border border-orange-300 text-orange-700 rounded-lg hover:bg-orange-50 font-medium text-xs sm:text-sm transition"
+                        >
+                            重置進度
+                        </button>
+                        <button 
+                            onClick={onExit}
+                            className="px-3 py-1.5 bg-stone-600 text-white rounded-lg hover:bg-stone-700 font-medium text-xs sm:text-sm transition"
+                        >
+                            暫停離開
+                        </button>
+                    </div>
+                 </div>
+                 <div className="w-full bg-orange-200 h-2.5 rounded-full overflow-hidden">
+                    <div 
+                        className="bg-orange-600 h-2.5 rounded-full progress-bar shadow-[0_0_10px_rgba(249,115,22,0.5)]" 
+                        style={{ width: `${progress}%` }}
+                    ></div>
+                 </div>
+              </div>
+
+              <div className="space-y-6">
+                {quizData.map((item) => {
+                    const userSelection = selections[item.id];
+                    const isAnswered = userSelection !== undefined;
+                    const isCorrect = userSelection === item.answer;
+                    const isFav = favorites.has(item.id);
+
+                    return (
+                        <div key={item.id} className={`bg-white rounded-xl shadow-sm border-2 transition-all duration-300 overflow-hidden ${isAnswered ? (isCorrect ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50') : 'border-orange-100'}`}>
+                            <div className="p-4 border-b border-black/5 flex items-start gap-3">
+                                <span className="bg-orange-100 text-orange-800 font-mono font-bold px-2 py-1 rounded text-sm shrink-0 mt-1">
+                                    #{item.id}
+                                </span>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onToggleFavorite(item.id);
+                                            }}
+                                            className={`transition transform active:scale-90 p-1 rounded-full -ml-2 ${isFav ? 'text-red-500' : 'text-stone-300 hover:text-red-400'}`}
+                                            title={isFav ? "取消收藏" : "加入最愛"}
+                                        >
+                                            <Heart size={20} className={isFav ? "fill-current heart-click" : ""} />
+                                        </button>
+                                        <h3 className="text-xl md:text-2xl font-bold text-stone-800 leading-snug">
+                                            {item.question}
+                                        </h3>
+                                    </div>
+                                </div>
+                                {isAnswered && (
+                                    <div className="ml-auto shrink-0">
+                                        {isCorrect ? <CheckCircle className="text-green-500" /> : <XCircle className="text-red-500" />}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="p-4 bg-white/50">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    {item.options.map((option, idx) => {
+                                        let btnClass = "py-4 px-2 rounded-lg font-bold text-2xl md:text-3xl transition-all border-2 relative ";
+                                        
+                                        if (isAnswered) {
+                                            if (option === item.answer) {
+                                                btnClass += "bg-green-500 text-white border-green-600 shadow-md";
+                                            } else if (option === userSelection && !isCorrect) {
+                                                btnClass += "bg-red-500 text-white border-red-600 shadow-md";
+                                            } else {
+                                                btnClass += "bg-stone-100 text-stone-400 border-transparent opacity-50";
+                                            }
+                                        } else {
+                                            btnClass += "bg-white text-stone-700 border-stone-200 hover:border-orange-400 hover:bg-orange-50 active:scale-95";
+                                        }
+
+                                        return (
+                                            <button
+                                                key={idx}
+                                                onClick={() => !isAnswered && handleSelect(item.id, option)}
+                                                disabled={isAnswered}
+                                                className={btnClass}
+                                            >
+                                                {option}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                {isAnswered && !isCorrect && (
+                                    <div className="mt-3 text-sm text-red-600 font-medium animate-in fade-in slide-in-from-top-1">
+                                        正確答案：{item.answer}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+              </div>
+
+              {progress === 100 && (
+                <div className="mt-8 p-8 bg-green-100 rounded-2xl text-center border-2 border-green-300 animate-in zoom-in duration-300">
+                    <h3 className="text-2xl font-bold text-green-800 mb-2">恭喜完成所有題目！</h3>
+                    <p className="text-green-700">您已經完成了 {data.length} 題的練習。</p>
+                    <button 
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                        className="mt-4 text-green-700 underline hover:text-green-900"
+                    >
+                        回到頂部
+                    </button>
+                </div>
+              )}
+            </div>
+          );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
