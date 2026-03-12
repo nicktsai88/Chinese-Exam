@@ -28,7 +28,7 @@
 
     <style>
         :root {
-            --bg: #fffaf5;
+            --bg: #fffaf5; /* 暖色調背景適合國文 */
             --text-main: #4e342e;
             --card-bg: #ffffff;
         }
@@ -120,6 +120,7 @@
             box-shadow: 0 12px 30px rgba(0,0,0,0.1);
         }
 
+        /* Completed state styling is handled dynamically in React for glowing effect */
         .app-card.completed {
             transform: scale(1.02);
             background-color: #ffffff; 
@@ -292,71 +293,76 @@
                     name: "1.國二下第1次段考", 
                     color: "#e53935", // Red
                     lightColor: "#ffebee", 
-                    icon: "✍️", 
+                    icon: "📝", 
                     titles: [
                         "第 1 站：注音國字練習",
                         "第 2 站：凱昱國字注音練習",
                         "第 3 站：注釋練習",
-                        "第 4 站："
+                        "第 4 站：",
+                        "第 5 站："
                     ] 
                 },
                 { 
                     name: "2.國二下第2次段考", 
                     color: "#fb8c00", // Orange
                     lightColor: "#fff3e0", 
-                    icon: "🗣️", 
+                    icon: "📝", 
                     titles: [
-                        "第 1 站：",
-                        "第 2 站：",
-                        "第 3 站："
+                        "第 1 站：注音國字練習",
+                        "第 2 站：凱昱國字注音練習",
+                        "第 3 站：注釋練習",
+                        "第 4 站：",
+                        "第 5 站："
                     ] 
                 },
                 { 
                     name: "3.國二下第3次段考", 
-                    color: "#fdd835", // Yellow/Amber
+                    color: "#fdd835", // Yellow
                     lightColor: "#fffde7", 
-                    icon: "🀄", 
+                    icon: "📝", 
                     titles: [
-                        "第 1 站：",
-                        "第 2 站："
+                        "第 1 站：注音國字練習",
+                        "第 2 站：凱昱國字注音練習",
+                        "第 3 站：注釋練習",
+                        "第 4 站：",
+                        "第 5 站："
                     ] 
                 },
                 { 
                     name: "4.國三上第1次段考", 
                     color: "#afb42b", // Lime
                     lightColor: "#f9fbe7", 
-                    icon: "📖", 
+                    icon: "📝", 
                     titles: [
-                        "第 1 站：",
-                        "第 2 站：",
-                        "第 3 站：",
-                        "第 4 站："
+                        "第 1 站：注音國字練習",
+                        "第 2 站：凱昱國字注音練習",
+                        "第 3 站：注釋練習",
+                        "第 4 站：",
+                        "第 5 站："
                     ] 
                 },
                 { 
                     name: "5.國三上第2次段考", 
                     color: "#43a047", // Green
                     lightColor: "#e8f5e9", 
-                    icon: "💡", 
+                    icon: "📝", 
                     titles: [
-                        "第 1 站：",
-                        "第 2 站：",
-                        "第 3 站：",
+                        "第 1 站：注音國字練習",
+                        "第 2 站：凱昱國字注音練習",
+                        "第 3 站：注釋練習",
                         "第 4 站：",
-                        "第 5 站：",
-                        "第 6 站：",
-                        "第 7 站："
+                        "第 5 站："
                     ] 
                 },
                 { 
                     name: "6.國三上第3次段考", 
                     color: "#00897b", // Teal
                     lightColor: "#e0f2f1", 
-                    icon: "🦁", 
+                    icon: "📝", 
                     titles: [
-                        "第 1 站：",
-                        "第 2 站：",
-                        "第 3 站：",
+                        "第 1 站：注音國字練習",
+                        "第 2 站：凱昱國字注音練習",
+                        "第 3 站：注釋練習",
                         "第 4 站：",
                         "第 5 站："
                     ] 
@@ -365,34 +371,39 @@
                     name: "7.國三下第1次段考", 
                     color: "#00acc1", // Cyan
                     lightColor: "#e0f7fa", 
-                    icon: "⚖️", 
+                    icon: "📝", 
                     titles: [
-                        "第 1 站：",
-                        "第 2 站：",
-                        "第 3 站："
+                        "第 1 站：注音國字練習",
+                        "第 2 站：凱昱國字注音練習",
+                        "第 3 站：注釋練習",
+                        "第 4 站：",
+                        "第 5 站："
                     ] 
                 },
                 { 
                     name: "8.國三下第2次段考", 
                     color: "#039be5", // Light Blue
                     lightColor: "#e1f5fe", 
-                    icon: "✉️", 
+                    icon: "📝", 
                     titles: [
-                        "第 1 站：",
-                        "第 2 站：",
-                        "第 3 站："
+                        "第 1 站：注音國字練習",
+                        "第 2 站：凱昱國字注音練習",
+                        "第 3 站：注釋練習",
+                        "第 4 站：",
+                        "第 5 站："
                     ] 
                 },
                 { 
                     name: "9.國三下第3次段考", 
                     color: "#3949ab", // Indigo
                     lightColor: "#e8eaf6", 
-                    icon: "⛩️", 
+                    icon: "📝", 
                     titles: [
-                        "第 1 站：",
-                        "第 2 站：",
-                        "第 3 站：",
-                        "第 4 站："
+                        "第 1 站：注音國字練習",
+                        "第 2 站：凱昱國字注音練習",
+                        "第 3 站：注釋練習",
+                        "第 4 站：",
+                        "第 5 站："
                     ] 
                 }
             ];
@@ -426,7 +437,7 @@
         };
 
         const RAW_DATA = generateRawData();
-        const TOTAL_ITEMS = 33; // 更新為真實項目數
+        const TOTAL_ITEMS = 45; 
 
         // ==========================================
         // 3. React Components
@@ -480,30 +491,23 @@
             useEffect(() => {
                 if (!firebaseConfig.apiKey) {
                     setSyncStatus("offline");
-                    const saved = localStorage.getItem('cl_local_progress');
+                    const saved = localStorage.getItem('cl_local_progress'); // key updated
                     if (saved) setLocalProgress(JSON.parse(saved));
                     return;
                 }
 
-                // 環境安全性要求：必須優先執行自定義 Auth，才能確保 Firestore 請求不被阻擋
-                const initAuth = async () => {
-                    try {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    } catch (error) {
-                        console.error("Auth init failed", error);
-                    }
-                };
-                
-                initAuth();
-
                 const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
                     if (user) {
-                        console.log("Firebase Auth Ready");
+                        console.log("Firebase Auth Ready:", user.uid);
                         setIsAuthReady(true);
+                    } else {
+                        console.log("Signing in anonymously...");
+                        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                        if (initialAuthToken) {
+                            signInWithCustomToken(auth, initialAuthToken).catch(e => console.error("Token login failed", e));
+                        } else {
+                            signInAnonymously(auth).catch(e => console.error("Anon login failed", e));
+                        }
                     }
                 });
 
@@ -515,14 +519,11 @@
                 if (!isAuthReady || !db) return;
 
                 setSyncStatus("loading");
-                // 環境安全性要求：共用資料庫結構必須符合 /artifacts/{appId}/public/data/{collectionName}
-                const globalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'Chinese-Exam-Global');
-                
-                const unsubGlobal = onSnapshot(globalDocRef, (docSnap) => {
+                const unsubGlobal = onSnapshot(doc(db, COLLECTION_NAME, DOC_GLOBAL), (docSnap) => {
                     if (docSnap.exists()) {
                         setAllUsers(docSnap.data().users || []);
                     } else {
-                        setDoc(globalDocRef, { users: [] }, { merge: true });
+                        setDoc(doc(db, COLLECTION_NAME, DOC_GLOBAL), { users: [] }, { merge: true });
                         setAllUsers([]);
                     }
                     if (!currentUser) setSyncStatus("success");
@@ -539,9 +540,7 @@
                 if (!currentUser || !isAuthReady || !db) return;
 
                 setSyncStatus('loading');
-                const userDocRef = doc(db, 'artifacts', appId, 'public', 'data', `Chinese-Exam-User-${currentUser}`);
-                
-                const unsubUser = onSnapshot(userDocRef, (docSnap) => {
+                const unsubUser = onSnapshot(doc(db, COLLECTION_NAME, currentUser), (docSnap) => {
                     if (docSnap.exists()) {
                         setLocalProgress(docSnap.data().progress || {});
                     } else {
@@ -562,13 +561,12 @@
                 
                 if (isAuthReady && db) {
                     if (!allUsers.includes(uname)) {
-                        const globalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'Chinese-Exam-Global');
                         try {
-                            await updateDoc(globalDocRef, {
+                            await updateDoc(doc(db, COLLECTION_NAME, DOC_GLOBAL), {
                                 users: arrayUnion(uname)
                             });
                         } catch (e) {
-                            await setDoc(globalDocRef, {
+                            await setDoc(doc(db, COLLECTION_NAME, DOC_GLOBAL), {
                                 users: arrayUnion(uname)
                             }, { merge: true });
                         }
@@ -591,8 +589,7 @@
                 if (currentUser && isAuthReady && db) {
                     try {
                         setSyncStatus('loading');
-                        const userDocRef = doc(db, 'artifacts', appId, 'public', 'data', `Chinese-Exam-User-${currentUser}`);
-                        await setDoc(userDocRef, {
+                        await setDoc(doc(db, COLLECTION_NAME, currentUser), {
                             progress: newProgress,
                             lastUpdated: new Date()
                         }, { merge: true });
@@ -602,7 +599,7 @@
                         setSyncStatus('error');
                     }
                 } else {
-                    localStorage.setItem('cl_local_progress', JSON.stringify(newProgress)); 
+                    localStorage.setItem('cl_local_progress', JSON.stringify(newProgress)); // key updated
                 }
             };
 
@@ -700,6 +697,7 @@
                     <div className="pb-20">
                         {RAW_DATA.map((section, idx) => (
                             <div key={idx} className="mb-12">
+                                {/* 修正此處：將 section.name 改為 section.title */}
                                 <div className="section-divider">{section.title}</div>
                                 <div className="app-grid">
                                     {section.items.map((item) => {
@@ -711,11 +709,13 @@
                                                 target="_blank"
                                                 className={`app-card ${isDone ? 'completed' : ''} group`}
                                                 style={{
-                                                    borderTopColor: section.color,
-                                                    border: isDone ? `4px solid ${section.color}` : `1px solid rgba(0,0,0,0.05)`, 
+                                                    // Dynamic Style Logic
+                                                    borderTopColor: section.color, // Always colored top
+                                                    border: isDone ? `4px solid ${section.color}` : `1px solid rgba(0,0,0,0.05)`, // Fluorescent border when done
                                                     borderTop: isDone ? `4px solid ${section.color}` : `6px solid ${section.color}`,
+                                                    // Stronger Glow effect (Double layer shadow for neon look)
                                                     boxShadow: isDone ? `0 0 20px ${section.color}, 0 0 45px ${section.color}99` : undefined,
-                                                    zIndex: isDone ? 10 : 1 
+                                                    zIndex: isDone ? 10 : 1 // Ensure glowing card stays on top
                                                 }}
                                             >
                                                 <div 
@@ -727,6 +727,7 @@
                                                     }}
                                                     title={isDone ? "標記為未完成" : "標記為已完成"}
                                                     style={{
+                                                        // Checkbox also follows theme color when checked
                                                         backgroundColor: isDone ? section.color : 'white',
                                                         borderColor: isDone ? section.color : '#ddd'
                                                     }}
