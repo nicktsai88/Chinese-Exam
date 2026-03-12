@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國文(段考專區)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Import Map for Firebase -->
+    <script type="importmap">
+      {
+        "imports": {
+          "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+          "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
+          "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"
+        }
+      }
+    </script>
+
+    <style>
+        :root {
+            --bg: #fffaf5; /* 暖色調背景適合國文 */
+            --text-main: #4e342e;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg);
+            background-image: radial-gradient(#d7ccc8 1px, transparent 1px);
+            background-size: 20px 20px;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: var(--text-main);
+        }
+
+        h1, h2, .font-serif { font-family: 'Noto Serif TC', serif; }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            max-width: 900px;
+        }
+
+        .header h1 {
+            font-family: 'Noto Serif TC', serif;
+            color: var(--text-main);
+            font-size: 3.5em; 
+            font-weight: 900; 
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+        }
+
+        .header p {
+            color: #795548;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #8d6e63 0%, #a1887f 100%);
+            color: white;
+            padding: 15px 50px;
+            border-radius: 9999px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.3em;
+            box-shadow: 0 6px 15px rgba(141, 110, 99, 0.3);
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        .home-btn:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 8px 20px rgba(141, 110, 99, 0.4); 
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1300px;
+            margin-bottom: 40px;
+        }
+
+        .app-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            text-decoration: none;
+            color: #333;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-top: 6px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.05);
+            min-height: 200px;
+        }
+
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+        }
+
+        /* Completed state styling is handled dynamically in React for glowing effect */
+        .app-card.completed {
+            transform: scale(1.02);
+            background-color: #ffffff; 
+        }
+
+        .card-icon-wrapper {
+            font-size: 2.2em;
+            margin-bottom: 12px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f5f5;
+        }
+
+        .card-title {
+            font-family: 'Noto Serif TC', serif;
+            font-size: 1.15em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            color: #444;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-desc {
+            font-size: 0.8em;
+            color: #888;
+            background: #f9f9f9;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-family: monospace;
+            margin-top: auto;
+        }
+
+        .card-checkbox {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 26px;
+            height: 26px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+        
+        .card-checkbox:hover {
+            transform: scale(1.1);
+        }
+
+        .card-checkbox.checked {
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .status-loading { background-color: #fdd835; box-shadow: 0 0 5px #fdd835; }
+        .status-success { background-color: #4caf50; box-shadow: 0 0 5px #4caf50; }
+        .status-error { background-color: #ef5350; box-shadow: 0 0 5px #ef5350; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+
+        .section-divider {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            margin: 60px 0 30px 0;
+            color: #5d4037;
+            font-family: 'Noto Serif TC', serif;
+            font-size: 1.8em;
+            font-weight: 900;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
+        }
+        .section-divider::before, .section-divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 2px solid #d7ccc8;
+        }
+        .section-divider::before { margin-right: 20px; }
+        .section-divider::after { margin-left: 20px; }
+
+        .quick-user-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border: 2px solid #bcaaa4;
+            color: #5d4037;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .quick-user-btn:hover {
+            background: #efebe9;
+            border-color: #8d6e63;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, doc, setDoc, updateDoc, getDoc, onSnapshot, arrayUnion } from "firebase/firestore";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "firebase/auth";
+
+        // ==========================================
+        // 1. Firebase Config
+        // ==========================================
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyAxQFt76ZPXE7d0i1XeNZ1yiiD2WYNIfHs",
+            authDomain: "chinese-learning-47f4d.firebaseapp.com",
+            projectId: "chinese-learning-47f4d",
+            storageBucket: "chinese-learning-47f4d.firebasestorage.app",
+            messagingSenderId: "76289812052",
+            appId: "1:76289812052:web:898384a916f9f341f62fc1"
+        };
+
+        const COLLECTION_NAME = 'Chinese-Exam'; 
+        const DOC_GLOBAL = 'global';
+
+        let app, db, auth;
+
+        try {
+            if (firebaseConfig.apiKey) {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+            }
+        } catch (e) {
+            console.error("Firebase init failed:", e);
+        }
+
+        // ==========================================
+        // 2. Data Structure (17 Categories)
+        // ==========================================
+        const generateRawData = () => {
+            const sections = [
+                { 
+                    name: "1.國二下第1次段考", 
+                    color: "#e53935", // Red
+                    lightColor: "#ffebee", 
+                    icon: "✍️", 
+                    titles: [
+                        "第 1 站：注音國字練習",
+                        "第 2 站：凱昱國字注音練習",
+                        "第 3 站：注釋練習",
+                        "第 4 站："
+                    ] 
+                },
+                { 
+                    name: "2.國二下第2次段考", 
+                    color: "#fb8c00", // Orange
+                    lightColor: "#fff3e0", 
+                    icon: "🗣️", 
+                    titles: [
+                        "第 1 站：",
+                        "第 2 站：",
+                        "第 3 站："
+                    ] 
+                },
+                { 
+                    name: "3.國二下第3次段考", 
+                    color: "#fdd835", // Yellow/Amber
+                    lightColor: "#fffde7", 
+                    icon: "🀄", 
+                    titles: [
+                        "第 1 站：",
+                        "第 2 站："
+                    ] 
+                },
+                { 
+                    name: "4.國三上第1次段考", 
+                    color: "#afb42b", // Lime
+                    lightColor: "#f9fbe7", 
+                    icon: "📖", 
+                    titles: [
+                        "第 1 站：",
+                        "第 2 站：",
+                        "第 3 站：",
+                        "第 4 站："
+                    ] 
+                },
+                { 
+                    name: "5.國三上第2次段考", 
+                    color: "#43a047", // Green
+                    lightColor: "#e8f5e9", 
+                    icon: "💡", 
+                    titles: [
+                        "第 1 站：",
+                        "第 2 站：",
+                        "第 3 站：",
+                        "第 4 站：",
+                        "第 5 站：",
+                        "第 6 站：",
+                        "第 7 站："
+                    ] 
+                },
+                { 
+                    name: "6.國三上第3次段考", 
+                    color: "#00897b", // Teal
+                    lightColor: "#e0f2f1", 
+                    icon: "🦁", 
+                    titles: [
+                        "第 1 站：",
+                        "第 2 站：",
+                        "第 3 站：",
+                        "第 4 站：",
+                        "第 5 站："
+                    ] 
+                },
+                { 
+                    name: "7.國三下第1次段考", 
+                    color: "#00acc1", // Cyan
+                    lightColor: "#e0f7fa", 
+                    icon: "⚖️", 
+                    titles: [
+                        "第 1 站：",
+                        "第 2 站：",
+                        "第 3 站："
+                    ] 
+                },
+                { 
+                    name: "8.國三下第2次段考", 
+                    color: "#039be5", // Light Blue
+                    lightColor: "#e1f5fe", 
+                    icon: "✉️", 
+                    titles: [
+                        "第 1 站：",
+                        "第 2 站：",
+                        "第 3 站："
+                    ] 
+                },
+                { 
+                    name: "9.國三下第3次段考", 
+                    color: "#3949ab", // Indigo
+                    lightColor: "#e8eaf6", 
+                    icon: "⛩️", 
+                    titles: [
+                        "第 1 站：",
+                        "第 2 站：",
+                        "第 3 站：",
+                        "第 4 站："
+                    ] 
+                }
+            ];
+
+            const result = [];
+            let currentId = 1;
+
+            sections.forEach(sec => {
+                const sectionItems = [];
+                
+                sec.titles.forEach((title, index) => {
+                    sectionItems.push({
+                        id: currentId,
+                        code: `Chinese-Exam-${currentId}`,
+                        title: title,
+                        href: `Chinese-Exam-${currentId}.html`
+                    });
+                    currentId++;
+                });
+
+                result.push({
+                    title: sec.name,
+                    color: sec.color,
+                    lightColor: sec.lightColor,
+                    icon: sec.icon,
+                    items: sectionItems
+                });
+            });
+
+            return result;
+        };
+
+        const RAW_DATA = generateRawData();
+        const TOTAL_ITEMS = 67; 
+
+        // ==========================================
+        // 3. React Components
+        // ==========================================
+
+        const { useState, useEffect, useMemo } = React;
+
+        const StatusLight = ({ status }) => {
+            let dotClass = 'status-loading';
+            let text = '連線中...';
+
+            if (status === 'success') {
+                dotClass = 'status-success';
+                text = '已同步';
+            } else if (status === 'error') {
+                dotClass = 'status-error';
+                text = '同步失敗';
+            } else if (status === 'loading') {
+                dotClass = 'status-loading';
+                text = '讀取資料中...';
+            } else {
+                dotClass = ''; 
+                text = '離線模式';
+            }
+
+            return (
+                <div className="flex items-center text-xs text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm border border-gray-100">
+                    <span className={`status-dot ${dotClass}`}></span>
+                    {text}
+                </div>
+            );
+        };
+
+        const App = () => {
+            // UI States
+            const [currentUser, setCurrentUser] = useState(null); 
+            const [allUsers, setAllUsers] = useState([]);
+            const [localProgress, setLocalProgress] = useState({}); 
+            const [loginName, setLoginName] = useState("");
+            const [showLogin, setShowLogin] = useState(false);
+            
+            // System States
+            const [isAuthReady, setIsAuthReady] = useState(false);
+            const [syncStatus, setSyncStatus] = useState("loading"); 
+
+            const completedCount = useMemo(() => {
+                return Object.values(localProgress).filter(v => v === true).length;
+            }, [localProgress]);
+
+            // 1. Init Auth
+            useEffect(() => {
+                if (!firebaseConfig.apiKey) {
+                    setSyncStatus("offline");
+                    const saved = localStorage.getItem('cl_local_progress'); // key updated
+                    if (saved) setLocalProgress(JSON.parse(saved));
+                    return;
+                }
+
+                const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        console.log("Firebase Auth Ready:", user.uid);
+                        setIsAuthReady(true);
+                    } else {
+                        console.log("Signing in anonymously...");
+                        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                        if (initialAuthToken) {
+                            signInWithCustomToken(auth, initialAuthToken).catch(e => console.error("Token login failed", e));
+                        } else {
+                            signInAnonymously(auth).catch(e => console.error("Anon login failed", e));
+                        }
+                    }
+                });
+
+                return () => unsubscribeAuth();
+            }, []);
+
+            // 2. Fetch Users
+            useEffect(() => {
+                if (!isAuthReady || !db) return;
+
+                setSyncStatus("loading");
+                const unsubGlobal = onSnapshot(doc(db, COLLECTION_NAME, DOC_GLOBAL), (docSnap) => {
+                    if (docSnap.exists()) {
+                        setAllUsers(docSnap.data().users || []);
+                    } else {
+                        setDoc(doc(db, COLLECTION_NAME, DOC_GLOBAL), { users: [] }, { merge: true });
+                        setAllUsers([]);
+                    }
+                    if (!currentUser) setSyncStatus("success");
+                }, (error) => {
+                    console.error("Fetch users error:", error);
+                    setSyncStatus("error");
+                });
+
+                return () => unsubGlobal();
+            }, [isAuthReady, currentUser]);
+
+            // 3. Fetch User Progress
+            useEffect(() => {
+                if (!currentUser || !isAuthReady || !db) return;
+
+                setSyncStatus('loading');
+                const unsubUser = onSnapshot(doc(db, COLLECTION_NAME, currentUser), (docSnap) => {
+                    if (docSnap.exists()) {
+                        setLocalProgress(docSnap.data().progress || {});
+                    } else {
+                        setLocalProgress({});
+                    }
+                    setSyncStatus('success');
+                }, (err) => {
+                    console.error("Sync progress error:", err);
+                    setSyncStatus('error');
+                });
+
+                return () => unsubUser();
+            }, [currentUser, isAuthReady]);
+
+            const handleLogin = async (name) => {
+                if (!name.trim()) return;
+                const uname = name.trim();
+                
+                if (isAuthReady && db) {
+                    if (!allUsers.includes(uname)) {
+                        try {
+                            await updateDoc(doc(db, COLLECTION_NAME, DOC_GLOBAL), {
+                                users: arrayUnion(uname)
+                            });
+                        } catch (e) {
+                            await setDoc(doc(db, COLLECTION_NAME, DOC_GLOBAL), {
+                                users: arrayUnion(uname)
+                            }, { merge: true });
+                        }
+                    }
+                } else {
+                    console.log("Offline login, local only.");
+                }
+                
+                setCurrentUser(uname);
+                setShowLogin(false);
+                setLoginName("");
+            };
+
+            const toggleProgress = async (code) => {
+                const newVal = !localProgress[code];
+                const newProgress = { ...localProgress, [code]: newVal };
+                
+                setLocalProgress(newProgress);
+
+                if (currentUser && isAuthReady && db) {
+                    try {
+                        setSyncStatus('loading');
+                        await setDoc(doc(db, COLLECTION_NAME, currentUser), {
+                            progress: newProgress,
+                            lastUpdated: new Date()
+                        }, { merge: true });
+                        setSyncStatus('success');
+                    } catch (e) {
+                        console.error("Save failed:", e);
+                        setSyncStatus('error');
+                    }
+                } else {
+                    localStorage.setItem('cl_local_progress', JSON.stringify(newProgress)); // key updated
+                }
+            };
+
+            return (
+                <div className="max-w-[1300px] mx-auto relative">
+                    
+                    {/* Header */}
+                    <div className="header mx-auto">
+                        <h1>國文(主題探索)</h1>
+                        <div className="flex flex-col items-center gap-4">
+                            <p className="mb-0 text-xl font-medium">國中國文・主題式素養探索</p>
+                            
+                            {!currentUser && allUsers.length > 0 && (
+                                <div className="w-full max-w-3xl my-2 p-4 bg-white/50 rounded-2xl border border-gray-200">
+                                    <p className="text-center text-[#5d4037] mb-3 font-bold text-sm opacity-80">
+                                        ▼ 點擊下方名字快速登入 ▼
+                                    </p>
+                                    <div className="flex flex-wrap justify-center gap-3">
+                                        {allUsers.map(u => (
+                                            <button 
+                                                key={u} 
+                                                onClick={() => handleLogin(u)} 
+                                                className="quick-user-btn"
+                                            >
+                                                👤 {u}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex items-center gap-4 mt-2">
+                                <div className="text-lg font-bold text-[#3e2723] bg-white px-4 py-1 rounded-full shadow-sm border border-gray-200">
+                                    目前進度：{completedCount} / {TOTAL_ITEMS}
+                                </div>
+                                <StatusLight status={syncStatus} />
+                            </div>
+
+                            <div className="mt-2 flex items-center gap-3">
+                                {currentUser ? (
+                                    <div className="flex items-center gap-2 animate-fade-in">
+                                        <span className="text-base text-gray-600 font-medium">挑戰者：</span>
+                                        <span className="font-bold text-lg text-[#5d4037] bg-[#efebe9] px-4 py-1 rounded-full shadow-sm">{currentUser}</span>
+                                        <button 
+                                            onClick={() => { setCurrentUser(null); setLocalProgress({}); }}
+                                            className="text-sm text-gray-400 hover:text-gray-600 underline ml-2 font-medium"
+                                        >
+                                            登出
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button 
+                                        onClick={() => setShowLogin(true)}
+                                        className="text-lg bg-white border-2 border-[#8d6e63] text-[#5d4037] px-6 py-2 rounded-full hover:bg-[#efebe9] transition shadow-sm font-bold flex items-center gap-2"
+                                    >
+                                        <span>👤</span> 登入紀錄進度
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                        
+                        <div className="mt-8">
+                            <a href="https://nicktsai88.github.io/List/" className="home-btn">
+                                🎁 返回快樂學習百寶箱
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* Login Modal */}
+                    {showLogin && (
+                        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 backdrop-blur-sm" onClick={() => setShowLogin(false)}>
+                            <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-sm mx-4 animate-fade-in" onClick={e => e.stopPropagation()}>
+                                <h3 className="text-xl font-bold text-center mb-4 text-[#4e342e] font-serif">登入 / 建立使用者</h3>
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        value={loginName}
+                                        onChange={(e) => setLoginName(e.target.value)}
+                                        placeholder="輸入新名字..." 
+                                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#8d6e63]"
+                                        onKeyDown={(e) => e.key === 'Enter' && handleLogin(loginName)}
+                                    />
+                                    <button 
+                                        onClick={() => handleLogin(loginName)}
+                                        className="bg-[#8d6e63] text-white px-4 py-2 rounded-lg font-bold hover:bg-[#6d4c41] transition"
+                                    >
+                                        加入
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Content Grid */}
+                    <div className="pb-20">
+                        {RAW_DATA.map((section, idx) => (
+                            <div key={idx} className="mb-12">
+                                {/* 修正此處：將 section.name 改為 section.title */}
+                                <div className="section-divider">{section.title}</div>
+                                <div className="app-grid">
+                                    {section.items.map((item) => {
+                                        const isDone = !!localProgress[item.code];
+                                        return (
+                                            <a 
+                                                key={item.code}
+                                                href={item.href}
+                                                target="_blank"
+                                                className={`app-card ${isDone ? 'completed' : ''} group`}
+                                                style={{
+                                                    // Dynamic Style Logic
+                                                    borderTopColor: section.color, // Always colored top
+                                                    border: isDone ? `4px solid ${section.color}` : `1px solid rgba(0,0,0,0.05)`, // Fluorescent border when done
+                                                    borderTop: isDone ? `4px solid ${section.color}` : `6px solid ${section.color}`,
+                                                    // Stronger Glow effect (Double layer shadow for neon look)
+                                                    boxShadow: isDone ? `0 0 20px ${section.color}, 0 0 45px ${section.color}99` : undefined,
+                                                    zIndex: isDone ? 10 : 1 // Ensure glowing card stays on top
+                                                }}
+                                            >
+                                                <div 
+                                                    className={`card-checkbox ${isDone ? 'checked' : ''}`} 
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        toggleProgress(item.code);
+                                                    }}
+                                                    title={isDone ? "標記為未完成" : "標記為已完成"}
+                                                    style={{
+                                                        // Checkbox also follows theme color when checked
+                                                        backgroundColor: isDone ? section.color : 'white',
+                                                        borderColor: isDone ? section.color : '#ddd'
+                                                    }}
+                                                >
+                                                    {isDone && <span>✓</span>}
+                                                </div>
+
+                                                <div 
+                                                    className="card-icon-wrapper"
+                                                    style={{ 
+                                                        color: section.color, 
+                                                        backgroundColor: section.lightColor 
+                                                    }}
+                                                >
+                                                    {section.icon}
+                                                </div>
+                                                
+                                                <div className="card-title" style={{ color: section.color }}>
+                                                    {item.title}
+                                                </div>
+                                                
+                                                <div className="card-desc">
+                                                    {item.code}
+                                                </div>
+                                            </a>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
