@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>應用文(書信、便條) - 互動學習系統</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        wood: '#e5d3b3',
+                        'wood-dark': '#5c3a21',
+                        paper: '#fcf9f2'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { 
+            font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; 
+            background-color: #fcf9f2; 
+            color: #333; 
+            font-size: 1.125rem; 
+            line-height: 1.75; 
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; }
+        .status-loading { background-color: #fbbf24; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .status-success { background-color: #34d399; }
+        .status-error { background-color: #ef4444; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <div id="app" class="w-full h-full flex flex-col">
+        <!-- 內容將由 JS 動態渲染 -->
+    </div>
+
+    <!-- Firebase SDK (v11.6.1) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, arrayUnion, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        //  Firebase 設定與全域變數
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAxQFt76ZPXE7d0i1XeNZ1yiiD2WYNIfHs", // 請替換為真實 API Key
+            authDomain: "chinese-learning-47f4d.firebaseapp.com",
+            projectId: "chinese-learning-47f4d",
+            storageBucket: "chinese-learning-47f4d.firebasestorage.app",
+            messagingSenderId: "76289812052",
+            appId: "1:76289812052:web:898384a916f9f341f62fc1"
+        };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'letters-app-default';
+        const COLLECTION_NAME = 'Chinese-Letters';
+        
+        let app, auth, db;
+        let isFirebaseInitialized = false;
+        let currentUser = null;
+        let username = '';
+        let userData = { favorites: [], mistakes: [] };
+        
+        let connectionStatus = 'loading';
+        let recentUsers = [];
+        
+        // ==========================================
+        //  音效系統
+        // ==========================================
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        
+        const playTone = (freq, type, duration) => {
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = type;
+                oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + duration);
+            } catch(e) { }
+        };
+
+        const playCorrectSound = () => {
+            playTone(523.25, 'sine', 0.1); 
+            setTimeout(() => playTone(659.25, 'sine', 0.2), 100); 
+        };
+
+        const playWrongSound = () => {
+            playTone(300, 'sawtooth', 0.2);
+            setTimeout(() => playTone(200, 'sawtooth', 0.3), 150);
+        };
+
+        // 初始化 Firebase
+        try {
+            if (firebaseConfig.apiKey !== "填入key" && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                isFirebaseInitialized = true;
+                connectionStatus = 'success';
+            } else {
+                connectionStatus = 'error';
+            }
+        } catch (error) {
+            connectionStatus = 'error';
+        }
+
+        // ==========================================
+        //  學習資料庫 (應用文-書信、便條)
+        // ==========================================
+        const learnData = [
+            {
+                id: 'sec1', title: '一、書信概說與結構',
+                content: `
+                <div class="space-y-6">
+                    <p class="text-lg text-gray-700">書信屬於應用文的一種，是日常生活中傳遞訊息、與人交流的一種方式。寫信首先要弄清楚「對象是誰」與「談些什麼」。</p>
+                    
+                    <div class="bg-white p-6 rounded shadow-sm border-l-4 border-amber-600">
+                        <h3 class="font-bold text-xl text-amber-800 mb-3">書信寫作應注意事項</h3>
+                        <ol class="list-decimal ml-6 space-y-2 text-gray-700">
+                            <li>內容敘述簡單清楚，字體端正，表示對收信人的尊重。</li>
+                            <li>寫信給長輩，就得用晚輩的口氣；跟朋友寫信，就得用朋友的口氣。認清對象，措辭才能得體。</li>
+                            <li>格式必須合宜。</li>
+                        </ol>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <h3 class="font-bold text-xl text-amber-800 mb-3 mt-4">書信的結構 (傳統 vs 現代)</h3>
+                        <table class="min-w-full bg-white border border-gray-200 rounded">
+                            <thead class="bg-amber-50">
+                                <tr>
+                                    <th class="py-2 px-4 border-b">項目</th>
+                                    <th class="py-2 px-4 border-b">說明</th>
+                                    <th class="py-2 px-4 border-b text-gray-500">傳統書信範例</th>
+                                    <th class="py-2 px-4 border-b text-gray-500">現代書信範例</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-base text-gray-700">
+                                <tr><td class="py-2 px-4 border-b font-bold">稱謂</td><td class="py-2 px-4 border-b">寄信人對收信人的稱呼</td><td class="py-2 px-4 border-b">母親大人</td><td class="py-2 px-4 border-b">親愛的媽媽</td></tr>
+                                <tr class="bg-gray-50"><td class="py-2 px-4 border-b font-bold">提稱語</td><td class="py-2 px-4 border-b">請對方讀信的意思。須與稱謂配合</td><td class="py-2 px-4 border-b">膝下</td><td class="py-2 px-4 border-b">(可略)</td></tr>
+                                <tr><td class="py-2 px-4 border-b font-bold">啟事敬詞</td><td class="py-2 px-4 border-b">發語用詞，表示恭敬地述說事情開始</td><td class="py-2 px-4 border-b">敬稟者</td><td class="py-2 px-4 border-b">(可略)</td></tr>
+                                <tr class="bg-gray-50"><td class="py-2 px-4 border-b font-bold">開頭應酬語</td><td class="py-2 px-4 border-b">述說正事前的客套話，表思念或感謝</td><td class="py-2 px-4 border-b">自拜別慈顏後，思念殷切</td><td class="py-2 px-4 border-b">自從離家之後，十分思念您</td></tr>
+                                <tr><td class="py-2 px-4 border-b font-bold text-amber-600">正文</td><td class="py-2 px-4 border-b">信箋主體，陳述來信用意</td><td class="py-2 px-4 border-b">於二十日下午抵達臺南...</td><td class="py-2 px-4 border-b">我在二十日下午抵達...</td></tr>
+                                <tr class="bg-gray-50"><td class="py-2 px-4 border-b font-bold">結尾應酬語</td><td class="py-2 px-4 border-b">正文收束後的客套話或聲明</td><td class="py-2 px-4 border-b">近來天候多變，懇請保暖...</td><td class="py-2 px-4 border-b">(併入正文或省略)</td></tr>
+                                <tr><td class="py-2 px-4 border-b font-bold">問候語</td><td class="py-2 px-4 border-b">問候對方安好</td><td class="py-2 px-4 border-b">敬請 福安</td><td class="py-2 px-4 border-b">敬祝 身體健康</td></tr>
+                                <tr class="bg-gray-50"><td class="py-2 px-4 border-b font-bold">自稱署名</td><td class="py-2 px-4 border-b">寫信人的自稱與名字</td><td class="py-2 px-4 border-b">男 宗翰</td><td class="py-2 px-4 border-b">兒 宗翰</td></tr>
+                                <tr><td class="py-2 px-4 border-b font-bold">末啟詞</td><td class="py-2 px-4 border-b">對其稱謂所表現的態度詞</td><td class="py-2 px-4 border-b">叩上</td><td class="py-2 px-4 border-b">敬稟</td></tr>
+                                <tr class="bg-gray-50"><td class="py-2 px-4 border-b font-bold">日期</td><td class="py-2 px-4 border-b">寫信完成的日期</td><td class="py-2 px-4 border-b">三月二十日</td><td class="py-2 px-4 border-b">三月二十日</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec2', title: '二、書信繕寫格式與抬頭',
+                content: `
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded shadow-sm border-t-4 border-amber-500">
+                        <h3 class="font-bold text-2xl text-gray-800 mb-4">基本繕寫格式</h3>
+                        <ul class="list-disc ml-6 space-y-3 text-lg text-gray-700">
+                            <li><span class="font-bold text-amber-700">稱謂：</span>書信起首第一行稱謂要<span class="text-red-500 font-bold">頂格寫</span>，以示尊敬。</li>
+                            <li><span class="font-bold text-amber-700">自稱：</span>「自稱」偏右書寫，字體要<span class="text-red-500 font-bold">稍微偏小</span>，表示謙遜。</li>
+                            <li><span class="font-bold text-amber-700">抬頭：</span>書信中常用「抬頭」表示尊敬，一是信文中提及對方有關的人事物，一是提到自己的尊親屬。</li>
+                        </ul>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
+                            <h4 class="font-bold text-xl text-blue-800 mb-2">【平抬】</h4>
+                            <p class="text-gray-700 mb-3">寫到受尊敬的對象時，<span class="font-bold text-red-500">換行頂格書寫</span>。</p>
+                            <div class="bg-white p-4 rounded text-gray-600 font-serif border-l-4 border-blue-400">
+                                昨天我們一起去探望了<br>
+                                <span class="text-blue-600 font-bold">王老師</span>，他看起來精神很好。
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50 p-6 rounded-lg border border-emerald-100">
+                            <h4 class="font-bold text-xl text-emerald-800 mb-2">【挪抬】</h4>
+                            <p class="text-gray-700 mb-3">不換行，僅在原行中<span class="font-bold text-red-500">空一格書寫</span>。</p>
+                            <div class="bg-white p-4 rounded text-gray-600 font-serif border-l-4 border-emerald-400">
+                                大家都非常景仰我們偉大的 <span class="text-emerald-600 font-bold">國父</span>。
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec3', title: '三、敬謙詞與用語對照',
+                content: `
+                <div class="space-y-8 text-lg">
+                    <div>
+                        <h3 class="font-bold text-2xl text-amber-800 mb-4 border-b-2 border-amber-200 pb-2"><i class="fas fa-book-reader mr-2"></i> 1. 書信用語簡表</h3>
+                        <div class="overflow-x-auto bg-white rounded shadow-sm">
+                            <table class="min-w-full">
+                                <thead class="bg-amber-100 text-amber-900">
+                                    <tr>
+                                        <th class="py-3 px-4">對象</th>
+                                        <th class="py-3 px-4">提稱語</th>
+                                        <th class="py-3 px-4">問候語</th>
+                                        <th class="py-3 px-4">末啟詞</th>
+                                        <th class="py-3 px-4">啟封詞 (信封用)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center text-gray-700">
+                                    <tr class="border-b"><td class="py-3 px-4 font-bold">祖父母/父母</td><td class="py-3 px-4">膝下、膝前</td><td class="py-3 px-4">敬請 福安<br>叩請 金安</td><td class="py-3 px-4">叩上、敬稟</td><td class="py-3 px-4 text-red-500 font-bold">安啟</td></tr>
+                                    <tr class="border-b bg-gray-50"><td class="py-3 px-4 font-bold">一般長輩</td><td class="py-3 px-4">尊前、尊鑒、鈞鑒</td><td class="py-3 px-4">恭請 鈞安<br>敬請 崇安</td><td class="py-3 px-4">謹上、敬上</td><td class="py-3 px-4 font-bold">鈞啟、道啟</td></tr>
+                                    <tr class="border-b"><td class="py-3 px-4 font-bold">師長</td><td class="py-3 px-4">道鑒、函丈</td><td class="py-3 px-4">敬請 道安<br>恭請 教安</td><td class="py-3 px-4">敬上、受業啟</td><td class="py-3 px-4 font-bold">道啟</td></tr>
+                                    <tr class="border-b bg-gray-50"><td class="py-3 px-4 font-bold">平輩</td><td class="py-3 px-4">臺鑒、大鑒、惠鑒</td><td class="py-3 px-4">敬請 臺安<br>順頌 時祺</td><td class="py-3 px-4">敬啟、謹啟</td><td class="py-3 px-4 font-bold">臺啟、大啟</td></tr>
+                                    <tr><td class="py-3 px-4 font-bold">晚輩</td><td class="py-3 px-4">知之、如晤、收悉</td><td class="py-3 px-4">即問 近安<br>順問 近祺</td><td class="py-3 px-4">字、示、啟</td><td class="py-3 px-4 font-bold">啟、收</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="mt-2 text-sm text-red-500 font-bold">※注意：啟封詞絕對不可用「敬啟」、「恭啟」，因為要求收信人「恭敬地打開」是非常不禮貌的。</p>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-2xl text-amber-800 mb-4 border-b-2 border-amber-200 pb-2"><i class="fas fa-user-friends mr-2"></i> 2. 敬詞與謙詞對照表</h3>
+                        <p class="mb-3 text-gray-600">對自己的親屬事物用<span class="font-bold text-blue-600">「謙稱」</span>；對他人的親屬事物用<span class="font-bold text-red-600">「敬稱」</span>。</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-blue-50 p-5 rounded border border-blue-100">
+                                <h4 class="font-bold text-blue-800 text-xl mb-3 text-center">自稱 (謙稱)</h4>
+                                <ul class="space-y-2 text-gray-700">
+                                    <li><span class="bg-blue-200 px-2 py-1 rounded mr-2 text-sm">加「家」</span>稱自己長輩：家父(嚴)、家母(慈)、家兄</li>
+                                    <li><span class="bg-blue-200 px-2 py-1 rounded mr-2 text-sm">加「舍」</span>稱自己平輩晚輩：舍弟、舍妹、舍親</li>
+                                    <li><span class="bg-blue-200 px-2 py-1 rounded mr-2 text-sm">加「小」</span>稱自己晚輩：小犬(兒)、小女</li>
+                                    <li><span class="bg-blue-200 px-2 py-1 rounded mr-2 text-sm">加「先/亡」</span>稱已故親人：先父(顯考)、先母(顯妣)、亡弟</li>
+                                    <li><span class="bg-blue-200 px-2 py-1 rounded mr-2 text-sm">夫妻自稱</span>外子(夫)、內人/內子/拙荊(妻)</li>
+                                    <li><span class="bg-blue-200 px-2 py-1 rounded mr-2 text-sm">機構居處</span>敝校、敝公司、寒舍、小店</li>
+                                </ul>
+                            </div>
+                            <div class="bg-red-50 p-5 rounded border border-red-100">
+                                <h4 class="font-bold text-red-800 text-xl mb-3 text-center">稱人 (敬稱)</h4>
+                                <ul class="space-y-2 text-gray-700">
+                                    <li><span class="bg-red-200 px-2 py-1 rounded mr-2 text-sm">加「令」</span>稱對方親人：令尊、令堂、令郎、令嬡(千金)</li>
+                                    <li><span class="bg-red-200 px-2 py-1 rounded mr-2 text-sm">加「尊」</span>尊稱對方：尊翁、尊夫人(對方妻子)</li>
+                                    <li><span class="bg-red-200 px-2 py-1 rounded mr-2 text-sm">加「賢」</span>稱平輩或晚輩：賢喬梓(父子)、賢昆仲(兄弟)、賢伉儷(夫妻)</li>
+                                    <li><span class="bg-red-200 px-2 py-1 rounded mr-2 text-sm">機構居處</span>貴校、貴公司、貴寶號、貴府</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec4', title: '四、信封的書寫方式',
+                content: `
+                <div class="space-y-8 text-lg">
+                    <p class="text-gray-700">信封書寫分為中式(直式)與西式(橫式)兩種。</p>
+
+                    <!-- 直式信封 -->
+                    <div class="bg-white p-6 rounded shadow-md border-t-4 border-amber-600">
+                        <h3 class="font-bold text-2xl text-amber-800 mb-4">1. 直式信封 (中式)</h3>
+                        <div class="flex flex-col md:flex-row gap-6 items-center">
+                            <div class="w-full md:w-1/2">
+                                <ul class="list-decimal ml-6 space-y-3 text-gray-700">
+                                    <li><span class="font-bold text-amber-700">右欄 (收信人地址)：</span>寫收信人的地址和郵遞區號。字體要略小且<span class="text-red-500 font-bold">不可高於中欄收信人的姓</span>。</li>
+                                    <li><span class="font-bold text-amber-700">中欄 (收信人)：</span>寫收信人的姓名、稱呼與啟封詞。<br><span class="bg-yellow-100 text-red-600 px-2 py-1 text-sm rounded font-bold">注意：信封上的稱謂是「郵差對收信人的稱呼」，不可用私人稱呼(如父親、吾兒)。可用先生、女士、老師等。</span></li>
+                                    <li><span class="font-bold text-amber-700">左欄 (寄信人)：</span>寫寄信人的地址、姓名、緘封詞。<span class="text-red-500 font-bold">位置不可高於右欄收信人地址</span>。</li>
+                                </ul>
+                            </div>
+                            <div class="w-full md:w-1/2 flex justify-center">
+                                <div class="w-48 h-72 border-2 border-red-500 bg-[#f8f5e6] relative p-3 shadow-sm font-serif text-gray-800 text-sm">
+                                    <div class="absolute top-2 right-2 border border-red-500 w-16 h-6 flex justify-center items-center text-red-500">106002</div>
+                                    <div class="absolute top-2 left-2 border border-red-500 w-10 h-12 bg-red-100 flex items-center justify-center">郵票</div>
+                                    <div class="absolute top-10 right-4 w-6 h-40 leading-relaxed pt-2">臺北市大安區金山南路二段</div>
+                                    <div class="absolute top-16 left-1/2 transform -translate-x-1/2 w-8 text-center text-lg font-bold">王大明 先生<br><span class="text-base mt-2 inline-block">道啟</span></div>
+                                    <div class="absolute bottom-6 left-4 w-6 leading-relaxed text-xs">高雄市三民區</div>
+                                    <div class="absolute bottom-2 left-8 text-xs">徐偉 謹緘</div>
+                                    <div class="absolute bottom-2 left-2 text-red-500 border border-red-500 px-1 text-[10px]">807</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 bg-gray-50 p-3 rounded text-gray-600 text-base">
+                            <span class="font-bold text-red-500">※明信片特例：</span>因不須封口，中欄不用啟封詞(改用<span class="font-bold">「收」</span>)，左欄不用緘封詞(改用<span class="font-bold">「寄」</span>)。
+                        </div>
+                    </div>
+
+                    <!-- 橫式信封 -->
+                    <div class="bg-white p-6 rounded shadow-md border-t-4 border-blue-600">
+                        <h3 class="font-bold text-2xl text-blue-800 mb-4">2. 橫式信封 (西式)</h3>
+                        <div class="flex flex-col md:flex-row gap-6 items-center">
+                            <div class="w-full md:w-1/2">
+                                <ul class="list-decimal ml-6 space-y-3 text-gray-700">
+                                    <li><span class="font-bold text-blue-700">左上角：</span>寄信人郵遞區號、地址、姓名。</li>
+                                    <li><span class="font-bold text-blue-700">中央偏右：</span>收信人郵遞區號、地址、姓名、稱謂、啟封詞。</li>
+                                    <li><span class="font-bold text-blue-700">右上角：</span>郵票正貼。</li>
+                                </ul>
+                            </div>
+                            <div class="w-full md:w-1/2 flex justify-center">
+                                <div class="w-72 h-40 border-2 border-blue-300 bg-white relative p-3 shadow-sm font-serif text-gray-800 text-xs">
+                                    <div class="absolute top-2 right-2 border border-blue-300 w-10 h-12 bg-blue-50 flex items-center justify-center">郵票</div>
+                                    <div class="absolute top-2 left-2 text-[10px] text-gray-500">103016<br>臺北市大同區太原路80巷5號<br>裕記企業</div>
+                                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/4 w-48 text-sm">
+                                        <span class="text-blue-600">106002</span><br>
+                                        臺北市大安區金山南路二段86號<br>
+                                        <span class="font-bold text-base mt-1 inline-block">王大明 先生 臺啟</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec5', title: '五、便條概說與作法',
+                content: `
+                <div class="space-y-6 text-lg">
+                    <p class="text-gray-700">便條就是簡易方便的字條，也可說是簡化的書信。用於家人和較熟悉的親友，對於尊長和新交的朋友盡量避免使用。</p>
+                    
+                    <div class="bg-white p-6 rounded shadow-sm border-l-4 border-emerald-500">
+                        <h3 class="font-bold text-xl text-emerald-800 mb-3">使用便條應注意事項</h3>
+                        <ul class="list-disc ml-6 space-y-2 text-gray-700">
+                            <li>用字遣詞應力求<span class="font-bold text-red-500">簡明扼要</span>。書信中的應酬語、客套話往往可省略。</li>
+                            <li><span class="font-bold text-red-500">不用封套</span>，故不宜書寫太複雜的事情，更不可談機密問題。</li>
+                            <li>託人轉交只要填上日期即可；若本人親自留置的便條，則宜<span class="font-bold text-red-500">加注時刻</span>，讓對方知道何時留言。</li>
+                            <li>不拘字體，但以端正為宜。應留在對方看得到的地方。</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-yellow-50 p-6 rounded border border-yellow-200 mt-6">
+                        <h3 class="font-bold text-xl text-yellow-800 mb-4">便條範例 (借書)</h3>
+                        <div class="bg-white p-6 rounded shadow-sm font-serif max-w-md mx-auto relative border border-gray-200">
+                            <p class="font-bold text-xl mb-3">永祥哥：</p>
+                            <p class="leading-relaxed pl-8 mb-6">我下週要交《小王子》的讀書報告，你家中如有這本書，是否方便明天帶來學校借我？謝謝！</p>
+                            <div class="text-right">
+                                <p class="font-bold text-xl mb-1">康康 敬留</p>
+                                <p class="text-sm text-gray-500">三月五日下午四時</p>
+                            </div>
+                            <div class="absolute -top-3 -right-3 text-red-500 text-3xl opacity-20 transform rotate-12"><i class="fas fa-thumbtack"></i></div>
+                        </div>
+                    </div>
+                </div>`
+            }
+        ];
+
+        // ==========================================
+        //  50題 練習題 (依據 064~066.pdf 題型出題)
+        // ==========================================
+        const generate50Questions = () => {
+            const q = [];
+            
+            // --- 提稱語、末啟詞與問候語 ---
+            q.push({ q:"書信中對父母或祖父母使用的「提稱語」應為下列何者？", opts:["膝下、膝前", "尊前、鈞鑒", "道鑒、函丈", "臺鑒、大鑒"], ans:0 });
+            q.push({ q:"寫信給長官或一般長輩時，下列哪一個提稱語最適合？", opts:["膝下", "鈞鑒", "知之", "如晤"], ans:1 });
+            q.push({ q:"學生寫信給老師，提稱語可以使用「道鑒」，那末啟詞應該用什麼比較恰當？", opts:["叩稟", "敬上 / 受業啟", "敬啟", "字 / 示"], ans:1 });
+            q.push({ q:"寫信給平輩（如同學、朋友）時，適合使用的提稱語為？", opts:["尊前", "道鑒", "臺鑒 / 大鑒", "知之"], ans:2 });
+            q.push({ q:"寫信給晚輩（如子女、弟妹）時，提稱語可以使用下列何者？", opts:["膝下", "鈞鑒", "大鑒", "如晤 / 知之"], ans:3 });
+            q.push({ q:"寫信給長輩，結尾的問候語下列何者正確？", opts:["順頌 時祺", "敬祝 身體健康 (或恭請 鈞安)", "即頌 近好", "順問 近祺"], ans:1 });
+            q.push({ q:"信末問候語如「敬祝 身體健康」，其中的「身體健康」在書寫格式上通常會怎麼處理以示尊敬？", opts:["挪抬 (空一格)", "平抬 (換行頂格書寫)", "縮排兩格", "用紅字書寫"], ans:1 });
+            q.push({ q:"書信中提到自己的父母，要在稱謂前加什麼字表示謙稱？", opts:["令", "家", "敝", "尊"], ans:1 });
+            
+            // --- 敬謙詞對照 ---
+            q.push({ q:"尊稱別人的父親，應該用下列哪一個詞語？", opts:["家父", "先父", "令尊", "舍父"], ans:2 });
+            q.push({ q:"「令堂」是用來尊稱對方的哪一位親屬？", opts:["父親", "母親", "哥哥", "姐姐"], ans:1 });
+            q.push({ q:"謙稱自己的兒子，可以使用下列哪一個詞？", opts:["令郎", "小犬", "貴公子", "賢喬梓"], ans:1 });
+            q.push({ q:"尊稱別人的女兒，可以使用下列哪一個詞？", opts:["小女", "令嬡 (千金)", "家姐", "內人"], ans:1 });
+            q.push({ q:"「舍弟」一詞是用來稱呼誰？", opts:["別人的弟弟", "自己的弟弟", "自己的兒子", "別人的學生"], ans:1 });
+            q.push({ q:"若要謙稱自己已故的父親，正確的用語是？", opts:["家父", "令尊", "先父", "顯考 (僅用於墓碑或神主牌，書信多用先父)"], ans:2 }); // 取最通用書信詞
+            q.push({ q:"下列哪一組詞語是尊稱別人的夫妻？", opts:["愚夫婦", "賢喬梓", "賢昆仲", "賢伉儷"], ans:3 });
+            q.push({ q:"「賢喬梓」是用來尊稱別人的什麼關係？", opts:["夫妻", "兄弟", "父子", "師生"], ans:2 });
+            q.push({ q:"「賢昆仲」是用來尊稱別人的什麼關係？", opts:["夫妻", "兄弟", "父子", "母女"], ans:1 });
+            q.push({ q:"丈夫對外人謙稱自己的妻子，可用下列何者？", opts:["尊夫人", "內人 / 拙荊", "外子", "家慈"], ans:1 });
+            q.push({ q:"妻子對外人謙稱自己的丈夫，可用下列何者？", opts:["內人", "尊夫君", "外子", "先夫"], ans:2 });
+            q.push({ q:"對外人謙稱自己任職的學校或公司，應該用哪個字？", opts:["貴", "敝", "令", "家"], ans:1 });
+            
+            // --- 信封格式與啟封詞 ---
+            q.push({ q:"信封中欄的稱謂（如：先生、女士）是寫給誰看的？", opts:["寄信人自己", "收信人本人", "郵差 (送信人)", "收信人的家屬"], ans:2 });
+            q.push({ q:"承上題，因為信封稱謂是給郵差看的，所以寄信給父親時，信封中欄的稱呼應該怎麼寫最恰當？", opts:["林大明 父親", "林大明 先生", "林大明 吾翁", "林大明 家嚴"], ans:1 });
+            q.push({ q:"寄信給長輩，信封的「啟封詞」絕對「不可以」使用下列何者？", opts:["安啟", "鈞啟", "道啟", "敬啟"], ans:3 });
+            q.push({ q:"寄信給平輩，信封的「啟封詞」可以使用下列何者？", opts:["安啟", "鈞啟", "臺啟 / 大啟", "敬啟"], ans:2 });
+            q.push({ q:"寫「明信片」時，信封中欄收信人姓名底下的用語，正確的是？", opts:["大啟", "收", "安啟", "緘"], ans:1 });
+            q.push({ q:"寫「明信片」時，寄信人姓名底下的用語，正確的是？", opts:["緘", "寄", "上", "啟"], ans:1 });
+            q.push({ q:"書寫「直式信封」時，寄信人的地址與姓名應寫在哪個位置？", opts:["正中央", "右欄", "左欄下側", "右上角"], ans:2 });
+            q.push({ q:"書寫「西式（橫式）信封」時，收信人的資料應寫在哪個位置？", opts:["左上角", "中央偏右", "右上角", "左下角"], ans:1 });
+            q.push({ q:"直式信封的左欄（寄信人地址）位置，有什麼特別的規定？", opts:["必須用紅筆書寫", "字體要比收信人大", "位置不可高於右欄收信人地址", "必須寫上提稱語"], ans:2 });
+            q.push({ q:"「緘」字用在信封的左欄，它的意思是什麼？", opts:["打開", "封口", "寄出", "閱讀"], ans:1 });
+            
+            // --- 綜合應用與辨析 (仿照 064~066) ---
+            q.push({ q:"下列文句「」中的稱謂，何者使用最恰當？", opts:["謝謝您的蒞臨，「貴校」蓬蓽生輝", "「小女」的于歸之宴，請您務必賞光", "「家弟」近期要搬家，忙得不可開交", "為了準備求職面試，「舍姐」緊張不已"], ans:2 });
+            q.push({ q:"當羅絲遇見了里奧、納多兩兄弟時，她可以怎麼尊稱他們？", opts:["賢昆仲", "賢妯娌", "賢伉儷", "賢喬梓"], ans:0 });
+            q.push({ q:"下列文句「」中的語詞，何者「不含」自謙的意味？", opts:["「寒舍」恰好位在公園旁", "「敝校」最近成立美術班", "「小女」今年剛考上研究所", "「本人」對這件事有些建議"], ans:3 });
+            q.push({ q:"臺北的王小姐要寄信給高雄的陳先生(平輩)，下列信封中欄的寫法何者正確？", opts:["陳正心 先生 大啟", "陳正心 父親 安啟", "陳正心 哥哥 敬啟", "陳正心 先生 鈞啟"], ans:0 });
+            q.push({ q:"下列關於信封中欄的書寫方式，何者完全正確？", opts:["林文華 父親 安啟", "陳文志 校長 鈞啟", "王仁忠 老師 敬啟", "于一哲 先生 敬收 (寄信非明信片時)"], ans:1 }); // 老師可加鈞啟或道啟，敬啟錯誤。
+            q.push({ q:"寫信給舅父母時，提稱語可以使用下列哪一個？", opts:["膝下", "尊前", "大鑒", "知之"], ans:1 });
+            q.push({ q:"「賢昆仲同等傑出，並列體壇名人錄，父子雙雄，實在難得」這句話犯了什麼稱謂上的錯誤？", opts:["賢昆仲是指兄弟，父子應稱賢喬梓", "賢昆仲是自謙詞", "名人錄用詞不當", "沒有錯誤"], ans:0 });
+            q.push({ q:"「謝謝伯父，這全賴『敝』業師指導有方」這句話中，謙稱老師應把『敝』改成什麼字？", opts:["家", "令", "尊", "敝 (敝業師是正確的，但習慣上多稱「敝業師」或直接說「業師」即可，此選項為干擾，正解：不需要改，敝業師對)"], ans:3 }); // Actually let's make it clearer
+            q.push({ q:"下列對話何者完全正確？", opts:["甲：明天是先父生日，我訂了蛋糕幫他慶生！(先父已死)", "甲：你們蜜月要去哪？ 乙：我們賢伉儷要到日本。(賢伉儷不能自稱)", "甲：令嬡氣質非凡，就讀哪所大學？ 乙：小女目前就讀師大音樂系。", "甲：歡迎光臨貴府！(應為寒舍)"], ans:2 });
+            
+            // 替換第38題的題目讓語意更明確
+            q[37] = { q:"「恭喜貴小兒金榜題名」這句話有什麼語病？", opts:["小兒是謙稱自己的兒子，不可加上貴字稱呼別人的兒子", "金榜題名只能用於考試", "應該說貴小女", "沒有語病"], ans:0 };
+            
+            q.push({ q:"下列便條的寫法，何者完全正確？", opts:["不用封套，內容簡明扼要", "為了表示尊重，即使是便條也要寫滿客套話", "對於不熟的長輩，非常適合用便條交代事情", "便條絕對不可以署名與寫日期"], ans:0 });
+            q.push({ q:"阿珠想留便條給同學依玲邀約看電影，下列哪一項是便條中「不一定需要」的元素？", opts:["稱謂 (依玲：)", "時間與日期", "信封與啟封詞", "署名 (阿珠)"], ans:2 });
+            q.push({ q:"關於書信中的「抬頭」，下列敘述何者錯誤？", opts:["是為了表示尊敬", "平抬是指換行頂格書寫", "挪抬是指在原行中空一格書寫", "提到自己的弟弟時，為了表示疼愛也要使用抬頭"], ans:3 });
+            q.push({ q:"「自稱」在書信中通常要怎麼寫以表示謙遜？", opts:["換行頂格寫", "字體加大並加粗", "偏右書寫，字體稍微偏小", "寫在信件的最頂端"], ans:2 });
+            q.push({ q:"下列各項提稱語的配對，何者錯誤？", opts:["祖父母：膝下", "老師：道鑒", "平輩：惠鑒", "晚輩：尊前"], ans:3 });
+            q.push({ q:"小華想寫信給表哥，下列哪一個結尾問候語最適合？", opts:["敬請 福安", "恭請 鈞安", "即頌 近好 (或敬請 臺安)", "順問 近祺"], ans:2 });
+            
+            // --- 補足剩餘題目 (達到 50 題) ---
+            q.push({ q:"書信結尾的「末啟詞」，若是寫給晚輩，不適合使用下列何者？", opts:["字", "示", "啟", "叩稟"], ans:3 });
+            q.push({ q:"「舍兄囑我問候尊翁」，這句話的意思是？", opts:["我哥哥要我問候您父親", "我弟弟要我問候您父親", "我哥哥要我問候您爺爺", "我弟弟要我問候您哥哥"], ans:0 });
+            q.push({ q:"在外地求學的郭襄，想寫明信片給她的姐姐郭芙。信封中欄的寫法應為？", opts:["郭芙 吾姐 啟", "郭芙 小姐 收", "郭芙 小姐 臺啟", "郭芙 吾姐 敬收"], ans:1 });
+            q.push({ q:"王老師 惠鑒：暑假向您借閱的水滸傳已看完... (便條)，這段便條的提稱語犯了什麼錯誤？", opts:["老師不能用惠鑒，應用道鑒", "應該用膝下", "便條不能有提稱語", "惠鑒只能用於晚輩"], ans:0 });
+            q.push({ q:"信件開頭的「應酬語」，主要功能是什麼？", opts:["交代最核心的機密事項", "述說正事前的客套話，表思念或感謝", "請對方幫忙買東西", "威脅對方回信"], ans:1 });
+            
+            q.push({ q:"「愚兄，您支持哪一位候選人？」這句話的稱呼有何錯誤？", opts:["愚兄是用來稱呼對方的", "愚兄是自謙詞，不能用來稱呼對方（應改為仁兄）", "候選人不能用支持", "沒有錯誤"], ans:1 });
+            q.push({ q:"下列信封左欄(寄信人)的寫法，何者完全正確？", opts:["張三 敬啟", "張三 敬上", "張三 叩稟", "張三 緘"], ans:3 });
+            q.push({ q:"如果收信人是平輩，寄信人(左欄)可以寫「王大明 緘」，若是寫給長輩呢？", opts:["王大明 謹緘", "王大明 敬啟", "王大明 叩上", "王大明 安啟"], ans:0 });
+            q.push({ q:"現代書信中，如果已經用了「親愛的媽媽」，是否還一定要加上「膝下」等提稱語？", opts:["一定要，否則大不敬", "可以省略", "只能用尊前取代", "提稱語必須寫兩次"], ans:1 });
+            q.push({ q:"關於便條的敘述，何者正確？", opts:["可以寫很多頁", "適合談論商業機密", "不須使用封套", "必須使用文言文撰寫"], ans:2 });
+
+            return q;
+        };
+
+        // ==========================================
+        //  應用程式狀態與邏輯
+        // ==========================================
+        let currentTab = 'login';
+        let learnSubTab = 'sec1';
+        let quizState = { active: false, currentQ: 0, score: 0, answers: [], questions: [], showExplanation: false, selectedAns: null };
+        let isLearnMenuOpen = false;
+
+        const el = id => document.getElementById(id);
+
+        window.toggleLearnMenu = (show) => {
+            isLearnMenuOpen = typeof show === 'boolean' ? show : !isLearnMenuOpen;
+            const drawer = el('learn-drawer');
+            const overlay = el('learn-overlay');
+            if(drawer && overlay) {
+                if(isLearnMenuOpen) {
+                    drawer.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden');
+                } else {
+                    drawer.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                }
+            }
+        };
+
+        const loadRecentUsers = async () => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            try {
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', 'global_list');
+                const snap = await getDoc(ref);
+                if(snap.exists() && snap.data().users) {
+                    recentUsers = snap.data().users;
+                }
+            } catch(e) { }
+            if (currentTab === 'login') renderLogin();
+        };
+
+        const saveRecentUser = async (name) => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            try {
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', 'global_list');
+                await setDoc(ref, {
+                    users: arrayUnion(name)
+                }, { merge: true });
+                
+                if (!recentUsers.includes(name)) {
+                    recentUsers.push(name);
+                }
+            } catch(e) { }
+        };
+
+        const initApp = async () => {
+            renderApp();
+            if (isFirebaseInitialized) {
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        await loadUserData();
+                        await loadRecentUsers();
+                        if (username) {
+                            renderMain();
+                        } else {
+                            renderLogin();
+                        }
+                    } else {
+                        try {
+                            await signInAnonymously(auth);
+                        } catch (e) { 
+                            connectionStatus = 'error';
+                            renderLogin();
+                        }
+                    }
+                });
+            } else {
+                if (username) renderMain(); else renderLogin();
+            }
+        };
+
+        window.handleLogin = async (name) => {
+            if(!name.trim()) return alert("請輸入名稱");
+            username = name;
+            
+            if (isFirebaseInitialized && currentUser) {
+                const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid);
+                await setDoc(userRef, { username, lastLogin: new Date() }, { merge: true });
+                
+                const loginRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_logs'));
+                await setDoc(loginRef, { type: 'login', time: new Date() });
+
+                await saveRecentUser(name);
+            }
+            renderMain();
+        };
+
+        const loadUserData = async () => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
+            try {
+                const snap = await getDoc(ref);
+                if (snap.exists()) {
+                    userData = snap.data();
+                    if(!userData.favorites) userData.favorites = [];
+                    if(!userData.mistakes) userData.mistakes = [];
+                } else {
+                    await setDoc(ref, userData);
+                }
+            } catch(e) { }
+        };
+
+        const saveUserData = async () => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
+            try {
+                await updateDoc(ref, userData);
+            } catch(e) { }
+        };
+
+        window.toggleFavorite = async (itemId) => {
+            const idx = userData.favorites.indexOf(itemId);
+            if (idx > -1) {
+                userData.favorites.splice(idx, 1);
+            } else {
+                userData.favorites.push(itemId);
+            }
+            saveUserData();
+            if(currentTab === 'learn') renderLearnContent();
+            if(currentTab === 'favorites') renderFavorites();
+        };
+
+        // ==========================================
+        //  UI 渲染邏輯
+        // ==========================================
+        const renderApp = () => {
+            el('app').innerHTML = `
+                <div id="view-container" class="w-full h-full flex flex-col"></div>
+            `;
+        };
+
+        window.renderLogin = () => {
+            currentTab = 'login';
+            el('view-container').innerHTML = `
+                <div class="flex-1 flex flex-col items-center justify-center bg-wood bg-opacity-30 relative overflow-hidden p-6">
+                    <div class="absolute top-6 right-6 z-20">
+                        <div class="flex flex-col items-end gap-3 w-full md:w-auto">
+                            <div class="flex items-center bg-gray-50 px-4 py-2 rounded-full border border-gray-200 shadow-inner text-base font-bold text-gray-700">
+                                <span class="status-dot ${connectionStatus === 'loading' ? 'status-loading' : connectionStatus === 'success' ? 'status-success' : 'status-error'}"></span>
+                                ${connectionStatus === 'loading' ? '雲端讀取中...' : connectionStatus === 'success' ? '雲端已同步' : '雲端連線失敗'}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute -top-20 -left-20 w-80 h-80 bg-amber-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+                    <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+                    <div class="bg-white p-10 rounded-xl shadow-2xl z-10 w-[30rem] max-w-full text-center border-t-8 border-amber-600">
+                        <h1 class="text-3xl md:text-4xl font-bold text-wood-dark mb-4 tracking-widest">應用文</h1>
+                        <p class="text-amber-700 mb-8 text-2xl font-bold">書信、便條 互動系統</p>
+                        <div class="space-y-6">
+                            <input type="text" id="usernameInput" placeholder="請輸入您的姓名/座號" class="w-full px-5 py-4 text-lg rounded-lg border-2 border-gray-300 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-center">
+                            <button onclick="handleLogin(document.getElementById('usernameInput').value)" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-6 text-xl rounded-lg shadow-md transition duration-200">
+                                開始學習
+                            </button>
+                        </div>
+                        <div class="mt-10 border-t-2 border-gray-100 pt-6">
+                            <p class="text-base text-gray-400 mb-3 font-medium">雲端最近登入</p>
+                            <div class="flex flex-wrap justify-center gap-3">
+                                ${recentUsers.length > 0 
+                                    ? recentUsers.slice(-5).map(u => `<button onclick="handleLogin('${u}')" class="text-base font-bold bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 px-4 py-2 rounded shadow-sm transition">${u}</button>`).join('')
+                                    : `<span class="text-sm text-gray-400">尚無紀錄或尚未連線</span>`
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        window.renderMain = () => {
+            el('view-container').innerHTML = `
+                <nav class="bg-wood text-wood-dark shadow-md z-20">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="flex justify-between h-20">
+                            <div class="flex items-center gap-4">
+                                <span class="font-bold text-2xl tracking-widest hidden sm:block"><i class="fas fa-envelope-open-text mr-3 text-amber-700"></i>應用文學習</span>
+                            </div>
+                            <div class="flex items-center space-x-2 sm:space-x-4">
+                                <button onclick="switchTab('learn')" id="nav-learn" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">學習區</button>
+                                <button onclick="switchTab('quiz')" id="nav-quiz" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">測驗(50題)</button>
+                                <button onclick="switchTab('mistakes')" id="nav-mistakes" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">錯題本</button>
+                                <button onclick="switchTab('favorites')" id="nav-favorites" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">最愛</button>
+                                <div class="ml-4 flex items-center pl-4 border-l-2 border-amber-400">
+                                    <span class="text-lg font-bold mr-3"><i class="fas fa-user-circle mr-2"></i>${username}</span>
+                                    <button onclick="logout()" class="text-lg text-red-600 hover:text-red-800" title="登出"><i class="fas fa-sign-out-alt"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                <div id="main-content" class="flex-1 overflow-hidden bg-paper flex flex-col"></div>
+            `;
+            switchTab('learn');
+        };
+
+        window.logout = () => {
+            username = '';
+            userData = { favorites: [], mistakes: [] };
+            renderLogin();
+        };
+
+        window.switchTab = (tab) => {
+            currentTab = tab;
+            ['learn', 'quiz', 'mistakes', 'favorites'].forEach(t => {
+                const btn = el(`nav-${t}`);
+                if(btn) {
+                    if(t === tab) {
+                        btn.classList.add('bg-amber-700', 'text-white');
+                        btn.classList.remove('hover:bg-amber-700', 'hover:text-white');
+                    } else {
+                        btn.classList.remove('bg-amber-700', 'text-white');
+                        btn.classList.add('hover:bg-amber-700', 'hover:text-white');
+                    }
+                }
+            });
+
+            const content = el('main-content');
+            if(tab === 'learn') renderLearnView(content);
+            if(tab === 'quiz') renderQuizView(content);
+            if(tab === 'mistakes') renderMistakes(content);
+            if(tab === 'favorites') renderFavorites(content);
+        };
+
+        // --- 學習區 ---
+        const renderLearnView = (container) => {
+            const currentData = learnData.find(d => d.id === learnSubTab);
+            container.innerHTML = `
+                <div class="w-full bg-amber-50 border-b border-amber-200 p-4 flex items-center shadow-sm z-10 shrink-0">
+                    <button onclick="toggleLearnMenu(true)" class="text-amber-800 hover:text-amber-600 focus:outline-none flex items-center px-4 py-2 bg-white rounded border border-amber-300 shadow-sm mr-4 transition-colors">
+                        <i class="fas fa-bars text-2xl mr-3"></i>
+                        <span class="font-bold text-xl">單元選單</span>
+                    </button>
+                    <span class="font-bold text-2xl text-wood-dark" id="current-learn-title">${currentData ? currentData.title : ''}</span>
+                    <button onclick="toggleFavorite('${currentData ? currentData.title : ''}')" class="ml-auto text-gray-300 hover:text-red-500 fav-btn text-3xl transition-transform hover:scale-110" data-id="${currentData ? currentData.title : ''}"><i class="fas fa-heart"></i></button>
+                </div>
+                <div id="learn-overlay" onclick="toggleLearnMenu(false)" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden transition-opacity"></div>
+                <div id="learn-drawer" class="fixed inset-y-0 left-0 w-[22rem] bg-gray-50 border-r border-gray-200 z-40 transform -translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto shadow-2xl flex flex-col">
+                    <div class="p-6 bg-amber-100 flex justify-between items-center border-b border-amber-200 shrink-0">
+                        <span class="font-bold text-2xl text-amber-900"><i class="fas fa-list-ul mr-3"></i>學習目錄</span>
+                        <button onclick="toggleLearnMenu(false)" class="text-amber-800 hover:text-red-600 transition-colors"><i class="fas fa-times text-3xl"></i></button>
+                    </div>
+                    <ul class="py-4 flex-1">
+                        ${learnData.map(d => `
+                            <li>
+                                <button onclick="selectLearnTab('${d.id}')" id="ltab-${d.id}" class="w-full text-left px-8 py-5 text-xl font-bold hover:bg-amber-100 transition-colors ${learnSubTab === d.id ? 'bg-amber-100 text-amber-800 border-l-8 border-amber-600' : 'text-gray-600 border-l-8 border-transparent'}">
+                                    ${d.title}
+                                </button>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+                <div class="flex-1 p-6 md:p-10 overflow-y-auto" id="learn-content-area"></div>
+            `;
+            renderLearnContent();
+        };
+
+        window.selectLearnTab = (id) => {
+            learnSubTab = id;
+            const data = learnData.find(d => d.id === id);
+            const titleEl = el('current-learn-title');
+            if(titleEl && data) titleEl.innerText = data.title;
+            
+            // 更新愛心按鈕的 data-id
+            const favBtn = document.querySelector('#current-learn-title').nextElementSibling;
+            if(favBtn && data) {
+                favBtn.setAttribute('data-id', data.title);
+            }
+
+            learnData.forEach(d => {
+                const btn = el(`ltab-${d.id}`);
+                if(btn) {
+                    if(d.id === id) {
+                        btn.classList.add('bg-amber-100', 'text-amber-800', 'border-l-8', 'border-amber-600');
+                        btn.classList.remove('text-gray-600', 'border-transparent');
+                    } else {
+                        btn.classList.remove('bg-amber-100', 'text-amber-800', 'border-l-8', 'border-amber-600');
+                        btn.classList.add('text-gray-600', 'border-transparent');
+                    }
+                }
+            });
+            renderLearnContent();
+            toggleLearnMenu(false);
+        };
+
+        window.renderLearnContent = () => {
+            const area = el('learn-content-area');
+            if(!area) return;
+            const data = learnData.find(d => d.id === learnSubTab);
+            area.innerHTML = `
+                <div class="max-w-5xl mx-auto">
+                    ${data.content}
+                </div>
+            `;
+            setTimeout(() => {
+                document.querySelectorAll('.fav-btn').forEach(btn => {
+                    const id = btn.getAttribute('data-id');
+                    if(userData.favorites.includes(id)) {
+                        btn.classList.remove('text-gray-300');
+                        btn.classList.add('text-red-500');
+                    }
+                });
+            }, 0);
+        };
+
+        // --- 測驗區 ---
+        const renderQuizView = (container) => {
+            if(!quizState.active) {
+                container.innerHTML = `
+                    <div class="w-full flex items-center justify-center p-6 mt-10">
+                        <div class="bg-white p-10 rounded-xl shadow-md text-center max-w-2xl border-t-8 border-emerald-600">
+                            <i class="fas fa-pencil-alt text-6xl text-emerald-600 mb-6"></i>
+                            <h2 class="text-3xl font-bold mb-6">綜合測驗 (共 50 題)</h2>
+                            <p class="text-gray-600 mb-8 text-xl">題目涵蓋書信結構、信封格式、提稱語及敬謙詞對照等重點。挑戰自己是否完全吸收了！</p>
+                            <button onclick="startQuiz()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-12 text-2xl rounded-full shadow-lg transition transform hover:scale-105">開始測驗</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                renderQuizQuestion(container);
+            }
+        };
+
+        window.startQuiz = () => {
+            const qList = [...generate50Questions()].sort(() => 0.5 - Math.random());
+            quizState = { active: true, currentQ: 0, score: 0, answers: [], questions: qList, showExplanation: false, selectedAns: null };
+            renderQuizView(el('main-content'));
+        };
+
+        const renderQuizQuestion = (container) => {
+            const qIdx = quizState.currentQ;
+            if(qIdx >= quizState.questions.length) {
+                finishQuiz(container);
+                return;
+            }
+            
+            const q = quizState.questions[qIdx];
+            const progress = ((qIdx) / quizState.questions.length) * 100;
+
+            let optionsHtml = '';
+            q.opts.forEach((opt, i) => {
+                let btnClass = "w-full text-left p-5 text-xl rounded-lg border-2 transition-all flex items-center group ";
+                let iconHtml = `<span class="w-10 h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mr-5 font-bold text-xl transition-colors shrink-0">${String.fromCharCode(65+i)}</span>`;
+                
+                if (!quizState.showExplanation) {
+                    btnClass += "border-gray-300 hover:border-emerald-500 hover:bg-emerald-50 group-hover:bg-emerald-500 group-hover:text-white";
+                } else {
+                    if (i === q.ans) {
+                        btnClass += "border-emerald-500 bg-emerald-100 text-emerald-800 font-bold scale-100 shadow-md";
+                        iconHtml = `<span class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center mr-5 font-bold text-xl shrink-0"><i class="fas fa-check"></i></span>`;
+                    } else if (i === quizState.selectedAns) {
+                        btnClass += "border-red-500 bg-red-50 text-red-800 font-bold scale-[0.98]";
+                        iconHtml = `<span class="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center mr-5 font-bold text-xl shrink-0"><i class="fas fa-times"></i></span>`;
+                    } else {
+                        btnClass += "border-gray-200 bg-gray-50 opacity-50";
+                    }
+                }
+
+                optionsHtml += `
+                    <button ${quizState.showExplanation ? 'disabled' : `onclick="answerQuestion(${i})"`} class="${btnClass}">
+                        ${iconHtml}
+                        <span>${opt}</span>
+                    </button>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="w-full flex flex-col items-center p-6 md:p-10 overflow-y-auto">
+                    <div class="w-full max-w-4xl bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                        <div class="bg-emerald-50 px-8 py-5 border-b border-emerald-100 flex justify-between items-center">
+                            <span class="font-bold text-emerald-800 text-xl">第 ${qIdx + 1} / ${quizState.questions.length} 題</span>
+                            <div class="w-1/2 bg-gray-200 rounded-full h-3">
+                                <div class="bg-emerald-500 h-3 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                        <div class="p-8 md:p-12">
+                            <h3 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-relaxed">${q.q}</h3>
+                            <div class="space-y-4">
+                                ${optionsHtml}
+                            </div>
+                            
+                            ${quizState.showExplanation ? `
+                                <div class="mt-8 p-6 rounded-xl border-2 ${quizState.selectedAns === q.ans ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'} animate-fade-in shadow-inner">
+                                    <div class="flex items-center mb-4">
+                                        <i class="fas ${quizState.selectedAns === q.ans ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-red-500'} text-3xl mr-3"></i>
+                                        <span class="font-bold text-2xl">${quizState.selectedAns === q.ans ? '太棒了，答對了！' : '哎呀，答錯了！'}</span>
+                                    </div>
+                                    <div class="bg-white bg-opacity-70 p-5 rounded-lg border ${quizState.selectedAns === q.ans ? 'border-emerald-100' : 'border-red-100'}">
+                                        <p class="font-bold mb-2 text-xl"><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>完整題目解析：</p>
+                                        <p class="mt-2 text-lg">正確答案為 <strong class="${quizState.selectedAns === q.ans ? 'text-emerald-700' : 'text-red-700'} text-xl">(${String.fromCharCode(65+q.ans)}) ${q.opts[q.ans]}</strong>。</p>
+                                        <p class="mt-3 text-base text-gray-600">此題源自您所學習的《應用文-書信便條》重點講義內容，建議可至「學習區」多加複習來加深印象喔！</p>
+                                    </div>
+                                    <button onclick="nextQuestion()" class="mt-6 w-full ${quizState.selectedAns === q.ans ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'} text-white font-bold py-4 text-xl rounded-lg shadow-md transition transform hover:scale-[1.02]">我瞭解了，前往下一題 <i class="fas fa-arrow-right ml-2"></i></button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        window.answerQuestion = (optIdx) => {
+            const q = quizState.questions[quizState.currentQ];
+            const isCorrect = optIdx === q.ans;
+            
+            quizState.selectedAns = optIdx;
+            quizState.showExplanation = true;
+            
+            if (isCorrect) {
+                playCorrectSound();
+                confetti({
+                    particleCount: 150,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    colors: ['#34d399', '#fbbf24', '#f87171', '#3b82f6']
+                });
+            } else {
+                playWrongSound();
+            }
+
+            renderQuizView(el('main-content'));
+        };
+
+        window.nextQuestion = () => {
+            const q = quizState.questions[quizState.currentQ];
+            const isCorrect = quizState.selectedAns === q.ans;
+
+            quizState.answers.push({
+                q: q.q,
+                opts: q.opts,
+                userAns: quizState.selectedAns,
+                correctAns: q.ans,
+                isCorrect: isCorrect
+            });
+
+            if(isCorrect) quizState.score++;
+            
+            if(!isCorrect) {
+                const mistakeId = q.q;
+                const exists = userData.mistakes.find(m => m.id === mistakeId);
+                if(!exists) {
+                    userData.mistakes.push({
+                        id: mistakeId,
+                        q: q.q,
+                        opts: q.opts,
+                        ans: q.ans,
+                        time: new Date().toISOString()
+                    });
+                    saveUserData();
+                }
+            }
+
+            quizState.currentQ++;
+            quizState.showExplanation = false;
+            quizState.selectedAns = null;
+            renderQuizView(el('main-content'));
+        };
+
+        const finishQuiz = async (container) => {
+            quizState.active = false;
+            const total = quizState.questions.length;
+            const score = Math.round((quizState.score / total) * 100);
+            
+            if(isFirebaseInitialized && currentUser) {
+                const docRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_quizzes'));
+                try {
+                    await setDoc(docRef, { score, date: new Date(), total });
+                } catch(e) { }
+            }
+
+            container.innerHTML = `
+                <div class="w-full flex items-center justify-center p-6 overflow-y-auto mt-10">
+                    <div class="bg-white p-12 rounded-xl shadow-xl text-center max-w-2xl border-t-8 border-blue-600">
+                        <i class="fas fa-trophy text-8xl text-yellow-500 mb-6"></i>
+                        <h2 class="text-4xl font-bold mb-4">測驗完成！</h2>
+                        <p class="text-7xl font-extrabold text-blue-600 mb-8">${score} <span class="text-3xl text-gray-500">分</span></p>
+                        <p class="text-gray-600 mb-8 text-2xl">您答對了 <span class="text-blue-600 font-bold">${quizState.score}</span> 題，共 ${total} 題。</p>
+                        <div class="space-y-4">
+                            <button onclick="switchTab('mistakes')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 text-xl rounded-lg shadow transition">查看錯題本</button>
+                            <button onclick="startQuiz()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 px-6 text-xl rounded-lg shadow transition">重新測驗</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // --- 錯題本 ---
+        window.renderMistakes = (container) => {
+            if(!container) container = el('main-content');
+            
+            if(userData.mistakes.length === 0) {
+                container.innerHTML = `
+                    <div class="w-full flex items-center justify-center p-6 text-gray-400 flex-col mt-20">
+                        <i class="fas fa-check-circle text-8xl mb-6 text-emerald-200"></i>
+                        <p class="text-2xl font-bold">太棒了！目前沒有錯題紀錄。</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="w-full p-6 md:p-10 overflow-y-auto">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="flex justify-between items-center border-b-4 border-red-200 pb-4 mb-8">
+                            <h2 class="text-3xl font-bold text-red-800"><i class="fas fa-book-dead mr-3"></i>錯題本</h2>
+                            <button onclick="clearMistakes()" class="text-lg text-red-500 hover:text-red-700 font-bold underline">清空錯題</button>
+                        </div>
+                        <div class="space-y-6">
+                            ${userData.mistakes.map((m, i) => `
+                                <div class="bg-white p-6 md:p-8 rounded-xl shadow-md border-l-8 border-red-400">
+                                    <h3 class="font-bold text-gray-800 mb-5 text-xl md:text-2xl">${i+1}. ${m.q}</h3>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-lg">
+                                        ${m.opts.map((opt, idx) => `
+                                            <div class="p-3 rounded-lg ${idx === m.ans ? 'bg-emerald-100 text-emerald-800 font-bold border-2 border-emerald-300 shadow-sm' : 'bg-gray-50 text-gray-500 border border-gray-200'}">
+                                                ${String.fromCharCode(65+idx)}. ${opt}
+                                                ${idx === m.ans ? '<i class="fas fa-check ml-2"></i>(正確答案)' : ''}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `).reverse().join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        window.clearMistakes = () => {
+            if(confirm('確定要清空所有錯題紀錄嗎？')) {
+                userData.mistakes = [];
+                saveUserData();
+                renderMistakes();
+            }
+        };
+
+        // --- 我的最愛 ---
+        window.renderFavorites = (container) => {
+            if(!container) container = el('main-content');
+            
+            if(userData.favorites.length === 0) {
+                container.innerHTML = `
+                    <div class="w-full flex items-center justify-center p-6 text-gray-400 flex-col mt-20">
+                        <i class="fas fa-heart-broken text-8xl mb-6 text-pink-200"></i>
+                        <p class="text-2xl font-bold">目前還沒有收藏任何項目。</p>
+                        <p class="text-lg mt-3">到「學習區」點擊標題旁的愛心圖示即可收藏單元！</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="w-full p-6 md:p-10 overflow-y-auto">
+                    <div class="max-w-5xl mx-auto">
+                        <h2 class="text-3xl font-bold text-pink-800 border-b-4 border-pink-200 pb-4 mb-8"><i class="fas fa-heart mr-3"></i>我的最愛 (單元收藏)</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            ${userData.favorites.map(favId => `
+                                <div class="bg-white p-6 rounded-xl shadow-md border-2 border-pink-100 flex justify-between items-center group relative overflow-hidden transition-shadow hover:shadow-lg">
+                                    <div class="absolute inset-0 bg-pink-50 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                                    <span class="font-bold text-gray-800 z-10 text-xl md:text-2xl">${favId}</span>
+                                    <button onclick="toggleFavorite('${favId}')" class="text-pink-500 hover:text-red-600 z-10 text-3xl"><i class="fas fa-heart"></i></button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        initApp();
+
+    </script>
+</body>
+</html>
