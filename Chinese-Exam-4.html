@@ -8,7 +8,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; background-color: #fcf9f2; color: #333; }
+        /* 加大預設字體大小 */
+        body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; background-color: #fcf9f2; color: #333; font-size: 1.125rem; line-height: 1.75; }
         .tab-btn.active { border-bottom: 2px solid #b45309; color: #b45309; font-weight: bold; }
         .bg-wood { background-color: #e5d3b3; }
         .text-wood-dark { color: #5c3a21; }
@@ -119,26 +120,26 @@
                 id: 'sec1', title: '一、課文結構表',
                 content: `
                 <div class="space-y-4">
-                    <p class="font-bold text-lg border-l-4 border-amber-600 pl-2">木蘭詩 (記敘詩 / 詠人的敘事詩。文章出處：樂府詩集)</p>
-                    <div class="bg-white p-4 rounded shadow-sm">
-                        <h3 class="font-bold text-amber-700">◎敘事</h3>
-                        <ul class="list-disc ml-6 mt-2 space-y-1">
+                    <p class="font-bold text-xl md:text-2xl border-l-4 border-amber-600 pl-3">木蘭詩 (記敘詩 / 詠人的敘事詩。文章出處：樂府詩集)</p>
+                    <div class="bg-white p-6 rounded shadow-sm text-lg md:text-xl">
+                        <h3 class="font-bold text-amber-700 text-xl md:text-2xl">◎敘事</h3>
+                        <ul class="list-disc ml-8 mt-3 space-y-2">
                             <li><span class="font-semibold">背景：</span>第一段：代父從軍之因</li>
                             <li><span class="font-semibold">經過：</span>
-                                <ul class="list-circle ml-6 text-gray-700">
+                                <ul class="list-circle ml-8 text-gray-700 mt-1 space-y-1">
                                     <li>第二段：從軍的準備及行軍遠戍。(繁筆)</li>
                                     <li>第三段：征戰歲月。(簡筆)</li>
                                 </ul>
                             </li>
                             <li><span class="font-semibold">結局：</span>
-                                <ul class="list-circle ml-6 text-gray-700">
+                                <ul class="list-circle ml-8 text-gray-700 mt-1 space-y-1">
                                     <li>第四段：凱旋歸朝婉辭封賞。</li>
                                     <li>第五段：回鄉團圓及身分揭曉。(繁筆)</li>
                                 </ul>
                             </li>
                         </ul>
-                        <h3 class="font-bold text-amber-700 mt-4">◎結語</h3>
-                        <ul class="list-disc ml-6 mt-2">
+                        <h3 class="font-bold text-amber-700 text-xl md:text-2xl mt-6">◎結語</h3>
+                        <ul class="list-disc ml-8 mt-3">
                             <li><span class="font-semibold">讚語：</span>第六段：稱頌木蘭的智慧與英勇</li>
                         </ul>
                     </div>
@@ -146,7 +147,7 @@
             },
             {
                 id: 'sec2', title: '二、形音義辨析',
-                content: `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                content: `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-lg md:text-xl">
                     ${[
                         "朔 (ㄕㄨㄛˋ)：(形容詞) 北方的。如：朔風。 / (名詞) 農曆每月初一。如：朔日。",
                         "塑 (ㄙㄨˋ)：(動詞) 用泥土等做成人、物的形狀。如：雕塑。 / (動詞) 培養、形成。如：塑造。",
@@ -188,15 +189,15 @@
                         "傍 (ㄅㄤˋ)：(動詞) 靠近。如：傍地走、依山傍水。",
                         "傍 (ㄅㄤ)：(動詞) 臨近。如：傍晚。"
                     ].map(item => `
-                        <div class="bg-white p-3 rounded shadow-sm flex justify-between items-start">
-                            <span>${item.replace(/([ㄅ-ㄩ]+ˋ?)/g, '<span class="text-amber-600 text-sm">$1</span>')}</span>
-                            <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                        <div class="bg-white p-4 rounded shadow-sm flex justify-between items-start">
+                            <span>${item.replace(/([ㄅ-ㄩ]+ˋ?)/g, '<span class="text-amber-600 font-bold">$1</span>')}</span>
+                            <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl ml-2" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
                         </div>
                     `).join('')}
                     
-                    <div class="col-span-1 md:col-span-2 bg-amber-50 p-4 rounded mt-4">
-                        <h4 class="font-bold text-amber-800 mb-2">其他補充：</h4>
-                        <ul class="grid grid-cols-2 gap-2 text-sm">
+                    <div class="col-span-1 md:col-span-2 bg-amber-50 p-6 rounded mt-4">
+                        <h4 class="font-bold text-amber-800 text-xl md:text-2xl mb-4">其他補充：</h4>
+                        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <li>喜「帖」：ㄊㄧㄝˇ / 妥「帖」：ㄊㄧㄝ</li>
                             <li>「署」名：ㄕㄨˋ / 連「署」：ㄕㄨˋ / 部「署」：ㄕㄨˋ / 「署」長：ㄕㄨˇ</li>
                             <li>星「宿」：ㄒㄧㄡˋ / 民「宿」：ㄙㄨˋ / 借住一「宿」：ㄒㄧㄡˇ</li>
@@ -210,10 +211,10 @@
             {
                 id: 'sec3', title: '三、成語加油站',
                 content: `
-                <div class="space-y-6">
+                <div class="space-y-8 text-lg md:text-xl">
                     <div>
-                        <h3 class="font-bold text-lg text-amber-700 border-b-2 border-amber-200 mb-3">(一) 與「女子形象」有關的成語</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <h3 class="font-bold text-xl md:text-2xl text-amber-700 border-b-2 border-amber-200 mb-4 pb-2">(一) 與「女子形象」有關的成語</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             ${[
                                 "女中豪傑：女中丈夫。出類拔萃，具有男子氣概的女子。",
                                 "不讓鬚眉：形容女子處事能力不輸男子。",
@@ -227,16 +228,16 @@
                                 "淡掃蛾眉：形容女子淡雅的裝扮。",
                                 "不櫛進士：形容有文才的女子。"
                             ].map(item => `
-                                <div class="bg-white p-3 rounded shadow-sm border-l-4 border-pink-300 flex justify-between items-start">
-                                    <div><span class="font-bold text-pink-700">${item.split('：')[0]}</span>：${item.split('：')[1]}</div>
-                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-pink-400 flex justify-between items-start">
+                                    <div><span class="font-bold text-pink-700 text-xl">${item.split('：')[0]}</span>：${item.split('：')[1]}</div>
+                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl ml-2" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
                     <div>
-                        <h3 class="font-bold text-lg text-amber-700 border-b-2 border-amber-200 mb-3">(二) 與「戰事」有關的成語、諺語</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <h3 class="font-bold text-xl md:text-2xl text-amber-700 border-b-2 border-amber-200 mb-4 pb-2">(二) 與「戰事」有關的成語、諺語</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             ${[
                                 "直搗黃龍：宋時名將岳飛銳不可擋，乃以直抵金人都城黃龍府與部下相激勉。後用以指直接進擊敵方都城、巢穴。",
                                 "南征北討：形容經歷許多戰爭。",
@@ -257,9 +258,9 @@
                                 "兵馬倥偬：兵荒馬亂。倥偬，音ㄎㄨㄥˇ ㄗㄨㄥˇ，事情紛繁迫促的樣子。",
                                 "投筆從戎：指棄文從軍以衛國建功。"
                             ].map(item => `
-                                <div class="bg-white p-3 rounded shadow-sm border-l-4 border-gray-600 flex justify-between items-start">
-                                    <div><span class="font-bold text-gray-800">${item.split('：')[0]}</span>：${item.split('：')[1]}</div>
-                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-gray-600 flex justify-between items-start">
+                                    <div><span class="font-bold text-gray-800 text-xl">${item.split('：')[0]}</span>：${item.split('：')[1]}</div>
+                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl ml-2" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
                                 </div>
                             `).join('')}
                         </div>
@@ -269,42 +270,42 @@
             {
                 id: 'sec4', title: '四、南北朝民歌比較',
                 content: `
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white border border-gray-300 rounded shadow-sm mb-6">
+                <div class="overflow-x-auto text-lg md:text-xl">
+                    <table class="min-w-full bg-white border border-gray-300 rounded shadow-sm mb-8">
                         <thead>
-                            <tr class="bg-amber-100 text-amber-900">
-                                <th class="py-2 px-4 border-b">項目</th>
-                                <th class="py-2 px-4 border-b">南朝</th>
-                                <th class="py-2 px-4 border-b">北朝</th>
+                            <tr class="bg-amber-100 text-amber-900 text-xl">
+                                <th class="py-3 px-6 border-b">項目</th>
+                                <th class="py-3 px-6 border-b">南朝</th>
+                                <th class="py-3 px-6 border-b">北朝</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="py-2 px-4 border-b font-bold text-center">形式</td>
-                                <td class="py-2 px-4 border-b">1.多五言四句<br>2.多用雙關隱語</td>
-                                <td class="py-2 px-4 border-b">1.多雜言，以五言為主<br>2.語言質樸率真</td>
+                                <td class="py-3 px-6 border-b font-bold text-center">形式</td>
+                                <td class="py-3 px-6 border-b">1.多五言四句<br>2.多用雙關隱語</td>
+                                <td class="py-3 px-6 border-b">1.多雜言，以五言為主<br>2.語言質樸率真</td>
                             </tr>
                             <tr class="bg-gray-50">
-                                <td class="py-2 px-4 border-b font-bold text-center">風格</td>
-                                <td class="py-2 px-4 border-b">婉約含蓄、清新秀麗</td>
-                                <td class="py-2 px-4 border-b">粗獷率直、雄放豪邁</td>
+                                <td class="py-3 px-6 border-b font-bold text-center">風格</td>
+                                <td class="py-3 px-6 border-b">婉約含蓄、清新秀麗</td>
+                                <td class="py-3 px-6 border-b">粗獷率直、雄放豪邁</td>
                             </tr>
                             <tr>
-                                <td class="py-2 px-4 border-b font-bold text-center">描寫主題</td>
-                                <td class="py-2 px-4 border-b">少男、少女的思慕、情愛與離愁別恨</td>
-                                <td class="py-2 px-4 border-b">1.北朝遼闊壯麗的風光<br>2.戰爭及生活的艱苦<br>3.豪邁尚武的民族性<br>4.坦率直接的愛情</td>
+                                <td class="py-3 px-6 border-b font-bold text-center">描寫主題</td>
+                                <td class="py-3 px-6 border-b">少男、少女的思慕、情愛與離愁別恨</td>
+                                <td class="py-3 px-6 border-b">1.北朝遼闊壯麗的風光<br>2.戰爭及生活的艱苦<br>3.豪邁尚武的民族性<br>4.坦率直接的愛情</td>
                             </tr>
                             <tr class="bg-gray-50">
-                                <td class="py-2 px-4 border-b font-bold text-center">代表作品</td>
-                                <td class="py-2 px-4 border-b">子夜歌、子夜四時歌</td>
-                                <td class="py-2 px-4 border-b">木蘭詩、敕勒歌、李波小妹歌</td>
+                                <td class="py-3 px-6 border-b font-bold text-center">代表作品</td>
+                                <td class="py-3 px-6 border-b">子夜歌、子夜四時歌</td>
+                                <td class="py-3 px-6 border-b">木蘭詩、敕勒歌、李波小妹歌</td>
                             </tr>
                         </tbody>
                     </table>
 
-                    <div class="bg-blue-50 p-4 rounded border border-blue-200">
-                        <h4 class="font-bold text-blue-800 mb-2">辨析題：請依南北朝民歌的特色，判斷下列何者為「北朝民歌」？</h4>
-                        <ul class="space-y-2 text-sm text-gray-700 mb-4">
+                    <div class="bg-blue-50 p-6 rounded border border-blue-200">
+                        <h4 class="font-bold text-blue-800 text-xl md:text-2xl mb-4">辨析題：請依南北朝民歌的特色，判斷下列何者為「北朝民歌」？</h4>
+                        <ul class="space-y-3 text-gray-800 mb-6">
                             <li>(A) 江南可採蓮，蓮葉何田田... (江南)</li>
                             <li><span class="font-bold text-red-600">(B) 敕勒川，陰山下。天似穹廬，籠蓋四野... (敕勒歌)</span></li>
                             <li>(C) 始欲識郎時，兩心望如一... (子夜歌)</li>
@@ -312,32 +313,32 @@
                             <li><span class="font-bold text-red-600">(E) 健兒須快馬，快馬須健兒。跋黃塵下，然後別雄雌。(折楊柳歌)</span></li>
                             <li>(F) 淒淒復淒淒，嫁娶不須啼... (白頭吟)</li>
                         </ul>
-                        <p class="font-bold text-blue-900">答：(B)、(E)。</p>
-                        <p class="text-xs text-gray-500 mt-2">解析： (A)反映江南美麗風光與採蓮人愉悅心情。(C)表現對於愛情的渴望。(D)離別之情。(F)表現子女的執著與堅定。</p>
+                        <p class="font-bold text-blue-900 text-xl">答：(B)、(E)。</p>
+                        <p class="text-gray-600 mt-3 border-t border-blue-200 pt-3">解析： (A)反映江南美麗風光與採蓮人愉悅心情。(C)表現對於愛情的渴望。(D)離別之情。(F)表現子女的執著與堅定。</p>
                     </div>
                 </div>`
             },
             {
                 id: 'sec5', title: '五、本課字義整理',
                 content: `
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto text-lg md:text-xl">
                     <table class="min-w-full bg-white border border-gray-300 rounded shadow-sm">
                         <thead>
-                            <tr class="bg-amber-100 text-amber-900">
-                                <th class="py-2 px-4 border-b">字</th>
-                                <th class="py-2 px-4 border-b">文句</th>
-                                <th class="py-2 px-4 border-b">釋義</th>
-                                <th class="py-2 px-4 border-b">詞性</th>
+                            <tr class="bg-amber-100 text-amber-900 text-xl">
+                                <th class="py-3 px-6 border-b">字</th>
+                                <th class="py-3 px-6 border-b">文句</th>
+                                <th class="py-3 px-6 border-b">釋義</th>
+                                <th class="py-3 px-6 border-b">詞性</th>
                             </tr>
                         </thead>
                         <tbody class="text-center">
-                            <tr><td class="py-2 px-4 border-b font-bold">復</td><td class="py-2 px-4 border-b text-left">唧唧「復」唧唧</td><td class="py-2 px-4 border-b">又、再、連連</td><td class="py-2 px-4 border-b">副詞 (另說「助詞」，無義)</td></tr>
-                            <tr class="bg-gray-50"><td class="py-2 px-4 border-b font-bold">當</td><td class="py-2 px-4 border-b text-left">木蘭「當」戶織</td><td class="py-2 px-4 border-b">對著、向著</td><td class="py-2 px-4 border-b">動詞 (另說「介詞」)</td></tr>
-                            <tr><td class="py-2 px-4 border-b font-bold">惟</td><td class="py-2 px-4 border-b text-left">「惟」聞女嘆息</td><td class="py-2 px-4 border-b">只</td><td class="py-2 px-4 border-b">副詞</td></tr>
-                            <tr class="bg-gray-50"><td class="py-2 px-4 border-b font-bold" rowspan="2">但</td><td class="py-2 px-4 border-b text-left">「但」聞黃河流水鳴濺濺</td><td class="py-2 px-4 border-b" rowspan="2">只、僅</td><td class="py-2 px-4 border-b" rowspan="2">副詞</td></tr>
-                            <tr class="bg-gray-50"><td class="py-2 px-4 border-b text-left">「但」聞燕山胡騎聲啾啾</td></tr>
-                            <tr><td class="py-2 px-4 border-b font-bold">向</td><td class="py-2 px-4 border-b text-left">磨刀霍霍「向」豬羊</td><td class="py-2 px-4 border-b">對著、逼近</td><td class="py-2 px-4 border-b">動詞 (另說「介詞」)</td></tr>
-                            <tr class="bg-gray-50"><td class="py-2 px-4 border-b font-bold">安</td><td class="py-2 px-4 border-b text-left">「安」能辨我是雄雌</td><td class="py-2 px-4 border-b">豈、怎麼</td><td class="py-2 px-4 border-b">副詞</td></tr>
+                            <tr><td class="py-3 px-6 border-b font-bold text-2xl">復</td><td class="py-3 px-6 border-b text-left">唧唧「復」唧唧</td><td class="py-3 px-6 border-b">又、再、連連</td><td class="py-3 px-6 border-b">副詞 (另說「助詞」，無義)</td></tr>
+                            <tr class="bg-gray-50"><td class="py-3 px-6 border-b font-bold text-2xl">當</td><td class="py-3 px-6 border-b text-left">木蘭「當」戶織</td><td class="py-3 px-6 border-b">對著、向著</td><td class="py-3 px-6 border-b">動詞 (另說「介詞」)</td></tr>
+                            <tr><td class="py-3 px-6 border-b font-bold text-2xl">惟</td><td class="py-3 px-6 border-b text-left">「惟」聞女嘆息</td><td class="py-3 px-6 border-b">只</td><td class="py-3 px-6 border-b">副詞</td></tr>
+                            <tr class="bg-gray-50"><td class="py-3 px-6 border-b font-bold text-2xl" rowspan="2">但</td><td class="py-3 px-6 border-b text-left">「但」聞黃河流水鳴濺濺</td><td class="py-3 px-6 border-b" rowspan="2">只、僅</td><td class="py-3 px-6 border-b" rowspan="2">副詞</td></tr>
+                            <tr class="bg-gray-50"><td class="py-3 px-6 border-b text-left">「但」聞燕山胡騎聲啾啾</td></tr>
+                            <tr><td class="py-3 px-6 border-b font-bold text-2xl">向</td><td class="py-3 px-6 border-b text-left">磨刀霍霍「向」豬羊</td><td class="py-3 px-6 border-b">對著、逼近</td><td class="py-3 px-6 border-b">動詞 (另說「介詞」)</td></tr>
+                            <tr class="bg-gray-50"><td class="py-3 px-6 border-b font-bold text-2xl">安</td><td class="py-3 px-6 border-b text-left">「安」能辨我是雄雌</td><td class="py-3 px-6 border-b">豈、怎麼</td><td class="py-3 px-6 border-b">副詞</td></tr>
                         </tbody>
                     </table>
                 </div>`
@@ -345,10 +346,10 @@
             {
                 id: 'sec6', title: '六、常見的疊字狀聲詞',
                 content: `
-                <div class="space-y-4">
-                    <table class="min-w-full bg-white border border-gray-300 rounded shadow-sm text-sm">
-                        <thead class="bg-amber-100 text-amber-900 hidden md:table-header-group">
-                            <tr><th class="py-2 px-4 border-b">狀聲詞</th><th class="py-2 px-4 border-b">作用</th><th class="py-2 px-4 border-b">舉例</th></tr>
+                <div class="space-y-4 text-lg md:text-xl">
+                    <table class="min-w-full bg-white border border-gray-300 rounded shadow-sm">
+                        <thead class="bg-amber-100 text-amber-900 hidden md:table-header-group text-xl">
+                            <tr><th class="py-3 px-6 border-b">狀聲詞</th><th class="py-3 px-6 border-b">作用</th><th class="py-3 px-6 border-b">舉例</th></tr>
                         </thead>
                         <tbody>
                             ${[
@@ -367,10 +368,10 @@
                                 {w:"隆隆", func:"形容巨大的聲響", ex:"炮聲隆隆、雷聲隆隆。"},
                                 {w:"窸窸窣窣", func:"形容輕微細碎且斷斷續續的聲音", ex:"風吹來，(蘆葦)便真的窸窣地啜泣了。"}
                             ].map((item, i) => `
-                                <tr class="${i%2===0?'bg-white':'bg-gray-50'} flex flex-col md:table-row border-b md:border-none p-2 md:p-0">
-                                    <td class="py-1 md:py-2 px-2 md:px-4 md:border-b font-bold text-amber-700">${item.w}</td>
-                                    <td class="py-1 md:py-2 px-2 md:px-4 md:border-b">${item.func}</td>
-                                    <td class="py-1 md:py-2 px-2 md:px-4 md:border-b text-gray-600">${item.ex}</td>
+                                <tr class="${i%2===0?'bg-white':'bg-gray-50'} flex flex-col md:table-row border-b md:border-none p-4 md:p-0">
+                                    <td class="py-2 md:py-3 px-3 md:px-6 md:border-b font-bold text-amber-700 text-xl">${item.w}</td>
+                                    <td class="py-2 md:py-3 px-3 md:px-6 md:border-b">${item.func}</td>
+                                    <td class="py-2 md:py-3 px-3 md:px-6 md:border-b text-gray-600">${item.ex}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -380,31 +381,31 @@
             {
                 id: 'sec7', title: '七、「木蘭詩」成詩年代辨析',
                 content: `
-                <div class="space-y-6">
-                    <div class="bg-white p-5 rounded shadow-sm">
-                        <h3 class="font-bold text-lg text-amber-800 mb-3">(一) 成於北朝之說</h3>
+                <div class="space-y-8 text-lg md:text-xl">
+                    <div class="bg-white p-6 rounded shadow-sm">
+                        <h3 class="font-bold text-2xl text-amber-800 mb-4">(一) 成於北朝之說</h3>
                         <div class="ml-4">
-                            <h4 class="font-semibold text-gray-800 border-l-2 border-amber-400 pl-2">1. 內在證據</h4>
-                            <ul class="list-decimal ml-6 mt-2 text-gray-700 space-y-1">
+                            <h4 class="font-semibold text-gray-800 border-l-4 border-amber-400 pl-3 text-xl">1. 內在證據</h4>
+                            <ul class="list-decimal ml-8 mt-3 text-gray-700 space-y-2">
                                 <li>「黑山」、「燕山」為北國地區。</li>
                                 <li>「朔氣」為北國天候。</li>
                                 <li>「可汗」為北方天子之稱。</li>
                                 <li>「明駝」為朔地特有之獸。</li>
                             </ul>
-                            <h4 class="font-semibold text-gray-800 border-l-2 border-amber-400 pl-2 mt-4">2. 外在證據</h4>
-                            <ul class="list-decimal ml-6 mt-2 text-gray-700 space-y-1">
+                            <h4 class="font-semibold text-gray-800 border-l-4 border-amber-400 pl-3 mt-6 text-xl">2. 外在證據</h4>
+                            <ul class="list-decimal ml-8 mt-3 text-gray-700 space-y-2">
                                 <li>南朝陳智匠已將木蘭詩的題目記載在古今樂錄上，故可知此詩必成於陳朝之前。</li>
                                 <li>本詩發端六句與北朝樂府折楊柳枝歌中「敕敕何力力………………問女何所憶」辭意全同，其為北方之歌詞，亦略可知矣。</li>
                             </ul>
                         </div>
                     </div>
-                    <div class="bg-white p-5 rounded shadow-sm">
-                        <h3 class="font-bold text-lg text-amber-800 mb-3">(二) 唐代文人潤飾之說</h3>
-                        <ul class="list-decimal ml-6 mt-2 text-gray-700 space-y-2">
+                    <div class="bg-white p-6 rounded shadow-sm">
+                        <h3 class="font-bold text-2xl text-amber-800 mb-4">(二) 唐代文人潤飾之說</h3>
+                        <ul class="list-decimal ml-8 mt-3 text-gray-700 space-y-3">
                             <li>本詩深具民歌特色，不避雷同，反覆吟詠。然第三段卻對仗工整，用筆精鍊(簡筆——以短短六句涵蓋長年行伍生活)，不似民歌方式，反似唐人詩格。</li>
                             <li>「轉」是北朝評功行賞的專名，以前只有四級，隋朝是十級，至唐高祖年間才訂為十二級，故「策勳十二轉」疑似唐人之筆。</li>
                         </ul>
-                        <div class="mt-4 p-3 bg-amber-50 rounded border border-amber-200 text-amber-900 font-bold">
+                        <div class="mt-6 p-4 bg-amber-50 rounded border border-amber-200 text-amber-900 font-bold text-xl md:text-2xl">
                             → 由上文推知，本詩殆成於北朝，後經唐代文人潤飾而成。
                         </div>
                     </div>
@@ -535,8 +536,25 @@
         let currentTab = 'login';
         let learnSubTab = 'sec1';
         let quizState = { active: false, currentQ: 0, score: 0, answers: [], questions: [], showExplanation: false, selectedAns: null };
+        let isLearnMenuOpen = false;
 
         const el = id => document.getElementById(id);
+
+        // 彈出式側邊選單控制
+        window.toggleLearnMenu = (show) => {
+            isLearnMenuOpen = typeof show === 'boolean' ? show : !isLearnMenuOpen;
+            const drawer = el('learn-drawer');
+            const overlay = el('learn-overlay');
+            if(drawer && overlay) {
+                if(isLearnMenuOpen) {
+                    drawer.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden');
+                } else {
+                    drawer.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                }
+            }
+        };
 
         // 載入全域最近登入名單
         const loadRecentUsers = async () => {
@@ -666,37 +684,37 @@
         window.renderLogin = () => {
             currentTab = 'login';
             el('view-container').innerHTML = `
-                <div class="flex-1 flex flex-col items-center justify-center bg-wood bg-opacity-30 relative overflow-hidden p-4">
+                <div class="flex-1 flex flex-col items-center justify-center bg-wood bg-opacity-30 relative overflow-hidden p-6">
                     
-                    <div class="absolute top-4 right-4 z-20">
+                    <div class="absolute top-6 right-6 z-20">
                         <div class="flex flex-col items-end gap-3 w-full md:w-auto">
-                            <div class="flex items-center bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200 shadow-inner text-sm font-bold text-gray-700">
+                            <div class="flex items-center bg-gray-50 px-4 py-2 rounded-full border border-gray-200 shadow-inner text-base font-bold text-gray-700">
                                 <span class="status-dot ${connectionStatus === 'loading' ? 'status-loading' : connectionStatus === 'success' ? 'status-success' : 'status-error'}"></span>
                                 ${connectionStatus === 'loading' ? '雲端讀取中...' : connectionStatus === 'success' ? '雲端已同步' : '雲端連線失敗'}
                             </div>
                         </div>
                     </div>
 
-                    <div class="absolute -top-20 -left-20 w-64 h-64 bg-amber-200 rounded-full mix-blend-multiply filter blur-2xl opacity-50"></div>
-                    <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-yellow-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50"></div>
+                    <div class="absolute -top-20 -left-20 w-80 h-80 bg-amber-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+                    <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
                     
-                    <div class="bg-white p-8 rounded-xl shadow-2xl z-10 w-96 max-w-full text-center border-t-4 border-amber-600">
-                        <h1 class="text-3xl font-bold text-wood-dark mb-2 tracking-widest">木蘭詩</h1>
-                        <p class="text-gray-500 mb-8">互動學習系統</p>
+                    <div class="bg-white p-10 rounded-xl shadow-2xl z-10 w-[28rem] max-w-full text-center border-t-8 border-amber-600">
+                        <h1 class="text-4xl md:text-5xl font-bold text-wood-dark mb-4 tracking-widest">木蘭詩</h1>
+                        <p class="text-gray-500 mb-10 text-xl">互動學習系統</p>
                         
-                        <div class="space-y-4">
-                            <input type="text" id="usernameInput" placeholder="請輸入您的姓名/座號" class="w-full px-4 py-3 rounded border border-gray-300 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-center">
-                            <button onclick="handleLogin(document.getElementById('usernameInput').value)" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-4 rounded transition duration-200">
+                        <div class="space-y-6">
+                            <input type="text" id="usernameInput" placeholder="請輸入您的姓名/座號" class="w-full px-5 py-4 text-lg rounded-lg border-2 border-gray-300 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-center">
+                            <button onclick="handleLogin(document.getElementById('usernameInput').value)" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-6 text-xl rounded-lg shadow-md transition duration-200">
                                 開始學習
                             </button>
                         </div>
                         
-                        <div class="mt-8 border-t pt-4">
-                            <p class="text-xs text-gray-400 mb-2">雲端最近登入</p>
-                            <div class="flex flex-wrap justify-center gap-2">
+                        <div class="mt-10 border-t-2 border-gray-100 pt-6">
+                            <p class="text-base text-gray-400 mb-3 font-medium">雲端最近登入</p>
+                            <div class="flex flex-wrap justify-center gap-3">
                                 ${recentUsers.length > 0 
-                                    ? recentUsers.slice(-5).map(u => `<button onclick="handleLogin('${u}')" class="text-sm bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 px-3 py-1.5 rounded shadow-sm transition">${u}</button>`).join('')
-                                    : `<span class="text-xs text-gray-400">尚無紀錄或尚未連線</span>`
+                                    ? recentUsers.slice(-5).map(u => `<button onclick="handleLogin('${u}')" class="text-base font-bold bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 px-4 py-2 rounded shadow-sm transition">${u}</button>`).join('')
+                                    : `<span class="text-sm text-gray-400">尚無紀錄或尚未連線</span>`
                                 }
                             </div>
                         </div>
@@ -710,22 +728,22 @@
                 <!-- 導覽列 -->
                 <nav class="bg-wood text-wood-dark shadow-md z-20">
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div class="flex justify-between h-16">
+                        <div class="flex justify-between h-20">
                             <div class="flex items-center gap-4">
-                                <span class="font-bold text-xl tracking-widest hidden sm:block"><i class="fas fa-book-open mr-2 text-amber-700"></i>木蘭詩</span>
-                                <div class="flex items-center bg-gray-50 px-3 py-1 rounded-full border border-gray-200 shadow-inner text-xs font-bold text-gray-700">
+                                <span class="font-bold text-2xl tracking-widest hidden sm:block"><i class="fas fa-book-open mr-3 text-amber-700"></i>木蘭詩</span>
+                                <div class="flex items-center bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200 shadow-inner text-sm font-bold text-gray-700">
                                     <span class="status-dot ${connectionStatus === 'loading' ? 'status-loading' : connectionStatus === 'success' ? 'status-success' : 'status-error'}"></span>
                                     ${connectionStatus === 'loading' ? '讀取中' : connectionStatus === 'success' ? '雲端同步' : '連線失敗'}
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-1 sm:space-x-4">
-                                <button onclick="switchTab('learn')" id="nav-learn" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-amber-700 hover:text-white transition">學習區</button>
-                                <button onclick="switchTab('quiz')" id="nav-quiz" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-amber-700 hover:text-white transition">測驗(100題)</button>
-                                <button onclick="switchTab('mistakes')" id="nav-mistakes" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-amber-700 hover:text-white transition">錯題本</button>
-                                <button onclick="switchTab('favorites')" id="nav-favorites" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-amber-700 hover:text-white transition">最愛</button>
-                                <div class="ml-4 flex items-center pl-4 border-l border-amber-400">
-                                    <span class="text-sm font-bold mr-2"><i class="fas fa-user-circle mr-1"></i>${username}</span>
-                                    <button onclick="logout()" class="text-xs text-red-600 hover:text-red-800" title="登出"><i class="fas fa-sign-out-alt"></i></button>
+                            <div class="flex items-center space-x-2 sm:space-x-4">
+                                <button onclick="switchTab('learn')" id="nav-learn" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">學習區</button>
+                                <button onclick="switchTab('quiz')" id="nav-quiz" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">測驗(100題)</button>
+                                <button onclick="switchTab('mistakes')" id="nav-mistakes" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">錯題本</button>
+                                <button onclick="switchTab('favorites')" id="nav-favorites" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">最愛</button>
+                                <div class="ml-4 flex items-center pl-4 border-l-2 border-amber-400">
+                                    <span class="text-lg font-bold mr-3"><i class="fas fa-user-circle mr-2"></i>${username}</span>
+                                    <button onclick="logout()" class="text-lg text-red-600 hover:text-red-800" title="登出"><i class="fas fa-sign-out-alt"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -733,7 +751,7 @@
                 </nav>
                 
                 <!-- 內容區 -->
-                <div id="main-content" class="flex-1 overflow-hidden bg-white bg-opacity-50 flex"></div>
+                <div id="main-content" class="flex-1 overflow-hidden bg-white bg-opacity-50 flex flex-col"></div>
             `;
             switchTab('learn');
         };
@@ -769,41 +787,69 @@
 
         // --- 學習區 ---
         const renderLearnView = (container) => {
+            const currentData = learnData.find(d => d.id === learnSubTab);
+            
             container.innerHTML = `
-                <!-- 左側選單 -->
-                <div class="w-1/4 max-w-xs bg-gray-50 border-r border-gray-200 overflow-y-auto">
-                    <ul class="py-4">
+                <!-- 頂部：漢堡選單按鈕與標題 -->
+                <div class="w-full bg-amber-50 border-b border-amber-200 p-4 flex items-center shadow-sm z-10 shrink-0">
+                    <button onclick="toggleLearnMenu(true)" class="text-amber-800 hover:text-amber-600 focus:outline-none flex items-center px-4 py-2 bg-white rounded border border-amber-300 shadow-sm mr-4 transition-colors">
+                        <i class="fas fa-bars text-2xl mr-3"></i>
+                        <span class="font-bold text-xl">單元選單</span>
+                    </button>
+                    <span class="font-bold text-2xl text-wood-dark" id="current-learn-title">${currentData ? currentData.title : ''}</span>
+                </div>
+
+                <!-- 覆蓋層 (Overlay) -->
+                <div id="learn-overlay" onclick="toggleLearnMenu(false)" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden transition-opacity"></div>
+
+                <!-- 彈出式左側選單 (Drawer) -->
+                <div id="learn-drawer" class="fixed inset-y-0 left-0 w-[22rem] bg-gray-50 border-r border-gray-200 z-40 transform -translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto shadow-2xl flex flex-col">
+                    <div class="p-6 bg-amber-100 flex justify-between items-center border-b border-amber-200 shrink-0">
+                        <span class="font-bold text-2xl text-amber-900"><i class="fas fa-list-ul mr-3"></i>學習目錄</span>
+                        <button onclick="toggleLearnMenu(false)" class="text-amber-800 hover:text-red-600 transition-colors"><i class="fas fa-times text-3xl"></i></button>
+                    </div>
+                    <ul class="py-4 flex-1">
                         ${learnData.map(d => `
                             <li>
-                                <button onclick="selectLearnTab('${d.id}')" id="ltab-${d.id}" class="w-full text-left px-6 py-3 text-sm font-medium hover:bg-amber-100 transition-colors ${learnSubTab === d.id ? 'bg-amber-100 text-amber-800 border-r-4 border-amber-600' : 'text-gray-600'}">
+                                <button onclick="selectLearnTab('${d.id}')" id="ltab-${d.id}" class="w-full text-left px-8 py-5 text-xl font-bold hover:bg-amber-100 transition-colors ${learnSubTab === d.id ? 'bg-amber-100 text-amber-800 border-l-8 border-amber-600' : 'text-gray-600 border-l-8 border-transparent'}">
                                     ${d.title}
                                 </button>
                             </li>
                         `).join('')}
                     </ul>
                 </div>
-                <!-- 右側內容 -->
-                <div class="flex-1 p-6 overflow-y-auto" id="learn-content-area"></div>
+                
+                <!-- 右側主要內容 -->
+                <div class="flex-1 p-6 md:p-10 overflow-y-auto" id="learn-content-area"></div>
             `;
             renderLearnContent();
         };
 
         window.selectLearnTab = (id) => {
             learnSubTab = id;
+            const data = learnData.find(d => d.id === id);
+            
+            // 更新上方標題
+            const titleEl = el('current-learn-title');
+            if(titleEl && data) titleEl.innerText = data.title;
+            
             // 更新選單樣式
             learnData.forEach(d => {
                 const btn = el(`ltab-${d.id}`);
                 if(btn) {
                     if(d.id === id) {
-                        btn.classList.add('bg-amber-100', 'text-amber-800', 'border-r-4', 'border-amber-600');
-                        btn.classList.remove('text-gray-600');
+                        btn.classList.add('bg-amber-100', 'text-amber-800', 'border-l-8', 'border-amber-600');
+                        btn.classList.remove('text-gray-600', 'border-transparent');
                     } else {
-                        btn.classList.remove('bg-amber-100', 'text-amber-800', 'border-r-4', 'border-amber-600');
-                        btn.classList.add('text-gray-600');
+                        btn.classList.remove('bg-amber-100', 'text-amber-800', 'border-l-8', 'border-amber-600');
+                        btn.classList.add('text-gray-600', 'border-transparent');
                     }
                 }
             });
             renderLearnContent();
+            
+            // 選擇單元後自動收起選單
+            toggleLearnMenu(false);
         };
 
         window.renderLearnContent = () => {
@@ -811,9 +857,9 @@
             if(!area) return;
             const data = learnData.find(d => d.id === learnSubTab);
             area.innerHTML = `
-                <div class="max-w-4xl mx-auto">
-                    <h2 class="text-2xl font-bold text-wood-dark mb-6 border-b-2 border-amber-200 pb-2">${data.title}</h2>
-                    <div class="text-gray-800 leading-relaxed">${data.content}</div>
+                <div class="max-w-5xl mx-auto">
+                    <h2 class="text-3xl font-bold text-wood-dark mb-8 border-b-4 border-amber-200 pb-3">${data.title}</h2>
+                    <div class="text-gray-800 leading-relaxed text-lg md:text-xl">${data.content}</div>
                 </div>
             `;
             // 更新愛心狀態
@@ -832,12 +878,12 @@
         const renderQuizView = (container) => {
             if(!quizState.active) {
                 container.innerHTML = `
-                    <div class="w-full flex items-center justify-center p-6">
-                        <div class="bg-white p-8 rounded-xl shadow-md text-center max-w-md border-t-4 border-emerald-600">
-                            <i class="fas fa-pencil-alt text-4xl text-emerald-600 mb-4"></i>
-                            <h2 class="text-2xl font-bold mb-4">綜合測驗 (共100題)</h2>
-                            <p class="text-gray-600 mb-6 text-sm">題目涵蓋課文結構、字音字形、成語、南北朝民歌比較等所有重點。挑戰自己是否完全吸收了！</p>
-                            <button onclick="startQuiz()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-8 rounded-full shadow transition">開始測驗</button>
+                    <div class="w-full flex items-center justify-center p-6 mt-10">
+                        <div class="bg-white p-10 rounded-xl shadow-md text-center max-w-2xl border-t-8 border-emerald-600">
+                            <i class="fas fa-pencil-alt text-6xl text-emerald-600 mb-6"></i>
+                            <h2 class="text-3xl font-bold mb-6">綜合測驗 (共100題)</h2>
+                            <p class="text-gray-600 mb-8 text-xl">題目涵蓋課文結構、字音字形、成語、南北朝民歌比較等所有重點。挑戰自己是否完全吸收了！</p>
+                            <button onclick="startQuiz()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-12 text-2xl rounded-full shadow-lg transition transform hover:scale-105">開始測驗</button>
                         </div>
                     </div>
                 `;
@@ -866,20 +912,20 @@
             // 產生選項按鈕 HTML
             let optionsHtml = '';
             q.opts.forEach((opt, i) => {
-                let btnClass = "w-full text-left p-4 rounded-lg border transition-all flex items-center group ";
-                let iconHtml = `<span class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mr-4 font-bold transition-colors">${String.fromCharCode(65+i)}</span>`;
+                let btnClass = "w-full text-left p-5 text-xl rounded-lg border-2 transition-all flex items-center group ";
+                let iconHtml = `<span class="w-10 h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mr-5 font-bold text-xl transition-colors">${String.fromCharCode(65+i)}</span>`;
                 
                 if (!quizState.showExplanation) {
                     btnClass += "border-gray-300 hover:border-emerald-500 hover:bg-emerald-50 group-hover:bg-emerald-500 group-hover:text-white";
                 } else {
                     if (i === q.ans) {
                         // 正確答案高亮綠色
-                        btnClass += "border-emerald-500 bg-emerald-100 text-emerald-800 font-bold scale-100 shadow";
-                        iconHtml = `<span class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center mr-4 font-bold"><i class="fas fa-check"></i></span>`;
+                        btnClass += "border-emerald-500 bg-emerald-100 text-emerald-800 font-bold scale-100 shadow-md";
+                        iconHtml = `<span class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center mr-5 font-bold text-xl"><i class="fas fa-check"></i></span>`;
                     } else if (i === quizState.selectedAns) {
                         // 點錯的選項顯示紅色
                         btnClass += "border-red-500 bg-red-50 text-red-800 font-bold scale-[0.98]";
-                        iconHtml = `<span class="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center mr-4 font-bold"><i class="fas fa-times"></i></span>`;
+                        iconHtml = `<span class="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center mr-5 font-bold text-xl"><i class="fas fa-times"></i></span>`;
                     } else {
                         // 未選到的錯誤答案變淡
                         btnClass += "border-gray-200 bg-gray-50 opacity-50";
@@ -895,32 +941,32 @@
             });
 
             container.innerHTML = `
-                <div class="w-full flex flex-col items-center p-6 overflow-y-auto">
-                    <div class="w-full max-w-2xl bg-white rounded-xl shadow-md overflow-hidden">
-                        <div class="bg-emerald-50 px-6 py-4 border-b border-emerald-100 flex justify-between items-center">
-                            <span class="font-bold text-emerald-800">第 ${qIdx + 1} / 100 題</span>
-                            <div class="w-1/2 bg-gray-200 rounded-full h-2">
-                                <div class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+                <div class="w-full flex flex-col items-center p-6 md:p-10 overflow-y-auto">
+                    <div class="w-full max-w-4xl bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                        <div class="bg-emerald-50 px-8 py-5 border-b border-emerald-100 flex justify-between items-center">
+                            <span class="font-bold text-emerald-800 text-xl">第 ${qIdx + 1} / 100 題</span>
+                            <div class="w-1/2 bg-gray-200 rounded-full h-3">
+                                <div class="bg-emerald-500 h-3 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
                             </div>
                         </div>
-                        <div class="p-6 md:p-8">
-                            <h3 class="text-xl font-bold text-gray-800 mb-6 leading-relaxed">${q.q}</h3>
-                            <div class="space-y-3">
+                        <div class="p-8 md:p-12">
+                            <h3 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-relaxed">${q.q}</h3>
+                            <div class="space-y-4">
                                 ${optionsHtml}
                             </div>
                             
                             ${quizState.showExplanation ? `
-                                <div class="mt-6 p-5 rounded-lg border ${quizState.selectedAns === q.ans ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'} animate-fade-in shadow-inner">
-                                    <div class="flex items-center mb-3">
-                                        <i class="fas ${quizState.selectedAns === q.ans ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-red-500'} text-2xl mr-2"></i>
-                                        <span class="font-bold text-xl">${quizState.selectedAns === q.ans ? '太棒了，答對了！' : '哎呀，答錯了！'}</span>
+                                <div class="mt-8 p-6 rounded-xl border-2 ${quizState.selectedAns === q.ans ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'} animate-fade-in shadow-inner">
+                                    <div class="flex items-center mb-4">
+                                        <i class="fas ${quizState.selectedAns === q.ans ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-red-500'} text-3xl mr-3"></i>
+                                        <span class="font-bold text-2xl">${quizState.selectedAns === q.ans ? '太棒了，答對了！' : '哎呀，答錯了！'}</span>
                                     </div>
-                                    <div class="bg-white bg-opacity-60 p-3 rounded border ${quizState.selectedAns === q.ans ? 'border-emerald-100' : 'border-red-100'}">
-                                        <p class="font-bold mb-1"><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>完整題目解析：</p>
-                                        <p class="mt-1">正確答案為 <strong class="${quizState.selectedAns === q.ans ? 'text-emerald-700' : 'text-red-700'}">(${String.fromCharCode(65+q.ans)}) ${q.opts[q.ans]}</strong>。</p>
-                                        <p class="mt-2 text-sm opacity-90">此題源自您所學習的《木蘭詩》重點講義內容，建議可至「學習區」多加複習課文結構與字詞辨析來加深印象喔！</p>
+                                    <div class="bg-white bg-opacity-70 p-5 rounded-lg border ${quizState.selectedAns === q.ans ? 'border-emerald-100' : 'border-red-100'}">
+                                        <p class="font-bold mb-2 text-xl"><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>完整題目解析：</p>
+                                        <p class="mt-2 text-lg">正確答案為 <strong class="${quizState.selectedAns === q.ans ? 'text-emerald-700' : 'text-red-700'} text-xl">(${String.fromCharCode(65+q.ans)}) ${q.opts[q.ans]}</strong>。</p>
+                                        <p class="mt-3 text-base text-gray-600">此題源自您所學習的《木蘭詩》重點講義內容，建議可至「學習區」多加複習課文結構與字詞辨析來加深印象喔！</p>
                                     </div>
-                                    <button onclick="nextQuestion()" class="mt-4 w-full ${quizState.selectedAns === q.ans ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'} text-white font-bold py-3 rounded-lg shadow-md transition transform hover:scale-[1.02]">我瞭解了，前往下一題 <i class="fas fa-arrow-right ml-1"></i></button>
+                                    <button onclick="nextQuestion()" class="mt-6 w-full ${quizState.selectedAns === q.ans ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'} text-white font-bold py-4 text-xl rounded-lg shadow-md transition transform hover:scale-[1.02]">我瞭解了，前往下一題 <i class="fas fa-arrow-right ml-2"></i></button>
                                 </div>
                             ` : ''}
                         </div>
@@ -1004,15 +1050,15 @@
             }
 
             container.innerHTML = `
-                <div class="w-full flex items-center justify-center p-6 overflow-y-auto">
-                    <div class="bg-white p-8 rounded-xl shadow-md text-center max-w-md border-t-4 border-blue-600">
-                        <i class="fas fa-trophy text-6xl text-yellow-500 mb-4"></i>
-                        <h2 class="text-3xl font-bold mb-2">測驗完成！</h2>
-                        <p class="text-5xl font-extrabold text-blue-600 mb-6">${score} <span class="text-xl text-gray-500">分</span></p>
-                        <p class="text-gray-600 mb-6">您答對了 ${quizState.score} 題，共 ${total} 題。</p>
-                        <div class="space-y-3">
-                            <button onclick="switchTab('mistakes')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded transition">查看錯題本</button>
-                            <button onclick="startQuiz()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded transition">重新測驗</button>
+                <div class="w-full flex items-center justify-center p-6 overflow-y-auto mt-10">
+                    <div class="bg-white p-12 rounded-xl shadow-xl text-center max-w-2xl border-t-8 border-blue-600">
+                        <i class="fas fa-trophy text-8xl text-yellow-500 mb-6"></i>
+                        <h2 class="text-4xl font-bold mb-4">測驗完成！</h2>
+                        <p class="text-7xl font-extrabold text-blue-600 mb-8">${score} <span class="text-3xl text-gray-500">分</span></p>
+                        <p class="text-gray-600 mb-8 text-2xl">您答對了 <span class="text-blue-600 font-bold">${quizState.score}</span> 題，共 ${total} 題。</p>
+                        <div class="space-y-4">
+                            <button onclick="switchTab('mistakes')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 text-xl rounded-lg shadow transition">查看錯題本</button>
+                            <button onclick="startQuiz()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 px-6 text-xl rounded-lg shadow transition">重新測驗</button>
                         </div>
                     </div>
                 </div>
@@ -1025,27 +1071,27 @@
             
             if(userData.mistakes.length === 0) {
                 container.innerHTML = `
-                    <div class="w-full flex items-center justify-center p-6 text-gray-400 flex-col">
-                        <i class="fas fa-check-circle text-6xl mb-4 text-emerald-200"></i>
-                        <p class="text-lg">太棒了！目前沒有錯題紀錄。</p>
+                    <div class="w-full flex items-center justify-center p-6 text-gray-400 flex-col mt-20">
+                        <i class="fas fa-check-circle text-8xl mb-6 text-emerald-200"></i>
+                        <p class="text-2xl font-bold">太棒了！目前沒有錯題紀錄。</p>
                     </div>`;
                 return;
             }
 
             container.innerHTML = `
-                <div class="w-full p-6 overflow-y-auto">
-                    <div class="max-w-3xl mx-auto">
-                        <div class="flex justify-between items-center border-b-2 border-red-200 pb-2 mb-6">
-                            <h2 class="text-2xl font-bold text-red-800"><i class="fas fa-book-dead mr-2"></i>錯題本</h2>
-                            <button onclick="clearMistakes()" class="text-sm text-red-500 hover:text-red-700 underline">清空錯題</button>
+                <div class="w-full p-6 md:p-10 overflow-y-auto">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="flex justify-between items-center border-b-4 border-red-200 pb-4 mb-8">
+                            <h2 class="text-3xl font-bold text-red-800"><i class="fas fa-book-dead mr-3"></i>錯題本</h2>
+                            <button onclick="clearMistakes()" class="text-lg text-red-500 hover:text-red-700 font-bold underline">清空錯題</button>
                         </div>
-                        <div class="space-y-4">
+                        <div class="space-y-6">
                             ${userData.mistakes.map((m, i) => `
-                                <div class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-red-400">
-                                    <h3 class="font-bold text-gray-800 mb-3">${i+1}. ${m.q}</h3>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                <div class="bg-white p-6 md:p-8 rounded-xl shadow-md border-l-8 border-red-400">
+                                    <h3 class="font-bold text-gray-800 mb-5 text-xl md:text-2xl">${i+1}. ${m.q}</h3>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-lg">
                                         ${m.opts.map((opt, idx) => `
-                                            <div class="p-2 rounded ${idx === m.ans ? 'bg-emerald-100 text-emerald-800 font-bold border border-emerald-300' : 'bg-gray-50 text-gray-500'}">
+                                            <div class="p-3 rounded-lg ${idx === m.ans ? 'bg-emerald-100 text-emerald-800 font-bold border-2 border-emerald-300 shadow-sm' : 'bg-gray-50 text-gray-500 border border-gray-200'}">
                                                 ${String.fromCharCode(65+idx)}. ${opt}
                                                 ${idx === m.ans ? '<i class="fas fa-check ml-2"></i>(正確答案)' : ''}
                                             </div>
@@ -1073,10 +1119,10 @@
             
             if(userData.favorites.length === 0) {
                 container.innerHTML = `
-                    <div class="w-full flex items-center justify-center p-6 text-gray-400 flex-col">
-                        <i class="fas fa-heart-broken text-6xl mb-4 text-pink-200"></i>
-                        <p class="text-lg">目前還沒有收藏任何項目。</p>
-                        <p class="text-sm mt-2">到「學習區」點擊愛心圖示即可收藏！</p>
+                    <div class="w-full flex items-center justify-center p-6 text-gray-400 flex-col mt-20">
+                        <i class="fas fa-heart-broken text-8xl mb-6 text-pink-200"></i>
+                        <p class="text-2xl font-bold">目前還沒有收藏任何項目。</p>
+                        <p class="text-lg mt-3">到「學習區」點擊愛心圖示即可收藏！</p>
                     </div>`;
                 return;
             }
@@ -1095,15 +1141,15 @@
             };
 
             container.innerHTML = `
-                <div class="w-full p-6 overflow-y-auto">
-                    <div class="max-w-3xl mx-auto">
-                        <h2 class="text-2xl font-bold text-pink-800 border-b-2 border-pink-200 pb-2 mb-6"><i class="fas fa-heart mr-2"></i>我的最愛</h2>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <div class="w-full p-6 md:p-10 overflow-y-auto">
+                    <div class="max-w-5xl mx-auto">
+                        <h2 class="text-3xl font-bold text-pink-800 border-b-4 border-pink-200 pb-4 mb-8"><i class="fas fa-heart mr-3"></i>我的最愛</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                             ${userData.favorites.map(favId => `
-                                <div class="bg-white p-4 rounded-lg shadow-sm border border-pink-100 flex justify-between items-center group relative overflow-hidden">
-                                    <div class="absolute inset-0 bg-pink-50 transform translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                                    <span class="font-bold text-gray-800 z-10">${favId}</span>
-                                    <button onclick="toggleFavorite('${favId}')" class="text-pink-500 hover:text-red-600 z-10"><i class="fas fa-heart"></i></button>
+                                <div class="bg-white p-6 rounded-xl shadow-md border-2 border-pink-100 flex justify-between items-center group relative overflow-hidden transition-shadow hover:shadow-lg">
+                                    <div class="absolute inset-0 bg-pink-50 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                                    <span class="font-bold text-gray-800 z-10 text-xl md:text-2xl">${favId}</span>
+                                    <button onclick="toggleFavorite('${favId}')" class="text-pink-500 hover:text-red-600 z-10 text-3xl"><i class="fas fa-heart"></i></button>
                                 </div>
                             `).join('')}
                         </div>
