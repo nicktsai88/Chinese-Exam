@@ -240,13 +240,13 @@
                     
                     <div class="bg-amber-50 p-6 rounded-xl border-2 border-amber-200 mt-8 shadow-sm">
                         <h4 class="font-bold text-amber-900 text-2xl mb-4 flex items-center"><i class="fas fa-book mr-3"></i>其他補充：</h4>
-                        <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-gray-800">
-                            <li class="bg-white p-3 rounded shadow-sm border border-amber-100">喜「帖」：<span class="text-amber-600 font-bold">ㄊㄧㄝˇ</span> / 妥「帖」：<span class="text-amber-600 font-bold">ㄊㄧㄝ</span></li>
-                            <li class="bg-white p-3 rounded shadow-sm border border-amber-100">「署」名：<span class="text-amber-600 font-bold">ㄕㄨˋ</span> / 連「署」：<span class="text-amber-600 font-bold">ㄕㄨˋ</span><br>部「署」：<span class="text-amber-600 font-bold">ㄕㄨˋ</span> / 「署」長：<span class="text-amber-600 font-bold">ㄕㄨˇ</span></li>
-                            <li class="bg-white p-3 rounded shadow-sm border border-amber-100">星「宿」：<span class="text-amber-600 font-bold">ㄒㄧㄡˋ</span> / 民「宿」：<span class="text-amber-600 font-bold">ㄙㄨˋ</span><br>借住一「宿」：<span class="text-amber-600 font-bold">ㄒㄧㄡˇ</span></li>
-                            <li class="bg-white p-3 rounded shadow-sm border border-amber-100">歌「頌」：<span class="text-amber-600 font-bold">ㄙㄨㄥˋ</span> / 訴「訟」：<span class="text-amber-600 font-bold">ㄙㄨㄥˋ</span></li>
-                            <li class="bg-white p-3 rounded shadow-sm border border-amber-100">賞賜百千「強」：<span class="text-amber-600 font-bold">ㄑㄧㄤˊ</span> / 「強」人所難：<span class="text-amber-600 font-bold">ㄑㄧㄤˇ</span></li>
-                            <li class="bg-white p-3 rounded shadow-sm border border-amber-100">手續繁「複」 / 去而「復」返 / 「赴」湯蹈火</li>
+                        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-800">
+                            <li class="bg-white p-4 rounded shadow-sm border border-amber-100">喜「帖」：<span class="text-amber-600 font-bold">ㄊㄧㄝˇ</span> / 妥「帖」：<span class="text-amber-600 font-bold">ㄊㄧㄝ</span></li>
+                            <li class="bg-white p-4 rounded shadow-sm border border-amber-100">「署」名：<span class="text-amber-600 font-bold">ㄕㄨˋ</span> / 連「署」：<span class="text-amber-600 font-bold">ㄕㄨˋ</span><br>部「署」：<span class="text-amber-600 font-bold">ㄕㄨˋ</span> / 「署」長：<span class="text-amber-600 font-bold">ㄕㄨˇ</span></li>
+                            <li class="bg-white p-4 rounded shadow-sm border border-amber-100">星「宿」：<span class="text-amber-600 font-bold">ㄒㄧㄡˋ</span> / 民「宿」：<span class="text-amber-600 font-bold">ㄙㄨˋ</span><br>借住一「宿」：<span class="text-amber-600 font-bold">ㄒㄧㄡˇ</span></li>
+                            <li class="bg-white p-4 rounded shadow-sm border border-amber-100">歌「頌」：<span class="text-amber-600 font-bold">ㄙㄨㄥˋ</span> / 訴「訟」：<span class="text-amber-600 font-bold">ㄙㄨㄥˋ</span></li>
+                            <li class="bg-white p-4 rounded shadow-sm border border-amber-100">賞賜百千「強」：<span class="text-amber-600 font-bold">ㄑㄧㄤˊ</span> / 「強」人所難：<span class="text-amber-600 font-bold">ㄑㄧㄤˇ</span></li>
+                            <li class="bg-white p-4 rounded shadow-sm border border-amber-100">手續繁「複」 / 去而「復」返 / 「赴」湯蹈火</li>
                         </ul>
                     </div>
                 </div>`
@@ -272,7 +272,7 @@
                                 "不櫛進士：形容有文才的女子。"
                             ].map(item => `
                                 <div class="bg-white p-4 rounded shadow-sm border-l-4 border-pink-400 flex justify-between items-start">
-                                    <div><span class="font-bold text-pink-700 text-xl">${item.split('：')[0]}</span>：${item.split('：')[1]}</div>
+                                    <div><span class="font-bold text-pink-700 text-2xl md:text-3xl">${item.split('：')[0]}</span>：${item.split('：')[1]}</div>
                                     <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl ml-2" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
                                 </div>
                             `).join('')}
@@ -302,7 +302,7 @@
                                 "投筆從戎：指棄文從軍以衛國建功。"
                             ].map(item => `
                                 <div class="bg-white p-4 rounded shadow-sm border-l-4 border-gray-600 flex justify-between items-start">
-                                    <div><span class="font-bold text-gray-800 text-xl">${item.split('：')[0]}</span>：${item.split('：')[1]}</div>
+                                    <div><span class="font-bold text-red-600 text-2xl md:text-3xl">${item.split('：')[0]}</span>：${item.split('：')[1]}</div>
                                     <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl ml-2" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
                                 </div>
                             `).join('')}
