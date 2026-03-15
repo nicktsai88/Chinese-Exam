@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>木蘭詩 - 互動學習系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; background-color: #fcf9f2; color: #333; }
+        .tab-btn.active { border-bottom: 2px solid #b45309; color: #b45309; font-weight: bold; }
+        .bg-wood { background-color: #e5d3b3; }
+        .text-wood-dark { color: #5c3a21; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* 雲端狀態燈號 CSS */
+        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; }
+        .status-loading { background-color: #fbbf24; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .status-success { background-color: #34d399; }
+        .status-error { background-color: #ef4444; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <div id="app" class="w-full h-full flex flex-col">
+        <!-- 內容將由 JS 動態渲染 -->
+    </div>
+
+    <!-- Firebase SDK (v11.6.1) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        //  Firebase 設定與全域變數
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAxQFt76ZPXE7d0i1XeNZ1yiiD2WYNIfHs", // 請替換為您的真實 API Key 才能啟用雲端儲存
+            authDomain: "chinese-learning-47f4d.firebaseapp.com",
+            projectId: "chinese-learning-47f4d",
+            storageBucket: "chinese-learning-47f4d.firebasestorage.app",
+            messagingSenderId: "76289812052",
+            appId: "1:76289812052:web:898384a916f9f341f62fc1"
+        };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'mulan-app-default';
+        const COLLECTION_NAME = 'Chinese-L2';
+        
+        let app, auth, db;
+        let isFirebaseInitialized = false;
+        let currentUser = null;
+        let username = '';
+        let userData = { favorites: [], mistakes: [] };
+        
+        let connectionStatus = 'loading';
+        let recentUsers = [];
+        
+        // ==========================================
+        //  音效系統 (Web Audio API)
+        // ==========================================
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        
+        const playTone = (freq, type, duration) => {
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = type;
+                oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + duration);
+            } catch(e) { console.log('Audio error:', e); }
+        };
+
+        const playCorrectSound = () => {
+            playTone(523.25, 'sine', 0.1); // C5 音
+            setTimeout(() => playTone(659.25, 'sine', 0.2), 100); // E5 音
+        };
+
+        const playWrongSound = () => {
+            playTone(300, 'sawtooth', 0.2);
+            setTimeout(() => playTone(200, 'sawtooth', 0.3), 150);
+        };
+
+        // 嘗試初始化 Firebase
+        try {
+            if (firebaseConfig.apiKey !== "填入key" && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                isFirebaseInitialized = true;
+                connectionStatus = 'success';
+                console.log("Firebase 成功初始化");
+            } else {
+                connectionStatus = 'error';
+                console.warn("Firebase 未設定正確 Key，目前為單機暫存模式 (重整後資料會消失)。");
+            }
+        } catch (error) {
+            connectionStatus = 'error';
+            console.error("Firebase Init Error:", error);
+        }
+
+        // ==========================================
+        //  學習資料庫 (依照提供資料一字不漏建立)
+        // ==========================================
+        const learnData = [
+            {
+                id: 'sec1', title: '一、課文結構表',
+                content: `
+                <div class="space-y-4">
+                    <p class="font-bold text-lg border-l-4 border-amber-600 pl-2">木蘭詩 (記敘詩 / 詠人的敘事詩。文章出處：樂府詩集)</p>
+                    <div class="bg-white p-4 rounded shadow-sm">
+                        <h3 class="font-bold text-amber-700">◎敘事</h3>
+                        <ul class="list-disc ml-6 mt-2 space-y-1">
+                            <li><span class="font-semibold">背景：</span>第一段：代父從軍之因</li>
+                            <li><span class="font-semibold">經過：</span>
+                                <ul class="list-circle ml-6 text-gray-700">
+                                    <li>第二段：從軍的準備及行軍遠戍。(繁筆)</li>
+                                    <li>第三段：征戰歲月。(簡筆)</li>
+                                </ul>
+                            </li>
+                            <li><span class="font-semibold">結局：</span>
+                                <ul class="list-circle ml-6 text-gray-700">
+                                    <li>第四段：凱旋歸朝婉辭封賞。</li>
+                                    <li>第五段：回鄉團圓及身分揭曉。(繁筆)</li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <h3 class="font-bold text-amber-700 mt-4">◎結語</h3>
+                        <ul class="list-disc ml-6 mt-2">
+                            <li><span class="font-semibold">讚語：</span>第六段：稱頌木蘭的智慧與英勇</li>
+                        </ul>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec2', title: '二、形音義辨析',
+                content: `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ${[
+                        "朔 (ㄕㄨㄛˋ)：(形容詞) 北方的。如：朔風。 / (名詞) 農曆每月初一。如：朔日。",
+                        "塑 (ㄙㄨˋ)：(動詞) 用泥土等做成人、物的形狀。如：雕塑。 / (動詞) 培養、形成。如：塑造。",
+                        "溯 (ㄙㄨˋ)：(動詞) 逆流而上。如：溯溪。 / (動詞) 往前推求、回想。如：不溯既往。",
+                        "槊 (ㄕㄨㄛˋ)：(名詞) 武器名，一種長矛。如：橫槊賦詩。",
+                        "柝 (ㄊㄨㄛˋ)：(名詞) 古代巡夜人打更所敲的器具。如：金柝。",
+                        "析 (ㄒㄧ)：(動詞) 分開、離散。如：分崩離析。 / (動詞) 解釋。如：解析。",
+                        "拆 (ㄔㄞ)：(動詞) 撕除、打開。如：拆解。 / (動詞) 破壞、毀掉。如：拆散。",
+                        "折 (ㄓㄜˊ)：(動詞) 摘取、弄斷。如：折斷。 / (動詞) 彎曲。如：不為五斗米折腰。 / (動詞) 損失。如：損兵折將。",
+                        "鬢 (ㄅㄧㄣˋ)：(名詞) 兩頰近耳旁的頭髮。如：雲鬢。",
+                        "鬚 (ㄒㄩ)：(名詞) 生在下巴或嘴邊的毛。如：巾幗不讓鬚眉。",
+                        "髻 (ㄐㄧˋ)：(名詞) 盤結於頭頂或腦後的頭髮。如：髮髻。",
+                        "髟 (ㄅㄧㄠ)：(形容詞) 形容頭髮長而下垂的樣子。",
+                        "蘭 (ㄌㄢˊ)：(名詞) 植物名。如：蘭花。",
+                        "欄 (ㄌㄢˊ)：(名詞) 用木、竹、石或金屬等柱條圍成的阻擋物。如：護欄、柵欄。 / (名詞) 書刊報章依內容、性質區分的版面。如：廣告欄、專欄。",
+                        "攔 (ㄌㄢˊ)：(動詞) 阻擋。如：攔阻、攔截。",
+                        "瀾 (ㄌㄢˊ)：(名詞) 大波浪。如：力挽狂瀾。",
+                        "斕 (ㄌㄢˊ)：(形容詞) 顏色多彩、錯雜。如：斑斕。",
+                        "爛 (ㄌㄢˋ)：(形容詞) 光明、顯著。如：燦爛、絢爛。 / (動詞) 腐敗。如：潰爛、海枯石爛。",
+                        "織 (ㄓ)：(動詞) 用絲、麻、棉、毛等物編製物品。如：織布、編織。",
+                        "識 (ㄕˋ)：(名詞) 見解、見聞。如：見識、膽識。 / (動詞) 知道、了解。如：素不相識、有眼不識泰山。",
+                        "熾 (ㄔˋ)：(形容詞) 火勢旺盛。如：熾熱。",
+                        "幟 (ㄓˋ)：(名詞) 旌旗、旗子。如：獨樹一幟。",
+                        "征 (ㄓㄥ)：(動詞) 討伐。如：征伐、南征北討。 / (動詞) 遠行。如：長征、遠征。 / (動詞) 課徵，通「徵」。如：橫征暴斂、征稅。",
+                        "怔 (ㄓㄥ)：怔忪：驚懼害怕的樣子。如：怔忪不安。",
+                        "怔 (ㄌㄥˋ)：(動詞) 發呆、發愣，通「愣」。如：怔了半天。",
+                        "症 (ㄓㄥˋ)：(名詞) 疾病的徵象。如：對症下藥。",
+                        "駿 (ㄐㄩㄣˋ)：(名詞) 良馬。如：駿馬、神駿。 / (形容詞) 大的。如：駿業宏發。",
+                        "俊 (ㄐㄩㄣˋ)：(名詞) 才智出眾的人。如：俊傑。",
+                        "濺 (ㄐㄧㄢˋ)：(狀聲詞) 形容流水聲。如：流水鳴濺濺。",
+                        "濺 (ㄐㄧㄢˋ)：(動詞) 液體向四方飛射。如：水花四濺。",
+                        "啾 (ㄐㄧㄡ)：(狀聲詞) 形容馬鳴聲。如：馬鳴聲啾啾。 / (狀聲詞) 形容蟲鳥的鳴叫聲。如：啁啾。",
+                        "揪 (ㄐㄧㄡ)：(動詞) 扭扯、抓住。如：揪住不放。",
+                        "愀 (ㄑㄧㄠˇ)：(副詞) 臉色突然凝重的樣子。如：愀然變色。",
+                        "戎 (ㄖㄨㄥˊ)：(名詞) 軍旅。如：投筆從戎。",
+                        "戊 (ㄨˋ)：(名詞) 天干第五位。如：戊戌政變。",
+                        "戍 (ㄕㄨˋ)：(動詞) 以兵卒守衛邊疆。如：戍守。",
+                        "戌 (ㄒㄩ)：(名詞) 地支第十一位。如：戊戌政變。",
+                        "傍 (ㄅㄤˋ)：(動詞) 靠近。如：傍地走、依山傍水。",
+                        "傍 (ㄅㄤ)：(動詞) 臨近。如：傍晚。"
+                    ].map(item => `
+                        <div class="bg-white p-3 rounded shadow-sm flex justify-between items-start">
+                            <span>${item.replace(/([ㄅ-ㄩ]+ˋ?)/g, '<span class="text-amber-600 text-sm">$1</span>')}</span>
+                            <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                        </div>
+                    `).join('')}
+                    
+                    <div class="col-span-1 md:col-span-2 bg-amber-50 p-4 rounded mt-4">
+                        <h4 class="font-bold text-amber-800 mb-2">其他補充：</h4>
+                        <ul class="grid grid-cols-2 gap-2 text-sm">
+                            <li>喜「帖」：ㄊㄧㄝˇ / 妥「帖」：ㄊㄧㄝ</li>
+                            <li>「署」名：ㄕㄨˋ / 連「署」：ㄕㄨˋ / 部「署」：ㄕㄨˋ / 「署」長：ㄕㄨˇ</li>
+                            <li>星「宿」：ㄒㄧㄡˋ / 民「宿」：ㄙㄨˋ / 借住一「宿」：ㄒㄧㄡˇ</li>
+                            <li>歌「頌」：ㄙㄨㄥˋ / 訴「訟」：ㄙㄨㄥˋ</li>
+                            <li>賞賜百千「強」：ㄑㄧㄤˊ / 「強」人所難：ㄑㄧㄤˇ</li>
+                            <li>手續繁「複」 / 去而「復」返 / 「赴」湯蹈火</li>
+                        </ul>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec3', title: '三、成語加油站',
+                content: `
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="font-bold text-lg text-amber-700 border-b-2 border-amber-200 mb-3">(一) 與「女子形象」有關的成語</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${[
+                                "女中豪傑：女中丈夫。出類拔萃，具有男子氣概的女子。",
+                                "不讓鬚眉：形容女子處事能力不輸男子。",
+                                "詠絮之才：女子特別有才華，富有智慧。",
+                                "秀外慧中：多用於形容女子容貌秀美，內心聰慧。",
+                                "小家碧玉：(1)指小戶人家的女兒。(2)指平常人家年輕貌美的少女。",
+                                "蕙質蘭心：比喻女子芳潔的心地、高雅的品德。",
+                                "綽約多姿：形容女子婉約柔美，婀娜多姿。",
+                                "閉月羞花：形容女子容貌姣好，足使花、月為之退掩、失色。",
+                                "沉魚落雁：形容女子容貌美麗。",
+                                "淡掃蛾眉：形容女子淡雅的裝扮。",
+                                "不櫛進士：形容有文才的女子。"
+                            ].map(item => `
+                                <div class="bg-white p-3 rounded shadow-sm border-l-4 border-pink-300 flex justify-between items-start">
+                                    <div><span class="font-bold text-pink-700">${item.split('：')[0]}</span>：${item.split('：')[1]}</div>
+                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-amber-700 border-b-2 border-amber-200 mb-3">(二) 與「戰事」有關的成語、諺語</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${[
+                                "直搗黃龍：宋時名將岳飛銳不可擋，乃以直抵金人都城黃龍府與部下相激勉。後用以指直接進擊敵方都城、巢穴。",
+                                "南征北討：形容經歷許多戰爭。",
+                                "勢如破竹：比喻作戰或工作順利進行，毫無阻礙。",
+                                "窮兵黩武：恣意動用兵力，發動戰爭。黷，音ㄉㄨˊ，輕妄、濫用。",
+                                "所向披靡：風吹到的地方，草木立即伏倒。比喻力量所到之處，敵人紛紛潰敗逃散。",
+                                "槍林彈雨：形容戰爭猛烈。",
+                                "棄甲曳兵：拋棄鎧甲，拖著兵器。形容戰敗逃走的狼狽狀。",
+                                "兵不血刃：尚未實際交戰，即已征服敵人。後用以比喻輕易得勝。",
+                                "潰不成軍：指軍隊潰敗得不成個軍隊。形容遭到慘敗。",
+                                "枕戈待旦：枕著武器等待天明。形容時時警惕，準備作戰，不敢安睡。枕，音ㄓㄣˋ，用枕頭或其他東西墊頭。",
+                                "狼煙四起：四方邊境升起報警的訊號。比喻外敵來犯，戰事迭起，社會動盪不安。",
+                                "追亡逐北：追擊戰敗而逃走的敵軍。",
+                                "兵臨城下：指敵方軍馬來到己方據守的城外圍。",
+                                "化干戈為玉帛：比喻將戰爭轉變為和平。",
+                                "鐵馬金戈：本形容軍士的雄壯威武。後比喻戰爭和戎馬生涯。",
+                                "馬革裹屍：死於戰場後，用馬皮把屍體包裹起來。比喻英勇作戰，效命沙場。",
+                                "兵馬倥偬：兵荒馬亂。倥偬，音ㄎㄨㄥˇ ㄗㄨㄥˇ，事情紛繁迫促的樣子。",
+                                "投筆從戎：指棄文從軍以衛國建功。"
+                            ].map(item => `
+                                <div class="bg-white p-3 rounded shadow-sm border-l-4 border-gray-600 flex justify-between items-start">
+                                    <div><span class="font-bold text-gray-800">${item.split('：')[0]}</span>：${item.split('：')[1]}</div>
+                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec4', title: '四、南北朝民歌比較',
+                content: `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border border-gray-300 rounded shadow-sm mb-6">
+                        <thead>
+                            <tr class="bg-amber-100 text-amber-900">
+                                <th class="py-2 px-4 border-b">項目</th>
+                                <th class="py-2 px-4 border-b">南朝</th>
+                                <th class="py-2 px-4 border-b">北朝</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="py-2 px-4 border-b font-bold text-center">形式</td>
+                                <td class="py-2 px-4 border-b">1.多五言四句<br>2.多用雙關隱語</td>
+                                <td class="py-2 px-4 border-b">1.多雜言，以五言為主<br>2.語言質樸率真</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="py-2 px-4 border-b font-bold text-center">風格</td>
+                                <td class="py-2 px-4 border-b">婉約含蓄、清新秀麗</td>
+                                <td class="py-2 px-4 border-b">粗獷率直、雄放豪邁</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-4 border-b font-bold text-center">描寫主題</td>
+                                <td class="py-2 px-4 border-b">少男、少女的思慕、情愛與離愁別恨</td>
+                                <td class="py-2 px-4 border-b">1.北朝遼闊壯麗的風光<br>2.戰爭及生活的艱苦<br>3.豪邁尚武的民族性<br>4.坦率直接的愛情</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="py-2 px-4 border-b font-bold text-center">代表作品</td>
+                                <td class="py-2 px-4 border-b">子夜歌、子夜四時歌</td>
+                                <td class="py-2 px-4 border-b">木蘭詩、敕勒歌、李波小妹歌</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="bg-blue-50 p-4 rounded border border-blue-200">
+                        <h4 class="font-bold text-blue-800 mb-2">辨析題：請依南北朝民歌的特色，判斷下列何者為「北朝民歌」？</h4>
+                        <ul class="space-y-2 text-sm text-gray-700 mb-4">
+                            <li>(A) 江南可採蓮，蓮葉何田田... (江南)</li>
+                            <li><span class="font-bold text-red-600">(B) 敕勒川，陰山下。天似穹廬，籠蓋四野... (敕勒歌)</span></li>
+                            <li>(C) 始欲識郎時，兩心望如一... (子夜歌)</li>
+                            <li>(D) 聞歡下揚州，相送楚山頭... (莫愁樂)</li>
+                            <li><span class="font-bold text-red-600">(E) 健兒須快馬，快馬須健兒。跋黃塵下，然後別雄雌。(折楊柳歌)</span></li>
+                            <li>(F) 淒淒復淒淒，嫁娶不須啼... (白頭吟)</li>
+                        </ul>
+                        <p class="font-bold text-blue-900">答：(B)、(E)。</p>
+                        <p class="text-xs text-gray-500 mt-2">解析： (A)反映江南美麗風光與採蓮人愉悅心情。(C)表現對於愛情的渴望。(D)離別之情。(F)表現子女的執著與堅定。</p>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec5', title: '五、本課字義整理',
+                content: `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border border-gray-300 rounded shadow-sm">
+                        <thead>
+                            <tr class="bg-amber-100 text-amber-900">
+                                <th class="py-2 px-4 border-b">字</th>
+                                <th class="py-2 px-4 border-b">文句</th>
+                                <th class="py-2 px-4 border-b">釋義</th>
+                                <th class="py-2 px-4 border-b">詞性</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center">
+                            <tr><td class="py-2 px-4 border-b font-bold">復</td><td class="py-2 px-4 border-b text-left">唧唧「復」唧唧</td><td class="py-2 px-4 border-b">又、再、連連</td><td class="py-2 px-4 border-b">副詞 (另說「助詞」，無義)</td></tr>
+                            <tr class="bg-gray-50"><td class="py-2 px-4 border-b font-bold">當</td><td class="py-2 px-4 border-b text-left">木蘭「當」戶織</td><td class="py-2 px-4 border-b">對著、向著</td><td class="py-2 px-4 border-b">動詞 (另說「介詞」)</td></tr>
+                            <tr><td class="py-2 px-4 border-b font-bold">惟</td><td class="py-2 px-4 border-b text-left">「惟」聞女嘆息</td><td class="py-2 px-4 border-b">只</td><td class="py-2 px-4 border-b">副詞</td></tr>
+                            <tr class="bg-gray-50"><td class="py-2 px-4 border-b font-bold" rowspan="2">但</td><td class="py-2 px-4 border-b text-left">「但」聞黃河流水鳴濺濺</td><td class="py-2 px-4 border-b" rowspan="2">只、僅</td><td class="py-2 px-4 border-b" rowspan="2">副詞</td></tr>
+                            <tr class="bg-gray-50"><td class="py-2 px-4 border-b text-left">「但」聞燕山胡騎聲啾啾</td></tr>
+                            <tr><td class="py-2 px-4 border-b font-bold">向</td><td class="py-2 px-4 border-b text-left">磨刀霍霍「向」豬羊</td><td class="py-2 px-4 border-b">對著、逼近</td><td class="py-2 px-4 border-b">動詞 (另說「介詞」)</td></tr>
+                            <tr class="bg-gray-50"><td class="py-2 px-4 border-b font-bold">安</td><td class="py-2 px-4 border-b text-left">「安」能辨我是雄雌</td><td class="py-2 px-4 border-b">豈、怎麼</td><td class="py-2 px-4 border-b">副詞</td></tr>
+                        </tbody>
+                    </table>
+                </div>`
+            },
+            {
+                id: 'sec6', title: '六、常見的疊字狀聲詞',
+                content: `
+                <div class="space-y-4">
+                    <table class="min-w-full bg-white border border-gray-300 rounded shadow-sm text-sm">
+                        <thead class="bg-amber-100 text-amber-900 hidden md:table-header-group">
+                            <tr><th class="py-2 px-4 border-b">狀聲詞</th><th class="py-2 px-4 border-b">作用</th><th class="py-2 px-4 border-b">舉例</th></tr>
+                        </thead>
+                        <tbody>
+                            ${[
+                                {w:"唧唧", func:"形容機杼聲", ex:"唧唧復唧唧，木蘭當戶織。"},
+                                {w:"唧唧", func:"形容嘆息的聲音", ex:"我聞琵琶已嘆息，又聞此語重唧唧。"},
+                                {w:"唧唧", func:"形容蟲鳴聲", ex:"秋月斜明虛白堂，寒蛩唧唧樹蒼蒼。"},
+                                {w:"濺濺", func:"形容流水聲", ex:"但聞黃河流水鳴濺濺。 (近義: 淙淙、泠泠、潺潺)"},
+                                {w:"啾啾", func:"形容馬鳴聲", ex:"但聞燕山胡騎聲啾啾。"},
+                                {w:"啾啾", func:"形容鳥鳴/蟲鳴/各種聲音", ex:"蟪蛄吟兮啾啾 / 貓聲嗚嗚，鼠聲啾啾。"},
+                                {w:"蕭蕭", func:"形容馬鳴聲", ex:"揮手自茲去，蕭蕭班馬鳴。"},
+                                {w:"蕭蕭", func:"形容風聲/落葉聲", ex:"風蕭蕭兮易水寒 / 無邊落木蕭蕭下"},
+                                {w:"呼呼", func:"形容鼾聲/風聲", ex:"呼呼大睡 / 北風呼呼。"},
+                                {w:"格格", func:"形容鳥拍翅膀聲", ex:"那水鳥被人驚起，格格價飛。"},
+                                {w:"札札", func:"形容織布的聲音", ex:"札札弄機杼。"},
+                                {w:"丁丁", func:"形容伐木的聲音/下棋聲", ex:"伐木丁丁，鳥鳴嚶嚶。"},
+                                {w:"隆隆", func:"形容巨大的聲響", ex:"炮聲隆隆、雷聲隆隆。"},
+                                {w:"窸窸窣窣", func:"形容輕微細碎且斷斷續續的聲音", ex:"風吹來，(蘆葦)便真的窸窣地啜泣了。"}
+                            ].map((item, i) => `
+                                <tr class="${i%2===0?'bg-white':'bg-gray-50'} flex flex-col md:table-row border-b md:border-none p-2 md:p-0">
+                                    <td class="py-1 md:py-2 px-2 md:px-4 md:border-b font-bold text-amber-700">${item.w}</td>
+                                    <td class="py-1 md:py-2 px-2 md:px-4 md:border-b">${item.func}</td>
+                                    <td class="py-1 md:py-2 px-2 md:px-4 md:border-b text-gray-600">${item.ex}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>`
+            },
+            {
+                id: 'sec7', title: '七、「木蘭詩」成詩年代辨析',
+                content: `
+                <div class="space-y-6">
+                    <div class="bg-white p-5 rounded shadow-sm">
+                        <h3 class="font-bold text-lg text-amber-800 mb-3">(一) 成於北朝之說</h3>
+                        <div class="ml-4">
+                            <h4 class="font-semibold text-gray-800 border-l-2 border-amber-400 pl-2">1. 內在證據</h4>
+                            <ul class="list-decimal ml-6 mt-2 text-gray-700 space-y-1">
+                                <li>「黑山」、「燕山」為北國地區。</li>
+                                <li>「朔氣」為北國天候。</li>
+                                <li>「可汗」為北方天子之稱。</li>
+                                <li>「明駝」為朔地特有之獸。</li>
+                            </ul>
+                            <h4 class="font-semibold text-gray-800 border-l-2 border-amber-400 pl-2 mt-4">2. 外在證據</h4>
+                            <ul class="list-decimal ml-6 mt-2 text-gray-700 space-y-1">
+                                <li>南朝陳智匠已將木蘭詩的題目記載在古今樂錄上，故可知此詩必成於陳朝之前。</li>
+                                <li>本詩發端六句與北朝樂府折楊柳枝歌中「敕敕何力力………………問女何所憶」辭意全同，其為北方之歌詞，亦略可知矣。</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded shadow-sm">
+                        <h3 class="font-bold text-lg text-amber-800 mb-3">(二) 唐代文人潤飾之說</h3>
+                        <ul class="list-decimal ml-6 mt-2 text-gray-700 space-y-2">
+                            <li>本詩深具民歌特色，不避雷同，反覆吟詠。然第三段卻對仗工整，用筆精鍊(簡筆——以短短六句涵蓋長年行伍生活)，不似民歌方式，反似唐人詩格。</li>
+                            <li>「轉」是北朝評功行賞的專名，以前只有四級，隋朝是十級，至唐高祖年間才訂為十二級，故「策勳十二轉」疑似唐人之筆。</li>
+                        </ul>
+                        <div class="mt-4 p-3 bg-amber-50 rounded border border-amber-200 text-amber-900 font-bold">
+                            → 由上文推知，本詩殆成於北朝，後經唐代文人潤飾而成。
+                        </div>
+                    </div>
+                </div>`
+            }
+        ];
+
+        // ==========================================
+        //  100題 精編測驗資料 (完全基於提供資料)
+        // ==========================================
+        const generate100Questions = () => {
+            const q = [];
+            // 結構與背景 (1-5)
+            q.push({ q:"《木蘭詩》的文章出處為何？", opts:["詩經", "樂府詩集", "楚辭", "古詩十九首"], ans:1 });
+            q.push({ q:"《木蘭詩》的體裁屬於？", opts:["抒情詩", "記敘詩(詠人的敘事詩)", "寫景詩", "哲理詩"], ans:1 });
+            q.push({ q:"在課文結構表中，第二段「從軍的準備及行軍遠戍」使用了何種筆法？", opts:["簡筆", "繁筆", "白描", "烘托"], ans:1 });
+            q.push({ q:"在課文結構表中，第三段「征戰歲月」使用了何種筆法？", opts:["繁筆", "簡筆", "誇飾", "借代"], ans:1 });
+            q.push({ q:"木蘭詩第六段的結語主要內容為何？", opts:["抱怨戰爭殘酷", "感嘆時光飛逝", "稱頌木蘭的智慧與英勇", "描述沿途風景"], ans:2 });
+            // 形音義辨析 - 讀音 (6-25)
+            q.push({ q:"「朔」氣傳金柝，其中「朔」的注音是？", opts:["ㄙㄨˋ", "ㄕㄨㄛˋ", "ㄙㄨ", "ㄕㄨㄛ"], ans:1 });
+            q.push({ q:"「塑」造的「塑」注音是？", opts:["ㄙㄨˋ", "ㄕㄨㄛˋ", "ㄙㄨ", "ㄕㄨㄛ"], ans:0 });
+            q.push({ q:"「溯」溪的「溯」注音是？", opts:["ㄙㄨˋ", "ㄕㄨㄛˋ", "ㄙㄨ", "ㄕㄨㄛ"], ans:0 });
+            q.push({ q:"橫「槊」賦詩的「槊」注音是？", opts:["ㄙㄨˋ", "ㄕㄨㄛˋ", "ㄙㄨ", "ㄕㄨㄛ"], ans:1 });
+            q.push({ q:"金「柝」的「柝」注音是？", opts:["ㄔㄞ", "ㄓㄜˊ", "ㄊㄨㄛˋ", "ㄒㄧ"], ans:2 });
+            q.push({ q:"分崩離「析」的「析」注音是？", opts:["ㄔㄞ", "ㄓㄜˊ", "ㄊㄨㄛˋ", "ㄒㄧ"], ans:3 });
+            q.push({ q:"雲「鬢」的「鬢」注音是？", opts:["ㄅㄧㄣˋ", "ㄒㄩ", "ㄐㄧˋ", "ㄅㄧㄠ"], ans:0 });
+            q.push({ q:"髮「髻」的「髻」注音是？", opts:["ㄅㄧㄣˋ", "ㄒㄩ", "ㄐㄧˋ", "ㄅㄧㄠ"], ans:2 });
+            q.push({ q:"「髟」的注音是？", opts:["ㄅㄧㄣˋ", "ㄒㄩ", "ㄐㄧˋ", "ㄅㄧㄠ"], ans:3 });
+            q.push({ q:"斑「斕」的「斕」注音是？", opts:["ㄌㄢˊ", "ㄌㄢˋ", "ㄌㄢ", "ㄌㄧㄢˊ"], ans:0 });
+            q.push({ q:"海枯石「爛」的「爛」注音是？", opts:["ㄌㄢˊ", "ㄌㄢˋ", "ㄌㄢ", "ㄌㄧㄢˊ"], ans:1 });
+            q.push({ q:"「熾」熱的「熾」注音是？", opts:["ㄓ", "ㄕˋ", "ㄔˋ", "ㄓˋ"], ans:2 });
+            q.push({ q:"獨樹一「幟」的「幟」注音是？", opts:["ㄓ", "ㄕˋ", "ㄔˋ", "ㄓˋ"], ans:3 });
+            q.push({ q:"「怔」忪不安的「怔」注音是？", opts:["ㄓㄥ", "ㄌㄥˋ", "ㄓㄥˋ", "ㄓㄥˇ"], ans:0 });
+            q.push({ q:"發「愣」通「怔」，此時「怔」的注音是？", opts:["ㄓㄥ", "ㄌㄥˋ", "ㄓㄥˋ", "ㄓㄥˇ"], ans:1 });
+            q.push({ q:"對「症」下藥的「症」注音是？", opts:["ㄓㄥ", "ㄌㄥˋ", "ㄓㄥˋ", "ㄓㄥˇ"], ans:2 });
+            q.push({ q:"「愀」然變色的「愀」注音是？", opts:["ㄐㄧㄡ", "ㄑㄧㄠˇ", "ㄐㄧㄢˋ", "ㄔㄡˇ"], ans:1 });
+            q.push({ q:"「戊」戌政變的「戊」注音是？", opts:["ㄖㄨㄥˊ", "ㄨˋ", "ㄕㄨˋ", "ㄒㄩ"], ans:1 });
+            q.push({ q:"「戍」守邊疆的「戍」注音是？", opts:["ㄖㄨㄥˊ", "ㄨˋ", "ㄕㄨˋ", "ㄒㄩ"], ans:2 });
+            q.push({ q:"戊「戌」政變的「戌」注音是？", opts:["ㄖㄨㄥˊ", "ㄨˋ", "ㄕㄨˋ", "ㄒㄩ"], ans:3 });
+            // 形音義辨析 - 補充讀音 (26-33)
+            q.push({ q:"喜「帖」的注音是？", opts:["ㄊㄧㄝ", "ㄊㄧㄝˇ", "ㄊㄧㄝˋ", "ㄓㄢ"], ans:1 });
+            q.push({ q:"妥「帖」的注音是？", opts:["ㄊㄧㄝ", "ㄊㄧㄝˇ", "ㄊㄧㄝˋ", "ㄓㄢ"], ans:0 });
+            q.push({ q:"連「署」的注音是？", opts:["ㄕㄨˇ", "ㄕㄨˋ", "ㄕㄨ", "ㄕㄨˊ"], ans:1 });
+            q.push({ q:"「署」長的注音是？", opts:["ㄕㄨˇ", "ㄕㄨˋ", "ㄕㄨ", "ㄕㄨˊ"], ans:0 });
+            q.push({ q:"星「宿」的注音是？", opts:["ㄙㄨˋ", "ㄒㄧㄡˇ", "ㄒㄧㄡˋ", "ㄒㄧㄡ"], ans:2 });
+            q.push({ q:"借住一「宿」的注音是？", opts:["ㄙㄨˋ", "ㄒㄧㄡˇ", "ㄒㄧㄡˋ", "ㄒㄧㄡ"], ans:1 });
+            q.push({ q:"賞賜百千「強」的注音是？", opts:["ㄑㄧㄤˊ", "ㄑㄧㄤˇ", "ㄐㄧㄤˋ", "ㄐㄧㄤ"], ans:0 });
+            q.push({ q:"「強」人所難的注音是？", opts:["ㄑㄧㄤˊ", "ㄑㄧㄤˇ", "ㄐㄧㄤˋ", "ㄐㄧㄤ"], ans:1 });
+            // 形音義辨析 - 字義 (34-45)
+            q.push({ q:"「朔」除了北方的意思，還有什麼意思？", opts:["農曆每月十五", "農曆每月初一", "農曆每月最後一天", "冬季"], ans:1 });
+            q.push({ q:"「槊」的詞義為何？", opts:["一種長矛", "一種盾牌", "巡夜打更的器具", "一種樂器"], ans:0 });
+            q.push({ q:"「柝」的詞義為何？", opts:["一種長矛", "古代巡夜人打更所敲的器具", "一種木雕", "戰車的輪子"], ans:1 });
+            q.push({ q:"不為五斗米「折」腰，折的意思是？", opts:["摘取", "弄斷", "彎曲", "損失"], ans:2 });
+            q.push({ q:"「髟」用來形容什麼樣子？", opts:["鬍鬚很長", "頭髮長而下垂", "毛髮捲曲", "顏色鮮艷"], ans:1 });
+            q.push({ q:"素不相「識」的識意思是？", opts:["見解", "見聞", "知道、了解", "記號"], ans:2 });
+            q.push({ q:"橫「征」暴斂的征通哪一個字？", opts:["爭", "徵", "正", "症"], ans:1 });
+            q.push({ q:"「愀」然變色的愀，詞性為？", opts:["名詞", "動詞", "形容詞", "副詞"], ans:3 });
+            q.push({ q:"投筆從「戎」的戎意思是？", opts:["軍旅", "邊疆", "武器", "長官"], ans:0 });
+            q.push({ q:"天干第五位是哪一個字？", opts:["戍", "戌", "戊", "戎"], ans:2 });
+            q.push({ q:"地支第十一位是哪一個字？", opts:["戍", "戌", "戊", "戎"], ans:1 });
+            q.push({ q:"「傍」地走的傍，意思是？", opts:["臨近", "靠近", "傍晚", "依賴"], ans:1 });
+            // 成語 (46-65)
+            q.push({ q:"形容女子處事能力不輸男子的成語是？", opts:["女中豪傑", "不讓鬚眉", "詠絮之才", "秀外慧中"], ans:1 });
+            q.push({ q:"「詠絮之才」用來形容女子？", opts:["容貌秀美", "特別有才華，富有智慧", "高雅的品德", "婀娜多姿"], ans:1 });
+            q.push({ q:"「小家碧玉」指？", opts:["有文才的女子", "大家閨秀", "小戶人家的女兒或平常人家年輕貌美的少女", "淡雅裝扮的女子"], ans:2 });
+            q.push({ q:"比喻女子芳潔的心地、高雅的品德的成語是？", opts:["秀外慧中", "蕙質蘭心", "閉月羞花", "沉魚落雁"], ans:1 });
+            q.push({ q:"「不櫛進士」用來形容什麼樣的女子？", opts:["武藝高強", "容貌姣好", "有文才", "婀娜多姿"], ans:2 });
+            q.push({ q:"岳飛用來指直接進擊敵方都城、巢穴的成語是？", opts:["直搗黃龍", "南征北討", "勢如破竹", "窮兵黩武"], ans:0 });
+            q.push({ q:"「窮兵黩武」的黩字意義為何？", opts:["強大", "輕妄、濫用", "缺乏", "勇敢"], ans:1 });
+            q.push({ q:"比喻力量所到之處，敵人紛紛潰敗逃散的成語是？", opts:["勢如破竹", "所向披靡", "兵不血刃", "追亡逐北"], ans:1 });
+            q.push({ q:"「棄甲曳兵」用來形容？", opts:["輕易得勝", "戰敗逃走的狼狽狀", "戰爭猛烈", "準備作戰"], ans:1 });
+            q.push({ q:"尚未實際交戰，即已征服敵人，比喻輕易得勝的是？", opts:["勢如破竹", "兵不血刃", "追亡逐北", "化干戈為玉帛"], ans:1 });
+            q.push({ q:"枕著武器等待天明，形容時時警惕準備作戰的成語是？", opts:["枕戈待旦", "狼煙四起", "鐵馬金戈", "馬革裹屍"], ans:0 });
+            q.push({ q:"「追亡逐北」的北字意思與下列何者相關？", opts:["北方", "戰敗而逃走", "追擊", "勝利"], ans:1 });
+            q.push({ q:"比喻將戰爭轉變為和平的成語是？", opts:["兵不血刃", "化干戈為玉帛", "鐵馬金戈", "兵馬倥偬"], ans:1 });
+            q.push({ q:"死於戰場後用馬皮把屍體包裹起來，比喻效命沙場的是？", opts:["鐵馬金戈", "馬革裹屍", "兵馬倥偬", "投筆從戎"], ans:1 });
+            q.push({ q:"「兵馬倥偬」的倥偬意思是？", opts:["戰敗的樣子", "雄壯威武", "事情紛繁迫促的樣子", "兵荒馬亂的年代"], ans:2 });
+            q.push({ q:"哪一個成語用來形容經歷許多戰爭？", opts:["南征北討", "槍林彈雨", "兵臨城下", "狼煙四起"], ans:0 });
+            q.push({ q:"「淡掃蛾眉」形容女子的？", opts:["芳潔心地", "淡雅裝扮", "容貌美麗", "婀娜多姿"], ans:1 });
+            q.push({ q:"形容女子婉約柔美，婀娜多姿的成語是？", opts:["秀外慧中", "蕙質蘭心", "綽約多姿", "閉月羞花"], ans:2 });
+            q.push({ q:"哪一個成語與月亮和花朵有關，形容女子容貌姣好？", opts:["蕙質蘭心", "閉月羞花", "沉魚落雁", "秀外慧中"], ans:1 });
+            q.push({ q:"棄文從軍以衛國建功的成語是？", opts:["投筆從戎", "馬革裹屍", "枕戈待旦", "直搗黃龍"], ans:0 });
+            // 南北朝民歌比較 (66-75)
+            q.push({ q:"南朝民歌在形式上的特色為何？", opts:["多雜言", "語言質樸率真", "多五言四句、多用雙關隱語", "以七言為主"], ans:2 });
+            q.push({ q:"北朝民歌的風格為何？", opts:["婉約含蓄", "清新秀麗", "粗獷率直、雄放豪邁", "柔美動人"], ans:2 });
+            q.push({ q:"以下何者不是北朝民歌的描寫主題？", opts:["少男少女的思慕情愛與離愁別恨", "遼闊壯麗的風光", "戰爭及生活的艱苦", "豪邁尚武的民族性"], ans:0 });
+            q.push({ q:"《子夜歌》屬於哪一個朝代的民歌代表？", opts:["北朝", "南朝", "唐朝", "宋朝"], ans:1 });
+            q.push({ q:"《敕勒歌》屬於哪一個朝代的民歌代表？", opts:["北朝", "南朝", "唐朝", "宋朝"], ans:0 });
+            q.push({ q:"「天蒼蒼，野茫茫，風吹草低見牛羊」出現在哪一首民歌中？", opts:["江南", "敕勒歌", "子夜歌", "折楊柳歌"], ans:1 });
+            q.push({ q:"「健兒須快馬，快馬須健兒」展現了哪一朝代的民歌特色？", opts:["南朝", "北朝", "唐朝", "漢朝"], ans:1 });
+            q.push({ q:"南朝民歌的代表作品不包含下列何者？", opts:["子夜歌", "子夜四時歌", "江南", "李波小妹歌"], ans:3 });
+            q.push({ q:"北朝民歌對於愛情的描寫態度為何？", opts:["婉約含蓄", "多用隱語", "坦率直接", "欲言又止"], ans:2 });
+            q.push({ q:"《木蘭詩》屬於？", opts:["南朝民歌", "北朝民歌", "唐代近體詩", "宋代詞"], ans:1 });
+            // 本課字義 (76-83)
+            q.push({ q:"唧唧「復」唧唧的復，詞性與意義為何？", opts:["動詞，回復", "副詞，又、再", "形容詞，重複的", "名詞，重複"], ans:1 });
+            q.push({ q:"木蘭「當」戶織的當，意思是？", opts:["當然", "對著、向著", "阻擋", "擔任"], ans:1 });
+            q.push({ q:"「惟」聞女嘆息的惟，意思是？", opts:["只有", "思考", "但是", "因為"], ans:0 });
+            q.push({ q:"「但」聞黃河流水鳴濺濺的但，意思是？", opts:["但是", "只、僅", "而且", "所以"], ans:1 });
+            q.push({ q:"磨刀霍霍「向」豬羊的向，意思是？", opts:["方向", "以前", "對著、逼近", "嚮往"], ans:2 });
+            q.push({ q:"「安」能辨我是雄雌的安，意思是？", opts:["安全", "安置", "豈、怎麼", "平靜"], ans:2 });
+            q.push({ q:"下列何者的詞性與「惟」聞女嘆息的「惟」相同？", opts:["木蘭「當」戶織", "「但」聞燕山胡騎", "磨刀霍霍「向」豬羊", "唧唧「復」唧唧"], ans:1 }); // 都是副詞
+            q.push({ q:"「安」能辨我是雄雌的安，其詞性為何？", opts:["名詞", "動詞", "形容詞", "副詞"], ans:3 });
+            // 疊字狀聲詞 (84-95)
+            q.push({ q:"「唧唧」在木蘭詩中，用來形容什麼聲音？", opts:["流水聲", "機杼聲", "鳥鳴聲", "馬鳴聲"], ans:1 });
+            q.push({ q:"「唧唧」除了機杼聲，在其他詩詞中也可以形容什麼？", opts:["嘆息聲與蟲鳴聲", "流水聲與風聲", "馬鳴聲與鼾聲", "伐木聲與雷聲"], ans:0 });
+            q.push({ q:"「濺濺」用來形容什麼聲音？", opts:["馬鳴聲", "鳥鳴聲", "流水聲", "下棋聲"], ans:2 });
+            q.push({ q:"下列何者與「濺濺」的意思相近？", opts:["淙淙、泠泠、潺潺", "蕭蕭、呼呼", "丁丁、隆隆", "啾啾、格格"], ans:0 });
+            q.push({ q:"「啾啾」在木蘭詩中用來形容？", opts:["機杼聲", "鳥鳴聲", "馬鳴聲", "流水聲"], ans:2 });
+            q.push({ q:"「風蕭蕭兮易水寒」中的「蕭蕭」形容何種聲音？", opts:["馬鳴聲", "落葉聲", "風聲", "流水聲"], ans:2 });
+            q.push({ q:"「無邊落木蕭蕭下」中的「蕭蕭」形容何種聲音？", opts:["馬鳴聲", "落葉聲", "風聲", "雨聲"], ans:1 });
+            q.push({ q:"形容鼾聲或風聲的狀聲詞是？", opts:["格格", "呼呼", "丁丁", "隆隆"], ans:1 });
+            q.push({ q:"形容鳥拍翅膀聲的狀聲詞是？", opts:["格格", "札札", "丁丁", "隆隆"], ans:0 });
+            q.push({ q:"「札札弄機杼」中的札札形容什麼聲音？", opts:["伐木聲", "織布聲", "下棋聲", "落葉聲"], ans:1 });
+            q.push({ q:"「伐木丁丁」中的丁丁讀音為何？", opts:["ㄉㄧㄥ ㄉㄧㄥ", "ㄓㄥ ㄓㄥ", "ㄐㄧㄥ ㄐㄧㄥ", "ㄊㄧㄥ ㄊㄧㄥ"], ans:1 });
+            q.push({ q:"形容輕微細碎且斷斷續續的聲音是？", opts:["隆隆", "窸窸窣窣", "丁丁", "格格"], ans:1 });
+            // 成詩年代辨析 (96-100)
+            q.push({ q:"支持木蘭詩成於北朝的內在證據中，哪一個是指北國天候？", opts:["黑山", "燕山", "朔氣", "明駝"], ans:2 });
+            q.push({ q:"支持木蘭詩成於北朝的內在證據中，「明駝」代表什麼？", opts:["北方天子之稱", "北國地區", "北國天候", "朔地特有之獸"], ans:3 });
+            q.push({ q:"南朝陳智匠將木蘭詩記載在哪一本書上，成為外在證據？", opts:["全唐詩", "古今樂錄", "樂府詩集", "詩經"], ans:1 });
+            q.push({ q:"有學者認為木蘭詩經過唐代文人潤飾，其理由之一是第三段使用了何種筆法，對仗工整不似民歌？", opts:["繁筆", "簡筆", "白描", "鋪陳"], ans:1 });
+            q.push({ q:"下列哪一個詞語被認為疑似唐人之筆，因為它是評功行賞的專名且唐高祖才訂為十二級？", opts:["可汗", "明駝", "策勳十二轉", "朔氣"], ans:2 });
+            return q;
+        };
+
+        // ==========================================
+        //  應用程式狀態與邏輯
+        // ==========================================
+        let currentTab = 'login';
+        let learnSubTab = 'sec1';
+        let quizState = { active: false, currentQ: 0, score: 0, answers: [], questions: [], showExplanation: false, selectedAns: null };
+
+        const el = id => document.getElementById(id);
+
+        // 載入全域最近登入名單
+        const loadRecentUsers = async () => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            try {
+                // 修正路徑層級 (需為偶數：collection -> doc -> collection -> doc ...)
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', 'global_list');
+                const snap = await getDoc(ref);
+                if(snap.exists() && snap.data().users) {
+                    recentUsers = snap.data().users;
+                }
+            } catch(e) { console.error("Load Recent Users Error", e); }
+            if (currentTab === 'login') renderLogin();
+        };
+
+        // 儲存全域最近登入名單
+        const saveRecentUser = async (name) => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            try {
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', 'global_list');
+                await setDoc(ref, {
+                    users: arrayUnion(name)
+                }, { merge: true });
+                
+                // 同步更新本地端狀態，確保登出後畫面能立刻顯示
+                if (!recentUsers.includes(name)) {
+                    recentUsers.push(name);
+                }
+            } catch(e) { console.error("Save Recent User Error", e); }
+        };
+
+        const initApp = async () => {
+            renderApp();
+            if (isFirebaseInitialized) {
+                // Firebase Auth 監聽
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        // 嘗試讀取本地名稱暫存或 Firebase
+                        await loadUserData();
+                        await loadRecentUsers();
+                        if (username) {
+                            renderMain();
+                        } else {
+                            renderLogin();
+                        }
+                    } else {
+                        // 必須先匿名登入 (符合規則3)
+                        try {
+                            await signInAnonymously(auth);
+                        } catch (e) { 
+                            connectionStatus = 'error';
+                            console.error("Auth Error", e); 
+                            renderLogin();
+                        }
+                    }
+                });
+            } else {
+                // 單機模式
+                if (username) renderMain(); else renderLogin();
+            }
+        };
+
+        window.handleLogin = async (name) => {
+            if(!name.trim()) return alert("請輸入名稱");
+            username = name;
+            
+            if (isFirebaseInitialized && currentUser) {
+                const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid);
+                await setDoc(userRef, { username, lastLogin: new Date() }, { merge: true });
+                
+                // 記錄登入 (符合規則1,2)
+                const loginRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_logs'));
+                await setDoc(loginRef, { type: 'login', time: new Date() });
+
+                // 儲存至全域最近登入
+                await saveRecentUser(name);
+            }
+            renderMain();
+        };
+
+        const loadUserData = async () => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
+            try {
+                const snap = await getDoc(ref);
+                if (snap.exists()) {
+                    userData = snap.data();
+                    if(!userData.favorites) userData.favorites = [];
+                    if(!userData.mistakes) userData.mistakes = [];
+                } else {
+                    await setDoc(ref, userData);
+                }
+            } catch(e) { console.error("Load Data Error", e); }
+        };
+
+        const saveUserData = async () => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
+            try {
+                await updateDoc(ref, userData);
+            } catch(e) { console.error("Save Data Error", e); }
+        };
+
+        window.toggleFavorite = async (itemId) => {
+            const idx = userData.favorites.indexOf(itemId);
+            if (idx > -1) {
+                userData.favorites.splice(idx, 1);
+            } else {
+                userData.favorites.push(itemId);
+            }
+            saveUserData();
+            // 重新渲染以更新愛心狀態
+            if(currentTab === 'learn') renderLearnContent();
+            if(currentTab === 'favorites') renderFavorites();
+        };
+
+        // ==========================================
+        //  UI 渲染邏輯
+        // ==========================================
+        const renderApp = () => {
+            el('app').innerHTML = `
+                <div id="view-container" class="w-full h-full flex flex-col"></div>
+            `;
+        };
+
+        window.renderLogin = () => {
+            currentTab = 'login';
+            el('view-container').innerHTML = `
+                <div class="flex-1 flex flex-col items-center justify-center bg-wood bg-opacity-30 relative overflow-hidden p-4">
+                    
+                    <div class="absolute top-4 right-4 z-20">
+                        <div class="flex flex-col items-end gap-3 w-full md:w-auto">
+                            <div class="flex items-center bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200 shadow-inner text-sm font-bold text-gray-700">
+                                <span class="status-dot ${connectionStatus === 'loading' ? 'status-loading' : connectionStatus === 'success' ? 'status-success' : 'status-error'}"></span>
+                                ${connectionStatus === 'loading' ? '雲端讀取中...' : connectionStatus === 'success' ? '雲端已同步' : '雲端連線失敗'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="absolute -top-20 -left-20 w-64 h-64 bg-amber-200 rounded-full mix-blend-multiply filter blur-2xl opacity-50"></div>
+                    <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-yellow-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50"></div>
+                    
+                    <div class="bg-white p-8 rounded-xl shadow-2xl z-10 w-96 max-w-full text-center border-t-4 border-amber-600">
+                        <h1 class="text-3xl font-bold text-wood-dark mb-2 tracking-widest">木蘭詩</h1>
+                        <p class="text-gray-500 mb-8">互動學習系統</p>
+                        
+                        <div class="space-y-4">
+                            <input type="text" id="usernameInput" placeholder="請輸入您的姓名/座號" class="w-full px-4 py-3 rounded border border-gray-300 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-center">
+                            <button onclick="handleLogin(document.getElementById('usernameInput').value)" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-4 rounded transition duration-200">
+                                開始學習
+                            </button>
+                        </div>
+                        
+                        <div class="mt-8 border-t pt-4">
+                            <p class="text-xs text-gray-400 mb-2">雲端最近登入</p>
+                            <div class="flex flex-wrap justify-center gap-2">
+                                ${recentUsers.length > 0 
+                                    ? recentUsers.slice(-5).map(u => `<button onclick="handleLogin('${u}')" class="text-sm bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 px-3 py-1.5 rounded shadow-sm transition">${u}</button>`).join('')
+                                    : `<span class="text-xs text-gray-400">尚無紀錄或尚未連線</span>`
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        window.renderMain = () => {
+            el('view-container').innerHTML = `
+                <!-- 導覽列 -->
+                <nav class="bg-wood text-wood-dark shadow-md z-20">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="flex justify-between h-16">
+                            <div class="flex items-center gap-4">
+                                <span class="font-bold text-xl tracking-widest hidden sm:block"><i class="fas fa-book-open mr-2 text-amber-700"></i>木蘭詩</span>
+                                <div class="flex items-center bg-gray-50 px-3 py-1 rounded-full border border-gray-200 shadow-inner text-xs font-bold text-gray-700">
+                                    <span class="status-dot ${connectionStatus === 'loading' ? 'status-loading' : connectionStatus === 'success' ? 'status-success' : 'status-error'}"></span>
+                                    ${connectionStatus === 'loading' ? '讀取中' : connectionStatus === 'success' ? '雲端同步' : '連線失敗'}
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-1 sm:space-x-4">
+                                <button onclick="switchTab('learn')" id="nav-learn" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-amber-700 hover:text-white transition">學習區</button>
+                                <button onclick="switchTab('quiz')" id="nav-quiz" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-amber-700 hover:text-white transition">測驗(100題)</button>
+                                <button onclick="switchTab('mistakes')" id="nav-mistakes" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-amber-700 hover:text-white transition">錯題本</button>
+                                <button onclick="switchTab('favorites')" id="nav-favorites" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-amber-700 hover:text-white transition">最愛</button>
+                                <div class="ml-4 flex items-center pl-4 border-l border-amber-400">
+                                    <span class="text-sm font-bold mr-2"><i class="fas fa-user-circle mr-1"></i>${username}</span>
+                                    <button onclick="logout()" class="text-xs text-red-600 hover:text-red-800" title="登出"><i class="fas fa-sign-out-alt"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                
+                <!-- 內容區 -->
+                <div id="main-content" class="flex-1 overflow-hidden bg-white bg-opacity-50 flex"></div>
+            `;
+            switchTab('learn');
+        };
+
+        window.logout = () => {
+            username = '';
+            userData = { favorites: [], mistakes: [] };
+            renderLogin();
+        };
+
+        window.switchTab = (tab) => {
+            currentTab = tab;
+            // 更新導覽列樣式
+            ['learn', 'quiz', 'mistakes', 'favorites'].forEach(t => {
+                const btn = el(`nav-${t}`);
+                if(btn) {
+                    if(t === tab) {
+                        btn.classList.add('bg-amber-700', 'text-white');
+                        btn.classList.remove('hover:bg-amber-700', 'hover:text-white');
+                    } else {
+                        btn.classList.remove('bg-amber-700', 'text-white');
+                        btn.classList.add('hover:bg-amber-700', 'hover:text-white');
+                    }
+                }
+            });
+
+            const content = el('main-content');
+            if(tab === 'learn') renderLearnView(content);
+            if(tab === 'quiz') renderQuizView(content);
+            if(tab === 'mistakes') renderMistakes(content);
+            if(tab === 'favorites') renderFavorites(content);
+        };
+
+        // --- 學習區 ---
+        const renderLearnView = (container) => {
+            container.innerHTML = `
+                <!-- 左側選單 -->
+                <div class="w-1/4 max-w-xs bg-gray-50 border-r border-gray-200 overflow-y-auto">
+                    <ul class="py-4">
+                        ${learnData.map(d => `
+                            <li>
+                                <button onclick="selectLearnTab('${d.id}')" id="ltab-${d.id}" class="w-full text-left px-6 py-3 text-sm font-medium hover:bg-amber-100 transition-colors ${learnSubTab === d.id ? 'bg-amber-100 text-amber-800 border-r-4 border-amber-600' : 'text-gray-600'}">
+                                    ${d.title}
+                                </button>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+                <!-- 右側內容 -->
+                <div class="flex-1 p-6 overflow-y-auto" id="learn-content-area"></div>
+            `;
+            renderLearnContent();
+        };
+
+        window.selectLearnTab = (id) => {
+            learnSubTab = id;
+            // 更新選單樣式
+            learnData.forEach(d => {
+                const btn = el(`ltab-${d.id}`);
+                if(btn) {
+                    if(d.id === id) {
+                        btn.classList.add('bg-amber-100', 'text-amber-800', 'border-r-4', 'border-amber-600');
+                        btn.classList.remove('text-gray-600');
+                    } else {
+                        btn.classList.remove('bg-amber-100', 'text-amber-800', 'border-r-4', 'border-amber-600');
+                        btn.classList.add('text-gray-600');
+                    }
+                }
+            });
+            renderLearnContent();
+        };
+
+        window.renderLearnContent = () => {
+            const area = el('learn-content-area');
+            if(!area) return;
+            const data = learnData.find(d => d.id === learnSubTab);
+            area.innerHTML = `
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-2xl font-bold text-wood-dark mb-6 border-b-2 border-amber-200 pb-2">${data.title}</h2>
+                    <div class="text-gray-800 leading-relaxed">${data.content}</div>
+                </div>
+            `;
+            // 更新愛心狀態
+            setTimeout(() => {
+                document.querySelectorAll('.fav-btn').forEach(btn => {
+                    const id = btn.getAttribute('data-id');
+                    if(userData.favorites.includes(id)) {
+                        btn.classList.remove('text-gray-300');
+                        btn.classList.add('text-red-500');
+                    }
+                });
+            }, 0);
+        };
+
+        // --- 測驗區 ---
+        const renderQuizView = (container) => {
+            if(!quizState.active) {
+                container.innerHTML = `
+                    <div class="w-full flex items-center justify-center p-6">
+                        <div class="bg-white p-8 rounded-xl shadow-md text-center max-w-md border-t-4 border-emerald-600">
+                            <i class="fas fa-pencil-alt text-4xl text-emerald-600 mb-4"></i>
+                            <h2 class="text-2xl font-bold mb-4">綜合測驗 (共100題)</h2>
+                            <p class="text-gray-600 mb-6 text-sm">題目涵蓋課文結構、字音字形、成語、南北朝民歌比較等所有重點。挑戰自己是否完全吸收了！</p>
+                            <button onclick="startQuiz()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-8 rounded-full shadow transition">開始測驗</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                renderQuizQuestion(container);
+            }
+        };
+
+        window.startQuiz = () => {
+            // 隨機打亂100題
+            const qList = [...generate100Questions()].sort(() => 0.5 - Math.random());
+            quizState = { active: true, currentQ: 0, score: 0, answers: [], questions: qList, showExplanation: false, selectedAns: null };
+            renderQuizView(el('main-content'));
+        };
+
+        const renderQuizQuestion = (container) => {
+            const qIdx = quizState.currentQ;
+            if(qIdx >= quizState.questions.length) {
+                finishQuiz(container);
+                return;
+            }
+            
+            const q = quizState.questions[qIdx];
+            const progress = ((qIdx) / quizState.questions.length) * 100;
+
+            // 產生選項按鈕 HTML
+            let optionsHtml = '';
+            q.opts.forEach((opt, i) => {
+                let btnClass = "w-full text-left p-4 rounded-lg border transition-all flex items-center group ";
+                let iconHtml = `<span class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mr-4 font-bold transition-colors">${String.fromCharCode(65+i)}</span>`;
+                
+                if (!quizState.showExplanation) {
+                    btnClass += "border-gray-300 hover:border-emerald-500 hover:bg-emerald-50 group-hover:bg-emerald-500 group-hover:text-white";
+                } else {
+                    if (i === q.ans) {
+                        // 正確答案高亮綠色
+                        btnClass += "border-emerald-500 bg-emerald-100 text-emerald-800 font-bold scale-100 shadow";
+                        iconHtml = `<span class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center mr-4 font-bold"><i class="fas fa-check"></i></span>`;
+                    } else if (i === quizState.selectedAns) {
+                        // 點錯的選項顯示紅色
+                        btnClass += "border-red-500 bg-red-50 text-red-800 font-bold scale-[0.98]";
+                        iconHtml = `<span class="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center mr-4 font-bold"><i class="fas fa-times"></i></span>`;
+                    } else {
+                        // 未選到的錯誤答案變淡
+                        btnClass += "border-gray-200 bg-gray-50 opacity-50";
+                    }
+                }
+
+                optionsHtml += `
+                    <button ${quizState.showExplanation ? 'disabled' : `onclick="answerQuestion(${i})"`} class="${btnClass}">
+                        ${iconHtml}
+                        <span>${opt}</span>
+                    </button>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="w-full flex flex-col items-center p-6 overflow-y-auto">
+                    <div class="w-full max-w-2xl bg-white rounded-xl shadow-md overflow-hidden">
+                        <div class="bg-emerald-50 px-6 py-4 border-b border-emerald-100 flex justify-between items-center">
+                            <span class="font-bold text-emerald-800">第 ${qIdx + 1} / 100 題</span>
+                            <div class="w-1/2 bg-gray-200 rounded-full h-2">
+                                <div class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                        <div class="p-6 md:p-8">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6 leading-relaxed">${q.q}</h3>
+                            <div class="space-y-3">
+                                ${optionsHtml}
+                            </div>
+                            
+                            ${quizState.showExplanation ? `
+                                <div class="mt-6 p-5 rounded-lg border ${quizState.selectedAns === q.ans ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'} animate-fade-in shadow-inner">
+                                    <div class="flex items-center mb-3">
+                                        <i class="fas ${quizState.selectedAns === q.ans ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-red-500'} text-2xl mr-2"></i>
+                                        <span class="font-bold text-xl">${quizState.selectedAns === q.ans ? '太棒了，答對了！' : '哎呀，答錯了！'}</span>
+                                    </div>
+                                    <div class="bg-white bg-opacity-60 p-3 rounded border ${quizState.selectedAns === q.ans ? 'border-emerald-100' : 'border-red-100'}">
+                                        <p class="font-bold mb-1"><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>完整題目解析：</p>
+                                        <p class="mt-1">正確答案為 <strong class="${quizState.selectedAns === q.ans ? 'text-emerald-700' : 'text-red-700'}">(${String.fromCharCode(65+q.ans)}) ${q.opts[q.ans]}</strong>。</p>
+                                        <p class="mt-2 text-sm opacity-90">此題源自您所學習的《木蘭詩》重點講義內容，建議可至「學習區」多加複習課文結構與字詞辨析來加深印象喔！</p>
+                                    </div>
+                                    <button onclick="nextQuestion()" class="mt-4 w-full ${quizState.selectedAns === q.ans ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'} text-white font-bold py-3 rounded-lg shadow-md transition transform hover:scale-[1.02]">我瞭解了，前往下一題 <i class="fas fa-arrow-right ml-1"></i></button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        window.answerQuestion = (optIdx) => {
+            const q = quizState.questions[quizState.currentQ];
+            const isCorrect = optIdx === q.ans;
+            
+            // 設定顯示狀態
+            quizState.selectedAns = optIdx;
+            quizState.showExplanation = true;
+            
+            // 音效與特效
+            if (isCorrect) {
+                playCorrectSound();
+                confetti({
+                    particleCount: 150,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    colors: ['#34d399', '#fbbf24', '#f87171', '#3b82f6']
+                });
+            } else {
+                playWrongSound();
+            }
+
+            renderQuizView(el('main-content'));
+        };
+
+        window.nextQuestion = () => {
+            const q = quizState.questions[quizState.currentQ];
+            const isCorrect = quizState.selectedAns === q.ans;
+
+            quizState.answers.push({
+                q: q.q,
+                opts: q.opts,
+                userAns: quizState.selectedAns,
+                correctAns: q.ans,
+                isCorrect: isCorrect
+            });
+
+            if(isCorrect) quizState.score++;
+            
+            // 如果答錯，加入錯題本
+            if(!isCorrect) {
+                const mistakeId = q.q; // 簡單用題目當ID
+                const exists = userData.mistakes.find(m => m.id === mistakeId);
+                if(!exists) {
+                    userData.mistakes.push({
+                        id: mistakeId,
+                        q: q.q,
+                        opts: q.opts,
+                        ans: q.ans,
+                        time: new Date().toISOString()
+                    });
+                    saveUserData();
+                }
+            }
+
+            // 進入下一題並重置狀態
+            quizState.currentQ++;
+            quizState.showExplanation = false;
+            quizState.selectedAns = null;
+            renderQuizView(el('main-content'));
+        };
+
+        const finishQuiz = async (container) => {
+            quizState.active = false;
+            const total = quizState.questions.length;
+            const score = Math.round((quizState.score / total) * 100);
+            
+            // 存入 Firebase
+            if(isFirebaseInitialized && currentUser) {
+                const docRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_quizzes'));
+                try {
+                    await setDoc(docRef, { score, date: new Date(), total });
+                } catch(e) { console.error("Save Quiz Error", e); }
+            }
+
+            container.innerHTML = `
+                <div class="w-full flex items-center justify-center p-6 overflow-y-auto">
+                    <div class="bg-white p-8 rounded-xl shadow-md text-center max-w-md border-t-4 border-blue-600">
+                        <i class="fas fa-trophy text-6xl text-yellow-500 mb-4"></i>
+                        <h2 class="text-3xl font-bold mb-2">測驗完成！</h2>
+                        <p class="text-5xl font-extrabold text-blue-600 mb-6">${score} <span class="text-xl text-gray-500">分</span></p>
+                        <p class="text-gray-600 mb-6">您答對了 ${quizState.score} 題，共 ${total} 題。</p>
+                        <div class="space-y-3">
+                            <button onclick="switchTab('mistakes')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded transition">查看錯題本</button>
+                            <button onclick="startQuiz()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded transition">重新測驗</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // --- 錯題本 ---
+        window.renderMistakes = (container) => {
+            if(!container) container = el('main-content');
+            
+            if(userData.mistakes.length === 0) {
+                container.innerHTML = `
+                    <div class="w-full flex items-center justify-center p-6 text-gray-400 flex-col">
+                        <i class="fas fa-check-circle text-6xl mb-4 text-emerald-200"></i>
+                        <p class="text-lg">太棒了！目前沒有錯題紀錄。</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="w-full p-6 overflow-y-auto">
+                    <div class="max-w-3xl mx-auto">
+                        <div class="flex justify-between items-center border-b-2 border-red-200 pb-2 mb-6">
+                            <h2 class="text-2xl font-bold text-red-800"><i class="fas fa-book-dead mr-2"></i>錯題本</h2>
+                            <button onclick="clearMistakes()" class="text-sm text-red-500 hover:text-red-700 underline">清空錯題</button>
+                        </div>
+                        <div class="space-y-4">
+                            ${userData.mistakes.map((m, i) => `
+                                <div class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-red-400">
+                                    <h3 class="font-bold text-gray-800 mb-3">${i+1}. ${m.q}</h3>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                        ${m.opts.map((opt, idx) => `
+                                            <div class="p-2 rounded ${idx === m.ans ? 'bg-emerald-100 text-emerald-800 font-bold border border-emerald-300' : 'bg-gray-50 text-gray-500'}">
+                                                ${String.fromCharCode(65+idx)}. ${opt}
+                                                ${idx === m.ans ? '<i class="fas fa-check ml-2"></i>(正確答案)' : ''}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `).reverse().join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        window.clearMistakes = () => {
+            if(confirm('確定要清空所有錯題紀錄嗎？')) {
+                userData.mistakes = [];
+                saveUserData();
+                renderMistakes();
+            }
+        };
+
+        // --- 我的最愛 ---
+        window.renderFavorites = (container) => {
+            if(!container) container = el('main-content');
+            
+            if(userData.favorites.length === 0) {
+                container.innerHTML = `
+                    <div class="w-full flex items-center justify-center p-6 text-gray-400 flex-col">
+                        <i class="fas fa-heart-broken text-6xl mb-4 text-pink-200"></i>
+                        <p class="text-lg">目前還沒有收藏任何項目。</p>
+                        <p class="text-sm mt-2">到「學習區」點擊愛心圖示即可收藏！</p>
+                    </div>`;
+                return;
+            }
+
+            // 簡單查找最愛內容的原始字串(為了顯示)
+            const getFavText = (id) => {
+                let found = "未知內容";
+                const checkArr = [
+                    "朔", "塑", "溯", "槊", "柝", "析", "拆", "折", "鬢", "鬚", "髻", "髟", "蘭", "欄", "攔", "瀾", "斕", "爛", "織", "識", "熾", "幟", "征", "怔", "症", "駿", "俊", "濺", "啾", "揪", "愀", "戎", "戊", "戍", "戌", "傍",
+                    "女中豪傑", "不讓鬚眉", "詠絮之才", "秀外慧中", "小家碧玉", "蕙質蘭心", "綽約多姿", "閉月羞花", "沉魚落雁", "淡掃蛾眉", "不櫛進士",
+                    "直搗黃龍", "南征北討", "勢如破竹", "窮兵黩武", "所向披靡", "槍林彈雨", "棄甲曳兵", "兵不血刃", "潰不成軍", "枕戈待旦", "狼煙四起", "追亡逐北", "兵臨城下", "化干戈為玉帛", "鐵馬金戈", "馬革裹屍", "兵馬倥偬", "投筆從戎"
+                ];
+                // 由於前面是動態生成的，這裡簡單對照
+                // 若需完整內容可建立索引，為簡化單檔，此處只顯示被收藏的關鍵字
+                return id; 
+            };
+
+            container.innerHTML = `
+                <div class="w-full p-6 overflow-y-auto">
+                    <div class="max-w-3xl mx-auto">
+                        <h2 class="text-2xl font-bold text-pink-800 border-b-2 border-pink-200 pb-2 mb-6"><i class="fas fa-heart mr-2"></i>我的最愛</h2>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                            ${userData.favorites.map(favId => `
+                                <div class="bg-white p-4 rounded-lg shadow-sm border border-pink-100 flex justify-between items-center group relative overflow-hidden">
+                                    <div class="absolute inset-0 bg-pink-50 transform translate-y-full group-hover:translate-y-0 transition-transform"></div>
+                                    <span class="font-bold text-gray-800 z-10">${favId}</span>
+                                    <button onclick="toggleFavorite('${favId}')" class="text-pink-500 hover:text-red-600 z-10"><i class="fas fa-heart"></i></button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // 啟動應用
+        initApp();
+
+    </script>
+</body>
+</html>
