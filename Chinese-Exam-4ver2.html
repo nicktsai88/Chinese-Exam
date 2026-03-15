@@ -42,7 +42,7 @@
         //  Firebase 設定與全域變數
         // ==========================================
         const firebaseConfig = {
-            apiKey: "填入key", // 請替換為您的真實 API Key 才能啟用雲端儲存
+            apiKey: "AIzaSyAxQFt76ZPXE7d0i1XeNZ1yiiD2WYNIfHs", // 請替換為您的真實 API Key 才能啟用雲端儲存
             authDomain: "chinese-learning-47f4d.firebaseapp.com",
             projectId: "chinese-learning-47f4d",
             storageBucket: "chinese-learning-47f4d.firebasestorage.app",
@@ -147,106 +147,63 @@
             },
             {
                 id: 'sec2', title: '二、形音義辨析',
-                content: `<div class="space-y-8 text-lg md:text-xl">
-                    <p class="text-gray-600 mb-4"><i class="fas fa-info-circle mr-2 text-amber-600"></i>將形近、音近或多音字分組列表，方便對照比較。</p>
+                content: `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-lg md:text-xl">
                     ${[
-                        [
-                            { w: "朔", p: "ㄕㄨㄛˋ", d: "<span class='text-amber-800 font-semibold'>(形容詞)</span> 北方的。如：朔風。<br><span class='text-amber-800 font-semibold'>(名詞)</span> 農曆每月初一。如：朔日。" },
-                            { w: "塑", p: "ㄙㄨˋ", d: "<span class='text-amber-800 font-semibold'>(動詞)</span> 用泥土等做成人、物的形狀。如：雕塑。<br><span class='text-amber-800 font-semibold'>(動詞)</span> 培養、形成。如：塑造。" },
-                            { w: "溯", p: "ㄙㄨˋ", d: "<span class='text-amber-800 font-semibold'>(動詞)</span> 逆流而上。如：溯溪。<br><span class='text-amber-800 font-semibold'>(動詞)</span> 往前推求、回想。如：不溯既往。" },
-                            { w: "槊", p: "ㄕㄨㄛˋ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 武器名，一種長矛。如：橫槊賦詩。" }
-                        ],
-                        [
-                            { w: "柝", p: "ㄊㄨㄛˋ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 古代巡夜人打更所敲的器具。如：金柝。" },
-                            { w: "析", p: "ㄒㄧ", d: "<span class='text-amber-800 font-semibold'>(動詞)</span> 分開、離散。如：分崩離析。<br><span class='text-amber-800 font-semibold'>(動詞)</span> 解釋。如：解析。" },
-                            { w: "拆", p: "ㄔㄞ", d: "<span class='text-amber-800 font-semibold'>(動詞)</span> 撕除、打開。如：拆解。<br><span class='text-amber-800 font-semibold'>(動詞)</span> 破壞、毀掉。如：拆散。" },
-                            { w: "折", p: "ㄓㄜˊ", d: "<span class='text-amber-800 font-semibold'>(動詞)</span> 摘取、弄斷。如：折斷。<br><span class='text-amber-800 font-semibold'>(動詞)</span> 彎曲。如：不為五斗米折腰。<br><span class='text-amber-800 font-semibold'>(動詞)</span> 損失。如：損兵折將。" }
-                        ],
-                        [
-                            { w: "鬢", p: "ㄅㄧㄣˋ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 兩頰近耳旁的頭髮。如：雲鬢。" },
-                            { w: "鬚", p: "ㄒㄩ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 生在下巴或嘴邊的毛。如：巾幗不讓鬚眉。" },
-                            { w: "髻", p: "ㄐㄧˋ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 盤結於頭頂或腦後的頭髮。如：髮髻。" },
-                            { w: "髟", p: "ㄅㄧㄠ", d: "<span class='text-amber-800 font-semibold'>(形容詞)</span> 形容頭髮長而下垂的樣子。" }
-                        ],
-                        [
-                            { w: "蘭", p: "ㄌㄢˊ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 植物名。如：蘭花。" },
-                            { w: "欄", p: "ㄌㄢˊ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 用木、竹、石或金屬等柱條圍成的阻擋物。如：護欄、柵欄。<br><span class='text-amber-800 font-semibold'>(名詞)</span> 書刊報章依內容、性質區分的版面。如：廣告欄、專欄。" },
-                            { w: "攔", p: "ㄌㄢˊ", d: "<span class='text-amber-800 font-semibold'>(動詞)</span> 阻擋。如：攔阻、攔截。" },
-                            { w: "瀾", p: "ㄌㄢˊ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 大波浪。如：力挽狂瀾。" },
-                            { w: "斕", p: "ㄌㄢˊ", d: "<span class='text-amber-800 font-semibold'>(形容詞)</span> 顏色多彩、錯雜。如：斑斕。" },
-                            { w: "爛", p: "ㄌㄢˋ", d: "<span class='text-amber-800 font-semibold'>(形容詞)</span> 光明、顯著。如：燦爛、絢爛。<br><span class='text-amber-800 font-semibold'>(動詞)</span> 腐敗。如：潰爛、海枯石爛。" }
-                        ],
-                        [
-                            { w: "織", p: "ㄓ", d: "<span class='text-amber-800 font-semibold'>(動詞)</span> 用絲、麻、棉、毛等物編製物品。如：織布、編織。" },
-                            { w: "識", p: "ㄕˋ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 見解、見聞。如：見識、膽識。<br><span class='text-amber-800 font-semibold'>(動詞)</span> 知道、了解。如：素不相識、有眼不識泰山。" },
-                            { w: "熾", p: "ㄔˋ", d: "<span class='text-amber-800 font-semibold'>(形容詞)</span> 火勢旺盛。如：熾熱。" },
-                            { w: "幟", p: "ㄓˋ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 旌旗、旗子。如：獨樹一幟。" }
-                        ],
-                        [
-                            { w: "征", p: "ㄓㄥ", d: "<span class='text-amber-800 font-semibold'>(動詞)</span> 討伐。如：征伐、南征北討。<br><span class='text-amber-800 font-semibold'>(動詞)</span> 遠行。如：長征、遠征。<br><span class='text-amber-800 font-semibold'>(動詞)</span> 課徵，通「徵」。如：橫征暴斂、征稅。" },
-                            { w: "怔", p: "ㄓㄥ", d: "怔忪：驚懼害怕的樣子。如：怔忪不安。" },
-                            { w: "怔", p: "ㄌㄥˋ", d: "<span class='text-amber-800 font-semibold'>(動詞)</span> 發呆、發愣，通「愣」。如：怔了半天。" },
-                            { w: "症", p: "ㄓㄥˋ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 疾病的徵象。如：對症下藥。" }
-                        ],
-                        [
-                            { w: "駿", p: "ㄐㄩㄣˋ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 良馬。如：駿馬、神駿。<br><span class='text-amber-800 font-semibold'>(形容詞)</span> 大的。如：駿業宏發。" },
-                            { w: "俊", p: "ㄐㄩㄣˋ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 才智出眾的人。如：俊傑。" }
-                        ],
-                        [
-                            { w: "濺", p: "ㄐㄧㄢˋ", d: "<span class='text-amber-800 font-semibold'>(狀聲詞)</span> 形容流水聲。如：流水鳴濺濺。" },
-                            { w: "濺", p: "ㄐㄧㄢˋ", d: "<span class='text-amber-800 font-semibold'>(動詞)</span> 液體向四方飛射。如：水花四濺。" }
-                        ],
-                        [
-                            { w: "啾", p: "ㄐㄧㄡ", d: "<span class='text-amber-800 font-semibold'>(狀聲詞)</span> 形容馬鳴聲。如：馬鳴聲啾啾。<br><span class='text-amber-800 font-semibold'>(狀聲詞)</span> 形容蟲鳥的鳴叫聲。如：啁啾。" },
-                            { w: "揪", p: "ㄐㄧㄡ", d: "<span class='text-amber-800 font-semibold'>(動詞)</span> 扭扯、抓住。如：揪住不放。" },
-                            { w: "愀", p: "ㄑㄧㄠˇ", d: "<span class='text-amber-800 font-semibold'>(副詞)</span> 臉色突然凝重的樣子。如：愀然變色。" }
-                        ],
-                        [
-                            { w: "戎", p: "ㄖㄨㄥˊ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 軍旅。如：投筆從戎。" },
-                            { w: "戊", p: "ㄨˋ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 天干第五位。如：戊戌政變。" },
-                            { w: "戍", p: "ㄕㄨˋ", d: "<span class='text-amber-800 font-semibold'>(動詞)</span> 以兵卒守衛邊疆。如：戍守。" },
-                            { w: "戌", p: "ㄒㄩ", d: "<span class='text-amber-800 font-semibold'>(名詞)</span> 地支第十一位。如：戊戌政變。" }
-                        ],
-                        [
-                            { w: "傍", p: "ㄅㄤˋ", d: "<span class='text-amber-800 font-semibold'>(動詞)</span> 靠近。如：傍地走、依山傍水。" },
-                            { w: "傍", p: "ㄅㄤ", d: "<span class='text-amber-800 font-semibold'>(動詞)</span> 臨近。如：傍晚。" }
-                        ]
-                    ].map(group => `
-                        <div class="overflow-hidden bg-white border-2 border-amber-200 rounded-xl shadow-sm mb-6">
-                            <table class="min-w-full">
-                                <thead>
-                                    <tr class="bg-amber-100 text-amber-900 border-b-2 border-amber-200 text-xl">
-                                        <th class="py-3 px-4 w-1/6 text-center font-bold">字</th>
-                                        <th class="py-3 px-4 w-1/6 text-center font-bold">注音</th>
-                                        <th class="py-3 px-6 w-1/2 text-left font-bold">釋義與例詞</th>
-                                        <th class="py-3 px-4 w-1/6 text-center font-bold">收藏</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${group.map((item, idx) => `
-                                        <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-amber-50 transition-colors border-b border-gray-100 last:border-0">
-                                            <td class="py-4 px-4 text-center font-bold text-3xl text-gray-800">${item.w}</td>
-                                            <td class="py-4 px-4 text-center font-bold text-amber-600 text-2xl">${item.p}</td>
-                                            <td class="py-4 px-6 text-left leading-relaxed text-gray-700">${item.d}</td>
-                                            <td class="py-4 px-4 text-center">
-                                                <button onclick="toggleFavorite('${item.w}')" class="text-gray-300 hover:text-red-500 fav-btn text-3xl transition-transform hover:scale-110" data-id="${item.w}"><i class="fas fa-heart"></i></button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
+                        "朔 (ㄕㄨㄛˋ)：(形容詞) 北方的。如：朔風。 / (名詞) 農曆每月初一。如：朔日。",
+                        "塑 (ㄙㄨˋ)：(動詞) 用泥土等做成人、物的形狀。如：雕塑。 / (動詞) 培養、形成。如：塑造。",
+                        "溯 (ㄙㄨˋ)：(動詞) 逆流而上。如：溯溪。 / (動詞) 往前推求、回想。如：不溯既往。",
+                        "槊 (ㄕㄨㄛˋ)：(名詞) 武器名，一種長矛。如：橫槊賦詩。",
+                        "柝 (ㄊㄨㄛˋ)：(名詞) 古代巡夜人打更所敲的器具。如：金柝。",
+                        "析 (ㄒㄧ)：(動詞) 分開、離散。如：分崩離析。 / (動詞) 解釋。如：解析。",
+                        "拆 (ㄔㄞ)：(動詞) 撕除、打開。如：拆解。 / (動詞) 破壞、毀掉。如：拆散。",
+                        "折 (ㄓㄜˊ)：(動詞) 摘取、弄斷。如：折斷。 / (動詞) 彎曲。如：不為五斗米折腰。 / (動詞) 損失。如：損兵折將。",
+                        "鬢 (ㄅㄧㄣˋ)：(名詞) 兩頰近耳旁的頭髮。如：雲鬢。",
+                        "鬚 (ㄒㄩ)：(名詞) 生在下巴或嘴邊的毛。如：巾幗不讓鬚眉。",
+                        "髻 (ㄐㄧˋ)：(名詞) 盤結於頭頂或腦後的頭髮。如：髮髻。",
+                        "髟 (ㄅㄧㄠ)：(形容詞) 形容頭髮長而下垂的樣子。",
+                        "蘭 (ㄌㄢˊ)：(名詞) 植物名。如：蘭花。",
+                        "欄 (ㄌㄢˊ)：(名詞) 用木、竹、石或金屬等柱條圍成的阻擋物。如：護欄、柵欄。 / (名詞) 書刊報章依內容、性質區分的版面。如：廣告欄、專欄。",
+                        "攔 (ㄌㄢˊ)：(動詞) 阻擋。如：攔阻、攔截。",
+                        "瀾 (ㄌㄢˊ)：(名詞) 大波浪。如：力挽狂瀾。",
+                        "斕 (ㄌㄢˊ)：(形容詞) 顏色多彩、錯雜。如：斑斕。",
+                        "爛 (ㄌㄢˋ)：(形容詞) 光明、顯著。如：燦爛、絢爛。 / (動詞) 腐敗。如：潰爛、海枯石爛。",
+                        "織 (ㄓ)：(動詞) 用絲、麻、棉、毛等物編製物品。如：織布、編織。",
+                        "識 (ㄕˋ)：(名詞) 見解、見聞。如：見識、膽識。 / (動詞) 知道、了解。如：素不相識、有眼不識泰山。",
+                        "熾 (ㄔˋ)：(形容詞) 火勢旺盛。如：熾熱。",
+                        "幟 (ㄓˋ)：(名詞) 旌旗、旗子。如：獨樹一幟。",
+                        "征 (ㄓㄥ)：(動詞) 討伐。如：征伐、南征北討。 / (動詞) 遠行。如：長征、遠征。 / (動詞) 課徵，通「徵」。如：橫征暴斂、征稅。",
+                        "怔 (ㄓㄥ)：怔忪：驚懼害怕的樣子。如：怔忪不安。",
+                        "怔 (ㄌㄥˋ)：(動詞) 發呆、發愣，通「愣」。如：怔了半天。",
+                        "症 (ㄓㄥˋ)：(名詞) 疾病的徵象。如：對症下藥。",
+                        "駿 (ㄐㄩㄣˋ)：(名詞) 良馬。如：駿馬、神駿。 / (形容詞) 大的。如：駿業宏發。",
+                        "俊 (ㄐㄩㄣˋ)：(名詞) 才智出眾的人。如：俊傑。",
+                        "濺 (ㄐㄧㄢˋ)：(狀聲詞) 形容流水聲。如：流水鳴濺濺。",
+                        "濺 (ㄐㄧㄢˋ)：(動詞) 液體向四方飛射。如：水花四濺。",
+                        "啾 (ㄐㄧㄡ)：(狀聲詞) 形容馬鳴聲。如：馬鳴聲啾啾。 / (狀聲詞) 形容蟲鳥的鳴叫聲。如：啁啾。",
+                        "揪 (ㄐㄧㄡ)：(動詞) 扭扯、抓住。如：揪住不放。",
+                        "愀 (ㄑㄧㄠˇ)：(副詞) 臉色突然凝重的樣子。如：愀然變色。",
+                        "戎 (ㄖㄨㄥˊ)：(名詞) 軍旅。如：投筆從戎。",
+                        "戊 (ㄨˋ)：(名詞) 天干第五位。如：戊戌政變。",
+                        "戍 (ㄕㄨˋ)：(動詞) 以兵卒守衛邊疆。如：戍守。",
+                        "戌 (ㄒㄩ)：(名詞) 地支第十一位。如：戊戌政變。",
+                        "傍 (ㄅㄤˋ)：(動詞) 靠近。如：傍地走、依山傍水。",
+                        "傍 (ㄅㄤ)：(動詞) 臨近。如：傍晚。"
+                    ].map(item => `
+                        <div class="bg-white p-4 rounded shadow-sm flex justify-between items-start">
+                            <span>${item.replace(/([ㄅ-ㄩ]+ˋ?)/g, '<span class="text-amber-600 font-bold">$1</span>')}</span>
+                            <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl ml-2" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
                         </div>
                     `).join('')}
                     
-                    <div class="bg-amber-50 p-6 rounded-xl border-2 border-amber-200 mt-8 shadow-sm">
-                        <h4 class="font-bold text-amber-900 text-2xl mb-4 flex items-center"><i class="fas fa-book mr-3"></i>其他補充：</h4>
-                        <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-gray-800">
-                            <li class="bg-white p-3 rounded shadow-sm border border-amber-100">喜「帖」：<span class="text-amber-600 font-bold">ㄊㄧㄝˇ</span> / 妥「帖」：<span class="text-amber-600 font-bold">ㄊㄧㄝ</span></li>
-                            <li class="bg-white p-3 rounded shadow-sm border border-amber-100">「署」名：<span class="text-amber-600 font-bold">ㄕㄨˋ</span> / 連「署」：<span class="text-amber-600 font-bold">ㄕㄨˋ</span><br>部「署」：<span class="text-amber-600 font-bold">ㄕㄨˋ</span> / 「署」長：<span class="text-amber-600 font-bold">ㄕㄨˇ</span></li>
-                            <li class="bg-white p-3 rounded shadow-sm border border-amber-100">星「宿」：<span class="text-amber-600 font-bold">ㄒㄧㄡˋ</span> / 民「宿」：<span class="text-amber-600 font-bold">ㄙㄨˋ</span><br>借住一「宿」：<span class="text-amber-600 font-bold">ㄒㄧㄡˇ</span></li>
-                            <li class="bg-white p-3 rounded shadow-sm border border-amber-100">歌「頌」：<span class="text-amber-600 font-bold">ㄙㄨㄥˋ</span> / 訴「訟」：<span class="text-amber-600 font-bold">ㄙㄨㄥˋ</span></li>
-                            <li class="bg-white p-3 rounded shadow-sm border border-amber-100">賞賜百千「強」：<span class="text-amber-600 font-bold">ㄑㄧㄤˊ</span> / 「強」人所難：<span class="text-amber-600 font-bold">ㄑㄧㄤˇ</span></li>
-                            <li class="bg-white p-3 rounded shadow-sm border border-amber-100">手續繁「複」 / 去而「復」返 / 「赴」湯蹈火</li>
+                    <div class="col-span-1 md:col-span-2 bg-amber-50 p-6 rounded mt-4">
+                        <h4 class="font-bold text-amber-800 text-xl md:text-2xl mb-4">其他補充：</h4>
+                        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <li>喜「帖」：ㄊㄧㄝˇ / 妥「帖」：ㄊㄧㄝ</li>
+                            <li>「署」名：ㄕㄨˋ / 連「署」：ㄕㄨˋ / 部「署」：ㄕㄨˋ / 「署」長：ㄕㄨˇ</li>
+                            <li>星「宿」：ㄒㄧㄡˋ / 民「宿」：ㄙㄨˋ / 借住一「宿」：ㄒㄧㄡˇ</li>
+                            <li>歌「頌」：ㄙㄨㄥˋ / 訴「訟」：ㄙㄨㄥˋ</li>
+                            <li>賞賜百千「強」：ㄑㄧㄤˊ / 「強」人所難：ㄑㄧㄤˇ</li>
+                            <li>手續繁「複」 / 去而「復」返 / 「赴」湯蹈火</li>
                         </ul>
                     </div>
                 </div>`
