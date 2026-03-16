@@ -56,7 +56,7 @@
     <!-- Firebase SDK (v11.6.1) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, arrayUnion, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
@@ -1122,26 +1122,12 @@
                 if (!recentUsers.includes(name)) {
                     recentUsers.push(name);
                 }
-            } catch(e) { console.error("Save Recent User Error", e); }
-        };
-
-        const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (e) {
-                console.error("Auth Error", e);
-                connectionStatus = 'error';
-            }
+            } catch(e) { }
         };
 
         const initApp = async () => {
             renderApp();
             if (isFirebaseInitialized) {
-                await initAuth();
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         currentUser = user;
@@ -1153,7 +1139,12 @@
                             renderLogin();
                         }
                     } else {
-                        renderLogin();
+                        try {
+                            await signInAnonymously(auth);
+                        } catch (e) { 
+                            connectionStatus = 'error';
+                            renderLogin();
+                        }
                     }
                 });
             } else {
@@ -1166,9 +1157,6 @@
             username = name;
             
             if (isFirebaseInitialized && currentUser) {
-                // 確保先載入雲端資料，避免本地空資料覆蓋雲端舊紀錄
-                await loadUserData();
-
                 const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid);
                 await setDoc(userRef, { username, lastLogin: new Date() }, { merge: true });
                 
@@ -1186,22 +1174,21 @@
             try {
                 const snap = await getDoc(ref);
                 if (snap.exists()) {
-                    const data = snap.data();
-                    userData.favorites = data.favorites || [];
-                    userData.mistakes = data.mistakes || [];
+                    userData = snap.data();
+                    if(!userData.favorites) userData.favorites = [];
+                    if(!userData.mistakes) userData.mistakes = [];
                 } else {
-                    await setDoc(ref, userData, { merge: true });
+                    await setDoc(ref, userData);
                 }
-            } catch(e) { console.error("Load Data Error", e); }
+            } catch(e) { }
         };
 
         const saveUserData = async () => {
             if (!isFirebaseInitialized || !currentUser) return;
             const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
             try {
-                // 改用 setDoc with merge 避免原本文件不存在時發生錯誤
-                await setDoc(ref, userData, { merge: true });
-            } catch(e) { console.error("Save Data Error", e); }
+                await updateDoc(ref, userData);
+            } catch(e) { }
         };
 
         window.toggleFavorite = async (itemId) => {
