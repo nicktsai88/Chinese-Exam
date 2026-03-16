@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國文講義互動系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            body { background-color: white; color: black; }
+            .print-hidden { display: none !important; }
+            .print-block { display: block !important; }
+            .print-no-shadow { box-shadow: none !important; }
+            .print-m-0 { margin: 0 !important; }
+            .print-p-0 { padding: 0 !important; }
+            .print-max-w-none { max-width: none !important; }
+            .break-inside-avoid { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-800 font-sans">
+
+    <!-- 導覽列 (列印時隱藏) -->
+    <nav class="bg-blue-600 text-white p-4 shadow-md print-hidden sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                國文講義互動系統
+            </h1>
+            <div class="flex gap-2 bg-blue-700 p-1 rounded-lg">
+                <button id="btn-learn" onclick="setMode('learn')" class="mode-btn px-4 py-2 rounded-md flex items-center gap-2 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg> 
+                    學習模式
+                </button>
+                <button id="btn-quiz" onclick="setMode('quiz')" class="mode-btn px-4 py-2 rounded-md flex items-center gap-2 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg> 
+                    考卷列印
+                </button>
+                <button id="btn-answer" onclick="setMode('answer')" class="mode-btn px-4 py-2 rounded-md flex items-center gap-2 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><polyline points="9 15 11 17 15 13"></polyline></svg> 
+                    解答列印
+                </button>
+            </div>
+            <button onclick="window.print()" class="bg-green-500 hover:bg-green-400 text-white px-4 py-2 rounded-md flex items-center gap-2 shadow font-bold transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> 
+                列印 (A4直式)
+            </button>
+        </div>
+    </nav>
+
+    <!-- 講義內容區 -->
+    <main class="max-w-4xl mx-auto p-8 bg-white my-8 shadow-lg print-no-shadow print-m-0 print-p-0 print-max-w-none">
+        
+        <!-- 標題 -->
+        <div class="text-center mb-8 pb-4 border-b-2 border-gray-800">
+            <h1 class="text-3xl font-bold mb-2">
+                國文綜合講義測驗<span id="doc-title-suffix"></span>
+            </h1>
+            <p class="text-gray-600">班級：______ 座號：______ 姓名：____________</p>
+        </div>
+
+        <!-- L1 運動家的風度 -->
+        <section class="mb-10 break-inside-avoid">
+            <h2 class="text-2xl font-bold mb-4 bg-gray-200 p-2 border-l-4 border-blue-600">【L1 運動家的風度】</h2>
+            <ol class="list-decimal pl-6 space-y-3 text-lg leading-relaxed">
+                <li>運動家的風度一文選自：<span class="blank" data-answer="新人生觀"></span>，是一篇演講稿。希望大家藉由運動場上的<span class="blank" data-answer="公平"></span>競爭，培養運動家<span class="blank" data-answer="服輸"></span>並超越<span class="blank" data-answer="勝敗"></span>的精神，進而展現<span class="blank" data-answer="莊嚴公正"></span>、協調進取的人生。</li>
+                <li><strong>作者是</strong><span class="blank" data-answer="羅家倫"></span>，字<span class="blank" data-answer="志希"></span>，為<strong><span class="blank" data-answer="五四"></span>運動健將之一</strong>，見聞廣博，學養豐富。</li>
+                <li>奧林匹克運動會源於<span class="blank" data-answer="古希臘"></span>，首屆於西元1896年在<span class="blank" data-answer="雅典"></span>舉行，每<span class="blank" data-answer="四"></span>年舉辦一次。會旗由白底加上五個色環，組成環環相扣的圖形，象徵<span class="blank" data-answer="五"></span>大洲各民族齊聚一堂，從事公平的競賽。</li>
+                <li>本文從運動與健康的關係著筆，進而從體育的範疇延伸至<span class="blank" data-answer="道德"></span>修養、<span class="blank" data-answer="政治"></span>關係等層面，道出它與人生態度及修養的關聯性。這是一篇<span class="blank" data-answer="觀點"></span>新穎，結構嚴謹的<span class="blank" data-answer="論說"></span>文，善引中外的<span class="blank" data-answer="事例"></span>和<span class="blank" data-answer="名言"></span>，故說理剴切、擲地有聲，富有說服力。</li>
+                <li>論語八佾篇：「君子無所爭，必也<span class="blank" data-answer="射"></span>乎。揖讓而升，下而飲。」這是光明、雍容的「<span class="blank" data-answer="君子"></span>之爭」。說明競爭時應舉止合宜，依<span class="blank" data-answer="禮"></span>而行。</li>
+            </ol>
+            
+            <div class="my-4 break-inside-avoid">
+                <table class="w-full border-collapse border border-gray-400">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th colspan="3" class="border border-gray-400 p-2 text-left font-bold">論證的邏輯層次(第四、五、六、八段)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="border border-gray-400 p-2 text-center w-12">一</td>
+                            <td class="border border-gray-400 p-2 text-center w-24">比賽過程</td>
+                            <td class="border border-gray-400 p-2">遵守比賽的<span class="blank" data-answer="規律"></span>，一切不光明的態度都當排斥，該用正大光明的態度進行比賽</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 text-center">二</td>
+                            <td class="border border-gray-400 p-2 text-center">比賽結束</td>
+                            <td class="border border-gray-400 p-2">「不怨天，不尤人」的<span class="blank" data-answer="服輸"></span>精神</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 text-center">三</td>
+                            <td class="border border-gray-400 p-2 text-center">處事心態</td>
+                            <td class="border border-gray-400 p-2">超越勝敗的心胸，達到「得失無動於<span class="blank" data-answer="衷"></span>」的境地，即蘇軾詩：「勝固欣然，敗亦可<span class="blank" data-answer="喜"></span>」</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 text-center">四</td>
+                            <td class="border border-gray-400 p-2 text-center">品格原則</td>
+                            <td class="border border-gray-400 p-2">「言必信，行必果」-要守信且「<span class="blank" data-answer="貫徹"></span>始終」，「任重而道遠」、有<span class="blank" data-answer="毅"></span>力堅持到底，並且「寧可有光明的<span class="blank" data-answer="失敗"></span>，絕不要有不榮譽的<span class="blank" data-answer="成功"></span>」</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <ol class="list-decimal pl-6 space-y-3 text-lg leading-relaxed mt-4" start="6">
+                <li>寫作手法：開頭用<span class="blank" data-answer="冒題"></span>法，又稱<span class="blank" data-answer="破題"></span>法，直到第三段才點出主題。議論占比<span class="blank" data-answer="多"></span>於敘述占比，故不屬於夾敘夾議。結尾以<span class="blank" data-answer="映襯"></span>法凸顯光明正大的運動精神比成敗重要。</li>
+                <li>本文引述的<strong>唯一一個「事例」</strong>是<span class="blank" data-answer="威爾基"></span>率先發賀電給<span class="blank" data-answer="羅斯福"></span>總統。此舉符合作者所提倡的「運動家的風度」。其他引述的都為「<strong><span class="blank" data-answer="言"></span></strong>例」。</li>
+            </ol>
+        </section>
+
+        <hr class="my-8 border-gray-300" />
+
+        <!-- L2 木蘭詩 -->
+        <section class="mb-10 break-inside-avoid">
+            <h2 class="text-2xl font-bold mb-4 bg-gray-200 p-2 border-l-4 border-blue-600">【L2 木蘭詩】</h2>
+            <ol class="list-decimal pl-6 space-y-3 text-lg leading-relaxed">
+                <li><strong>木蘭詩一詩選自：</strong><span class="blank" data-answer="樂府詩集"></span>【是最完備的樂府詩總集】，又稱木蘭<span class="blank" data-answer="辭"></span>、木蘭<span class="blank" data-answer="歌"></span>，是<span class="blank" data-answer="北"></span>朝<span class="blank" data-answer="民歌"></span>，敘述木蘭女扮男裝，代<span class="blank" data-answer="父"></span>從軍的故事，特別呈現她盡<span class="blank" data-answer="忠"></span>盡<span class="blank" data-answer="孝"></span>的<span class="blank" data-answer="巾幗"></span>英雄的形象。<strong>作者</strong><span class="blank" data-answer="佚名"></span>。</li>
+                <li>樂府詩有兩個特色：一、多敘<span class="blank" data-answer="事"></span>寫<span class="blank" data-answer="實"></span>，語言<span class="blank" data-answer="樸實自然"></span>，能反映人民生活。二、詩句多<span class="blank" data-answer="反覆"></span>吟詠，<span class="blank" data-answer="不"></span>避雷同，如第二段「東市買駿馬，西市買鞍韉......」。但本詩的第<span class="blank" data-answer="五"></span>段出現對偶句<span class="blank" data-answer="三"></span>組，且運用多種修辭技巧，流露出本詩曾經過後人的潤飾。</li>
+                <li>「巾幗」一詞最早是<span class="blank" data-answer="諸葛亮"></span>送此物給<span class="blank" data-answer="司馬懿"></span>，為了譏諷他缺乏<span class="blank" data-answer="男"></span>子氣概。而「巾幗不讓鬚眉」是指<span class="blank" data-answer="女"></span>性表現出色，不遜於異性。</li>
+                <li>本詩是一首歌頌人物的<span class="blank" data-answer="敘事"></span>詩，採<span class="blank" data-answer="順"></span>敘法。寫作特色：一、敘述上<span class="blank" data-answer="繁簡"></span>合宜：全詩主旨是<span class="blank" data-answer="木蘭的英勇與孝思"></span>，因此著墨較多，用了四段【第一、二、四、五段】，至於戰爭過程並非重點，僅用了<span class="blank" data-answer="六"></span>句表達【第<span class="blank" data-answer="三"></span>段】，正是剪裁成功之處。二、<span class="blank" data-answer="時空"></span>推移靈活；三、人物形象鮮明：</li>
+            </ol>
+
+            <div class="my-4 break-inside-avoid">
+                <table class="w-full border-collapse border border-gray-400">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="border border-gray-400 p-2 w-1/4">人物</th>
+                            <th class="border border-gray-400 p-2 w-1/4">詩句</th>
+                            <th class="border border-gray-400 p-2 w-1/2">說明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="border border-gray-400 p-2 text-center">(1) 爺孃</td>
+                            <td class="border border-gray-400 p-2">出郭相扶將</td>
+                            <td class="border border-gray-400 p-2">為了<span class="blank" data-answer="迎接"></span>木蘭回</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 text-center">(2) 阿姊</td>
+                            <td class="border border-gray-400 p-2">當戶理紅妝</td>
+                            <td class="border border-gray-400 p-2">家而預做<span class="blank" data-answer="準備"></span>，</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 text-center">(3) 小弟</td>
+                            <td class="border border-gray-400 p-2">磨刀霍霍向豬羊</td>
+                            <td class="border border-gray-400 p-2">可見<span class="blank" data-answer="歡欣鼓舞"></span>心情</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 text-center" rowspan="2">(4) 木蘭</td>
+                            <td class="border border-gray-400 p-2">自述從軍之<span class="blank" data-answer="出征"></span>及與<span class="blank" data-answer="戰友"></span>的對話</td>
+                            <td class="border border-gray-400 p-2">凸顯其<span class="blank" data-answer="智"></span>、<span class="blank" data-answer="勇"></span>的形象</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2">伙伴皆驚惶</td>
+                            <td class="border border-gray-400 p-2"><span class="blank" data-answer="不知木蘭是女郎"></span>的形象</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <hr class="my-8 border-gray-300" />
+
+        <!-- L3 管好舌頭 -->
+        <section class="mb-10 break-inside-avoid">
+            <h2 class="text-2xl font-bold mb-4 bg-gray-200 p-2 border-l-4 border-blue-600">【L3 管好舌頭】</h2>
+            <ol class="list-decimal pl-6 space-y-3 text-lg leading-relaxed">
+                <li>管好舌頭一文選自：<span class="blank" data-answer="生活美學—諧趣"></span>，<strong>作者是</strong><span class="blank" data-answer="黃永武"></span>。作者有感於不恰當的言語所引發的是非、紛擾，往往帶來極大的<span class="blank" data-answer="煽動"></span>力和<span class="blank" data-answer="殺傷"></span>力，因而提出管好舌頭的重要性。呼籲我們要<span class="blank" data-answer="慎思謹言"></span>，勿逞口舌之<span class="blank" data-answer="快"></span>，並發揮舌頭的<span class="blank" data-answer="正"></span>面功能，為自己和別人造<span class="blank" data-answer="福"></span>。</li>
+                <li>本文以管好舌頭為<span class="blank" data-answer="主題"></span>，透過<span class="blank" data-answer="說理"></span>方式闡述<span class="blank" data-answer="慎言"></span>與說話技巧的重要性。寫作特色：一、論點明確，前後<span class="blank" data-answer="呼應"></span>。首段是以<span class="blank" data-answer="設問"></span>法引出主題。二、論證嚴謹：第四段至第七段從<span class="blank" data-answer="正"></span>、<span class="blank" data-answer="反"></span>面論述、舉<span class="blank" data-answer="例"></span>，藉此告訴我們舌頭不僅是表達思想、引導學習的<span class="blank" data-answer="工具"></span>，也是展現自我的最佳<span class="blank" data-answer="履歷表"></span>。三、旁<span class="blank" data-answer="徵"></span>博<span class="blank" data-answer="引"></span>，論據充足：</li>
+            </ol>
+
+            <div class="my-4 break-inside-avoid">
+                <table class="w-full border-collapse border border-gray-400 text-center">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="border border-gray-400 p-2">戰國人名</th>
+                            <th class="border border-gray-400 p-2">策略名稱</th>
+                            <th class="border border-gray-400 p-2 text-left">目的是讓六國：</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="border border-gray-400 p-2">(1) <span class="blank" data-answer="蘇秦"></span></td>
+                            <td class="border border-gray-400 p-2">「合縱」</td>
+                            <td class="border border-gray-400 p-2 text-left"><span class="blank" data-answer="抗秦"></span></td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2">(2) <span class="blank" data-answer="張儀"></span></td>
+                            <td class="border border-gray-400 p-2">「連橫」</td>
+                            <td class="border border-gray-400 p-2 text-left"><span class="blank" data-answer="親秦/破壞合縱"></span>同盟</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2">(3) <span class="blank" data-answer="范雎"></span></td>
+                            <td class="border border-gray-400 p-2">「遠交近攻」</td>
+                            <td class="border border-gray-400 p-2 text-left">曾任<span class="blank" data-answer="秦相"></span></td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="border border-gray-400 p-2 text-left bg-gray-50">
+                                「這些<span class="blank" data-answer="叱吒"></span>風雲、縱橫<span class="blank" data-answer="捭闔"></span>的人，全靠<span class="blank" data-answer="三寸不爛"></span>之舌。」
+                            </td>
+                        </tr>
+                        <tr class="bg-gray-100 font-bold">
+                            <td class="border border-gray-400 p-2">引述作者</td>
+                            <td class="border border-gray-400 p-2">篇章名稱</td>
+                            <td class="border border-gray-400 p-2 text-left">說明調撥舌頭是：</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2">(4) <span class="blank" data-answer="韓非子"></span></td>
+                            <td class="border border-gray-400 p-2"><span class="blank" data-answer="說難"></span></td>
+                            <td class="border border-gray-400 p-2 text-left"><span class="blank" data-answer="一件極難"></span>的事</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <hr class="my-8 border-gray-300" />
+
+        <!-- 語常一 書信、便條 -->
+        <section class="mb-10 break-inside-avoid">
+            <h2 class="text-2xl font-bold mb-4 bg-gray-200 p-2 border-l-4 border-blue-600">【語常一 書信、便條】</h2>
+            <ol class="list-decimal pl-6 space-y-3 text-lg leading-relaxed">
+                <li><strong>書信</strong>上的「稱謂」要從第一行<span class="blank" data-answer="頂"></span>格書寫，是寫<span class="blank" data-answer="寄"></span>信人對<span class="blank" data-answer="收"></span>信人的稱呼。而<strong>信封</strong>上的中央欄位稱謂，則要寫<span class="blank" data-answer="寄"></span>信人【郵差】對收信人的稱呼。</li>
+                <li>書信中常用「抬頭」寫法以示尊敬，常用的有兩種：一、平抬：<span class="blank" data-answer="換"></span>行<span class="blank" data-answer="頂"></span>格書寫。二、挪抬：<span class="blank" data-answer="原"></span>行<span class="blank" data-answer="空一"></span>格書寫。使用時要注意只抬<span class="blank" data-answer="人"></span>，不抬<span class="blank" data-answer="己"></span>。</li>
+                <li>在書信的後文，聲明自己的話是出於誠意的詞句叫做<span class="blank" data-answer="末啟詞"></span>。「自稱」常用較<span class="blank" data-answer="小"></span>字體偏<span class="blank" data-answer="右"></span>側書寫，以示<span class="blank" data-answer="謙遜"></span>。「署名」注意對近親只寫<span class="blank" data-answer="名"></span>，對其他人則要寫<span class="blank" data-answer="姓名"></span>。</li>
+                <li>「啟封詞」是指<span class="blank" data-answer="打開信封"></span>的用詞。千萬不可以寫「<span class="blank" data-answer="敬啟"></span>」、「<span class="blank" data-answer="恭啟"></span>」，因為不禮貌。用詞要根據與收信人的輩份、親疏關係來決定，對親人用「<span class="blank" data-answer="安"></span>啟」，對其他長輩用「<span class="blank" data-answer="鈞/道"></span>啟」，對師長用「<span class="blank" data-answer="道"></span>啟」，對平輩同學用「<span class="blank" data-answer="大/臺"></span>啟」，對晚輩用「啟/收」。</li>
+                <li>明信片因不須封口，故會用<span class="blank" data-answer="收"></span>、<span class="blank" data-answer="寄"></span>來代替書信中的<span class="blank" data-answer="啟"></span>、<span class="blank" data-answer="緘"></span>。</li>
+            </ol>
+
+            <div class="my-6 break-inside-avoid">
+                <h3 class="font-bold text-xl mb-2">● 家族稱謂表：</h3>
+                <table class="w-full border-collapse border border-gray-400 text-center">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="border border-gray-400 p-2 w-1/5">稱謂</th>
+                            <th class="border border-gray-400 p-2 w-1/5">自稱</th>
+                            <th class="border border-gray-400 p-2 w-3/10">尊稱他人</th>
+                            <th class="border border-gray-400 p-2 w-3/10">謙稱自家人</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="border border-gray-400 p-2">祖父母</td>
+                            <td class="border border-gray-400 p-2"><span class="blank" data-answer="孫"></span>、<span class="blank" data-answer="孫女"></span></td>
+                            <td class="border border-gray-400 p-2">令祖父母</td>
+                            <td class="border border-gray-400 p-2">家祖父母</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2">父母親</td>
+                            <td class="border border-gray-400 p-2">兒、女</td>
+                            <td class="border border-gray-400 p-2"><span class="blank" data-answer="令尊"></span>、<span class="blank" data-answer="令堂"></span></td>
+                            <td class="border border-gray-400 p-2 text-left pl-4">家父 = <span class="blank" data-answer="家嚴"></span><br/>家母 = <span class="blank" data-answer="家慈"></span></td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2">伯父、伯母</td>
+                            <td class="border border-gray-400 p-2"><span class="blank" data-answer="姪"></span>、<span class="blank" data-answer="姪女"></span></td>
+                            <td class="border border-gray-400 p-2">令伯父、令伯母</td>
+                            <td class="border border-gray-400 p-2">家伯父、家伯母</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2">兄嫂</td>
+                            <td class="border border-gray-400 p-2">弟、妹</td>
+                            <td class="border border-gray-400 p-2">令兄、令嫂</td>
+                            <td class="border border-gray-400 p-2">家兄、家嫂</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2">姐妹</td>
+                            <td class="border border-gray-400 p-2">弟、妹 / 兄、姐</td>
+                            <td class="border border-gray-400 p-2">令姐、<span class="blank" data-answer="令"></span>妹</td>
+                            <td class="border border-gray-400 p-2"><span class="blank" data-answer="家"></span>姐、<span class="blank" data-answer="舍"></span>妹</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2">夫妻 (夫)</td>
+                            <td class="border border-gray-400 p-2">妻</td>
+                            <td class="border border-gray-400 p-2">尊夫</td>
+                            <td class="border border-gray-400 p-2"><span class="blank" data-answer="外"></span>子</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2">夫妻 (妻)</td>
+                            <td class="border border-gray-400 p-2">夫</td>
+                            <td class="border border-gray-400 p-2">尊嫂、<span class="blank" data-answer="尊"></span>夫人</td>
+                            <td class="border border-gray-400 p-2">內子、拙荊、<span class="blank" data-answer="賤內"></span></td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2">兒女</td>
+                            <td class="border border-gray-400 p-2">父、母</td>
+                            <td class="border border-gray-400 p-2">令<span class="blank" data-answer="郎"></span>、令公子 /<br/>令<span class="blank" data-answer="媛"></span>、令千金</td>
+                            <td class="border border-gray-400 p-2">小兒、<span class="blank" data-answer="小犬"></span> / 小女</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2">亡故尊長</td>
+                            <td class="border border-gray-400 p-2">/</td>
+                            <td class="border border-gray-400 p-2">令先祖</td>
+                            <td class="border border-gray-400 p-2"><span class="blank" data-answer="先"></span>祖、<span class="blank" data-answer="先"></span>父/母</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2">亡故卑幼</td>
+                            <td class="border border-gray-400 p-2">/</td>
+                            <td class="border border-gray-400 p-2">/</td>
+                            <td class="border border-gray-400 p-2"><span class="blank" data-answer="亡"></span>弟/姪</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="my-6 break-inside-avoid">
+                <h3 class="font-bold text-xl mb-2">● 信中的稱呼：</h3>
+                <table class="w-full border-collapse border border-gray-400 text-center">
+                    <tbody>
+                        <tr>
+                            <td class="border border-gray-400 p-2 bg-gray-100 font-bold w-1/6">稱呼人</td>
+                            <td class="border border-gray-400 p-2 w-1/3"><span class="blank" data-answer="貴"></span>校</td>
+                            <td class="border border-gray-400 p-2 bg-gray-100 font-bold w-1/6">貴宅、府上</td>
+                            <td class="border border-gray-400 p-2 w-1/3"><span class="blank" data-answer="寶"></span>號</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 bg-gray-100 font-bold">自稱</td>
+                            <td class="border border-gray-400 p-2"><span class="blank" data-answer="敝"></span>校</td>
+                            <td class="border border-gray-400 p-2"><span class="blank" data-answer="寒舍"></span></td>
+                            <td class="border border-gray-400 p-2"><span class="blank" data-answer="敝"></span>店、<span class="blank" data-answer="小"></span>號</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 bg-gray-100 font-bold">稱呼人</td>
+                            <td class="border border-gray-400 p-2">賢<span class="blank" data-answer="喬梓"></span></td>
+                            <td class="border border-gray-400 p-2">賢<span class="blank" data-answer="昆仲"></span> <br/> 賢<span class="blank" data-answer="昆玉"></span></td>
+                            <td class="border border-gray-400 p-2">賢<span class="blank" data-answer="伉儷"></span></td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 bg-gray-100 font-bold">自稱</td>
+                            <td class="border border-gray-400 p-2">愚父子</td>
+                            <td class="border border-gray-400 p-2">愚兄弟</td>
+                            <td class="border border-gray-400 p-2">愚夫婦</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 bg-gray-100 font-bold">稱呼人</td>
+                            <td class="border border-gray-400 p-2">令公子</td>
+                            <td class="border border-gray-400 p-2">令師</td>
+                            <td class="border border-gray-400 p-2"><span class="blank" data-answer="高"></span>高足</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 bg-gray-100 font-bold">自稱</td>
+                            <td class="border border-gray-400 p-2">小犬</td>
+                            <td class="border border-gray-400 p-2"><span class="blank" data-answer="敝"></span>業師</td>
+                            <td class="border border-gray-400 p-2">敝門人</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="my-6 break-inside-avoid">
+                <h3 class="font-bold text-xl mb-2">● 判讀便條訊息：傑欽到老師家拜訪未遇，只好留下一則便條。</h3>
+                <div class="bg-yellow-50 p-4 border border-yellow-400 rounded-md italic mb-4 max-w-lg shadow-sm">
+                    <p>靖邦恩師(甲)：</p>
+                    <p class="indent-8 mt-2">今晨來訪，<span class="underline decoration-black">適逢外出(乙)</span>，未晤甚憾。因有要事奉商，明晚八時再趨拜，請 賜稍待為幸。</p>
+                    <p class="text-right mt-4 pr-16">受業(丙)</p>
+                    <p class="text-right pr-4">傑欽敬留(丁) 十月三日</p>
+                </div>
+                <ol class="list-decimal pl-6 space-y-2 text-lg">
+                    <li>便條中的畫線部分，何者<strong>不恰當</strong>？ 答：<span class="blank" data-answer="乙"></span></li>
+                    <li>這則便條是要告訴老師何種訊息？ 答：<span class="blank" data-answer="C"></span>
+                        <ul class="list-none pl-4 space-y-1 mt-2 text-base">
+                            <li>(A) 十月四日晚上八點，傑欽會在等老師來</li>
+                            <li>(B) 十月四日早上，傑欽將去老師家商量要事</li>
+                            <li>(C) 十月四日晚上八點，傑欽將再度去拜訪老師</li>
+                            <li>(D) 十月三日晚上八點，傑欽將和老師一起外出。</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <div class="my-6 break-inside-avoid">
+                <h3 class="font-bold text-xl mb-2">● 橫式信封的寫法：小翰要寄手寫卡片給表哥智淵，不確定橫式信封的寫法，請幫他將選項的代碼填在橫式信封的適當位置。</h3>
+                <ul class="list-none pl-6 space-y-1 text-lg mb-4">
+                    <li>(A) 寄件人地址：臺南市 南區 新忠路 8-1 號</li>
+                    <li>(B) 收件人地址：高雄市 三民區 民族一路 373 巷 15 號</li>
+                    <li>(C) 收件人郵遞區號：807071</li>
+                    <li>(D) 收件人：孫智淵先生 臺啟</li>
+                    <li>(E) 寄件人：林桎翰 緘</li>
+                    <li>(F) 寄件人郵遞區號：702012</li>
+                </ul>
+                
+                <div class="border-2 border-gray-600 p-6 max-w-2xl relative bg-white">
+                    <!-- 郵票 -->
+                    <div class="absolute top-4 right-4 w-12 h-16 border border-gray-400 flex items-center justify-center text-xs text-gray-400">
+                        郵票
+                    </div>
+                    
+                    <div class="space-y-2 text-lg font-mono">
+                        <div>1. <span class="blank" data-answer=" F "></span></div>
+                        <div>2. <span class="blank" data-answer=" A "></span></div>
+                        <div>3. <span class="blank" data-answer=" E "></span></div>
+                        
+                        <div class="mt-8 ml-32">
+                            <div>4. <span class="blank" data-answer=" C "></span></div>
+                            <div>5. <span class="blank" data-answer=" B "></span></div>
+                            <div class="text-xl">6. <span class="blank" data-answer=" D "></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-8 border-gray-300" />
+
+        <!-- 自學一 唐宋筆記選 -->
+        <section class="mb-10 break-inside-avoid">
+            <h2 class="text-2xl font-bold mb-4 bg-gray-200 p-2 border-l-4 border-blue-600">【自學一 唐宋筆記選】</h2>
+            <ol class="list-decimal pl-6 space-y-3 text-lg leading-relaxed">
+                <li>唐宋筆記承襲<span class="blank" data-answer="世說新語"></span>，多記錄<span class="blank" data-answer="軼事瑣聞"></span>，也有<span class="blank" data-answer="考證辨析"></span>等議論作品。因是隨手的紀錄，故較生動活潑，能反映<span class="blank" data-answer="社會"></span>生活，且保留史書上較<span class="blank" data-answer="少"></span>見的素材或事件，對了解古代有助益。</li>
+                <li>著名作品：唐劉餗<span class="blank" data-answer="隋唐嘉話"></span>、宋蘇軾<span class="blank" data-answer="東坡志林"></span>、陸游<span class="blank" data-answer="老學庵筆記"></span>、沈括<span class="blank" data-answer="夢溪筆談"></span>。</li>
+            </ol>
+
+            <div class="my-4 break-inside-avoid">
+                <table class="w-full border-collapse border border-gray-400">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="border border-gray-400 p-2 w-1/3">筆記標題</th>
+                            <th class="border border-gray-400 p-2 w-2/3">※意旨</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="border border-gray-400 p-2 font-bold">1. 腹中唯<span class="blank" data-answer="赤"></span>心</td>
+                            <td class="border border-gray-400 p-2">藉對話呈現<span class="blank" data-answer="安祿山"></span>巧舌如簧、善於<span class="blank" data-answer="阿諛奉承"></span>、玄宗寵信權臣形象</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 font-bold">2. 太宗懷<span class="blank" data-answer="鷂"></span></td>
+                            <td class="border border-gray-400 p-2">藉君臣互動呈現<span class="blank" data-answer="明"></span>君<span class="blank" data-answer="直"></span>臣形象：太宗察納雅言、<span class="blank" data-answer="魏徵"></span>勇於任事/直言敢諫</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 font-bold">3. 只許州官放<span class="blank" data-answer="火"></span>，不許百姓點燈</td>
+                            <td class="border border-gray-400 p-2">揭露官場上擔心觸犯長官忌諱和<span class="blank" data-answer="濫權胡為"></span>的行徑</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 font-bold">4. 賣油翁</td>
+                            <td class="border border-gray-400 p-2">藉他倒油技藝說明<span class="blank" data-answer="熟"></span>能生巧、術業有<span class="blank" data-answer="專攻"></span>和<span class="blank" data-answer="謙遜"></span>為懷的道理</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-400 p-2 font-bold">5. <span class="blank" data-answer="正午牡丹"></span></td>
+                            <td class="border border-gray-400 p-2">舉吳育對畫作的詳細辨析，作為古人善於<span class="blank" data-answer="觀察"></span>的例證</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <ol class="list-decimal pl-6 space-y-3 text-lg leading-relaxed mt-4" start="3">
+                <li>太宗懷鷂中，魏徵想勸諫唐太宗應避免<span class="blank" data-answer="玩物喪志"></span>。賣油翁對陳堯咨「但微頷之」，透露他認為其箭術尚可，<span class="blank" data-answer="不足稱奇"></span>。「爾安敢輕吾射」的語氣或情緒是<span class="blank" data-answer="憤怒"></span>、<span class="blank" data-answer="反"></span>問。賣油翁沉穩，陳堯咨<span class="blank" data-answer="浮躁易怒"></span>。賣油翁的主旨與文眼皆為「<span class="blank" data-answer="手熟"></span>」二字。</li>
+            </ol>
+        </section>
+
+    </main>
+
+    <!-- 列印用頁尾版權/備註資訊 -->
+    <footer class="hidden print-block text-center text-sm text-gray-500 mt-8 pb-8">
+        — 國文講義測驗卷 —
+    </footer>
+
+    <!-- JavaScript 邏輯 -->
+    <script>
+        function setMode(mode) {
+            // 更新按鈕樣式
+            const buttons = document.querySelectorAll('.mode-btn');
+            buttons.forEach(btn => {
+                btn.className = 'mode-btn px-4 py-2 rounded-md flex items-center gap-2 transition-colors hover:bg-blue-500';
+            });
+            
+            const activeBtn = document.getElementById('btn-' + mode);
+            if (activeBtn) {
+                activeBtn.className = 'mode-btn px-4 py-2 rounded-md flex items-center gap-2 transition-colors bg-white text-blue-700 font-bold shadow';
+            }
+
+            // 更新文件標題與填空樣式
+            const titleSuffix = document.getElementById('doc-title-suffix');
+            const blanks = document.querySelectorAll('.blank');
+
+            if (mode === 'quiz') {
+                titleSuffix.textContent = ' (學生卷)';
+                blanks.forEach(blank => {
+                    // 學生卷：隱藏文字、顯示底線
+                    blank.textContent = blank.getAttribute('data-answer');
+                    blank.className = 'blank inline-block min-w-[4rem] border-b border-gray-500 mx-1 align-bottom text-transparent px-2';
+                });
+            } else if (mode === 'answer' || mode === 'learn') {
+                titleSuffix.textContent = mode === 'answer' ? ' (解答卷)' : '';
+                blanks.forEach(blank => {
+                    // 解答卷/學習模式：顯示紅色解答
+                    blank.textContent = blank.getAttribute('data-answer');
+                    blank.className = 'blank inline-block min-w-[4rem] border-b-2 border-red-500 mx-1 align-bottom text-red-600 font-bold px-2 text-center';
+                });
+            }
+        }
+
+        // 頁面載入時預設為學習模式
+        document.addEventListener('DOMContentLoaded', () => {
+            setMode('learn');
+        });
+    </script>
+</body>
+</html>
