@@ -981,7 +981,7 @@
         const loadRecentUsers = async () => {
             if (!isFirebaseInitialized || !currentUser) return;
             try {
-                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', 'global_list');
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', COLLECTION_NAME);
                 const snap = await getDoc(ref);
                 if(snap.exists() && snap.data().users) {
                     recentUsers = snap.data().users;
@@ -993,7 +993,7 @@
         const saveRecentUser = async (name) => {
             if (!isFirebaseInitialized || !currentUser) return;
             try {
-                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', 'global_list');
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', COLLECTION_NAME);
                 await setDoc(ref, {
                     users: arrayUnion(name)
                 }, { merge: true });
