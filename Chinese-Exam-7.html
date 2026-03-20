@@ -73,7 +73,7 @@
         };
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'letters-app-default';
-        const COLLECTION_NAME = 'Chinese-Exam-7'; // 更新 Collection 名稱
+        const COLLECTION_NAME = 'Chinese-Exam-6'; // 更新 Collection 名稱
         
         let app, auth, db;
         let isFirebaseInitialized = false;
@@ -592,7 +592,8 @@
         const loadRecentUsers = async () => {
             if (!isFirebaseInitialized || !currentUser) return;
             try {
-                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', 'global_list');
+                // 將 global_list 改為使用 COLLECTION_NAME，讓每個 App 的登入紀錄獨立
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', COLLECTION_NAME);
                 const snap = await getDoc(ref);
                 if(snap.exists() && snap.data().users) {
                     recentUsers = snap.data().users;
@@ -604,7 +605,8 @@
         const saveRecentUser = async (name) => {
             if (!isFirebaseInitialized || !currentUser) return;
             try {
-                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', 'global_list');
+                // 將 global_list 改為使用 COLLECTION_NAME
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', COLLECTION_NAME);
                 await setDoc(ref, {
                     users: arrayUnion(name)
                 }, { merge: true });
@@ -803,8 +805,8 @@
             }
 
             try {
-                // 1. 從全域最近登入名單移除該名使用者
-                const globalRef = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', 'global_list');
+                // 1. 從「該 App 專屬」的最近登入名單移除該名使用者 (將 global_list 改為 COLLECTION_NAME)
+                const globalRef = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', COLLECTION_NAME);
                 const globalSnap = await getDoc(globalRef);
                 if(globalSnap.exists()) {
                     let currentList = globalSnap.data().users || [];
