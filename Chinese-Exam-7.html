@@ -57,7 +57,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, arrayUnion, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, arrayUnion, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
         //  Firebase 設定與全域變數
@@ -769,7 +769,8 @@
                                 <button onclick="switchTab('favorites')" id="nav-favorites" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">最愛</button>
                                 <div class="ml-4 flex items-center pl-4 border-l-2 border-amber-400">
                                     <span class="text-lg font-bold mr-3"><i class="fas fa-user-circle mr-2"></i>${username}</span>
-                                    <button onclick="logout()" class="text-lg text-red-600 hover:text-red-800" title="登出"><i class="fas fa-sign-out-alt"></i></button>
+                                    <button onclick="logout()" class="text-lg text-red-600 hover:text-red-800 mr-3" title="登出"><i class="fas fa-sign-out-alt"></i></button>
+                                    <button onclick="deleteCurrentUser()" class="text-lg text-gray-400 hover:text-red-600" title="刪除使用者與紀錄"><i class="fas fa-user-times"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -784,6 +785,51 @@
             username = '';
             userData = { favorites: [], mistakes: [] };
             renderLogin();
+        };
+
+        window.deleteCurrentUser = async () => {
+            if(!username || !currentUser) return;
+            
+            // 第一次確認：警告提示
+            const firstConfirm = confirm(`【警告】\n您確定要刪除「${username}」的所有學習紀錄嗎？\n此動作將清除錯題本、我的最愛與測驗紀錄，且無法復原！`);
+            if(!firstConfirm) return;
+
+            // 第二次確認：要求輸入名稱防呆
+            const secondConfirm = prompt(`【二次確認】\n請輸入您的使用者名稱「${username}」以確認執行刪除：`);
+            if(secondConfirm !== username) {
+                if (secondConfirm !== null) alert("名稱不符，已取消刪除操作。");
+                return;
+            }
+
+            try {
+                // 1. 從全域最近登入名單移除該名使用者
+                const globalRef = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', 'global_list');
+                const globalSnap = await getDoc(globalRef);
+                if(globalSnap.exists()) {
+                    let currentList = globalSnap.data().users || [];
+                    currentList = currentList.filter(u => u !== username);
+                    await setDoc(globalRef, { users: currentList });
+                }
+
+                // 2. 刪除個人的 profile (包含錯題本、最愛)
+                const profileRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile_' + username);
+                await deleteDoc(profileRef);
+
+                // 3. 刪除個人的測驗總分紀錄
+                const quizRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_quizzes_' + username);
+                await deleteDoc(quizRef);
+                
+                // 更新本地端緩存的 recentUsers
+                recentUsers = recentUsers.filter(u => u !== username);
+
+            } catch(e) {
+                console.error("刪除失敗", e);
+                alert("刪除過程中發生錯誤。");
+                return;
+            }
+            
+            alert(`使用者「${username}」的所有資料已成功刪除。`);
+            window.logout(); // 清除狀態並回到登入頁面
         };
 
         window.switchTab = (tab) => {
