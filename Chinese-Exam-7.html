@@ -634,7 +634,8 @@
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         currentUser = user;
-                        await loadUserData();
+                        // 確保只有在 username 存在時才讀取個人資料，避免初始化讀取錯誤
+                        if (username) await loadUserData();
                         await loadRecentUsers();
                         if (username) {
                             renderMain();
@@ -654,20 +655,24 @@
             if(!name.trim()) return alert("請輸入名稱");
             username = name;
             
+            // 登入時先清空本地快取，避免讀取到前一個使用者的錯題本
+            userData = { favorites: [], mistakes: [] };
+
             if (isFirebaseInitialized && currentUser) {
                 await loadUserData();
                 const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid);
                 await setDoc(userRef, { username, lastLogin: new Date() }, { merge: true });
                 const loginRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_logs'));
-                await setDoc(loginRef, { type: 'login', time: new Date() });
+                await setDoc(loginRef, { type: 'login', username: name, time: new Date() });
                 await saveRecentUser(name);
             }
             renderMain();
         };
 
         const loadUserData = async () => {
-            if (!isFirebaseInitialized || !currentUser) return;
-            const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
+            if (!isFirebaseInitialized || !currentUser || !username) return;
+            // 儲存路徑加上 username，徹底隔絕不同使用者的紀錄 (例如：profile_Nick)
+            const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile_' + username);
             try {
                 const snap = await getDoc(ref);
                 if (snap.exists()) {
@@ -675,14 +680,17 @@
                     userData.favorites = data.favorites || [];
                     userData.mistakes = data.mistakes || [];
                 } else {
+                    userData.favorites = [];
+                    userData.mistakes = [];
                     await setDoc(ref, userData, { merge: true });
                 }
             } catch(e) { console.error("Load Data Error", e); }
         };
 
         const saveUserData = async () => {
-            if (!isFirebaseInitialized || !currentUser) return;
-            const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
+            if (!isFirebaseInitialized || !currentUser || !username) return;
+            // 儲存路徑加上 username，徹底隔絕不同使用者的紀錄
+            const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile_' + username);
             try {
                 await setDoc(ref, userData, { merge: true });
             } catch(e) { console.error("Save Data Error", e); }
@@ -1049,10 +1057,11 @@
             const total = quizState.questions.length;
             const score = Math.round((quizState.score / total) * 100);
             
-            if(isFirebaseInitialized && currentUser) {
-                const docRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_quizzes'));
+            if(isFirebaseInitialized && currentUser && username) {
+                // 將測驗紀錄的 collection 也加上 username 以利後續分析
+                const docRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_quizzes_' + username));
                 try {
-                    await setDoc(docRef, { score, date: new Date(), total });
+                    await setDoc(docRef, { score, date: new Date(), total, username });
                 } catch(e) { }
             }
 
