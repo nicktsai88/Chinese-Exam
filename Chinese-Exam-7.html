@@ -57,7 +57,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, arrayUnion, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // 這裡在最後方新增了 getDocs 函式
+        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, arrayUnion, onSnapshot, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
         //  Firebase 設定與全域變數
@@ -815,9 +816,14 @@
                 const profileRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile_' + username);
                 await deleteDoc(profileRef);
 
-                // 3. 刪除個人的測驗總分紀錄
-                const quizRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_quizzes_' + username);
-                await deleteDoc(quizRef);
+                // 3. 刪除個人的測驗總分紀錄 (因為是集合，必須先讀取內部所有文件再逐一刪除)
+                const quizzesColRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_quizzes_' + username);
+                const quizSnap = await getDocs(quizzesColRef);
+                const deletePromises = [];
+                quizSnap.forEach((d) => {
+                    deletePromises.push(deleteDoc(d.ref));
+                });
+                await Promise.all(deletePromises);
                 
                 // 更新本地端緩存的 recentUsers
                 recentUsers = recentUsers.filter(u => u !== username);
