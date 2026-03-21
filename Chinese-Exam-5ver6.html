@@ -1152,7 +1152,6 @@
                             <div class="flex items-center space-x-2 sm:space-x-4">
                                 <button onclick="switchTab('learn')" id="nav-learn" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">學習區</button>
                                 <button onclick="switchTab('quiz')" id="nav-quiz" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">測驗(50題)</button>
-                                <button onclick="switchTab('review')" id="nav-review" class="px-4 py-3 rounded-md text-base md:text-lg font-bold text-indigo-600 hover:bg-indigo-600 hover:text-white transition">50題總複習</button>
                                 <button onclick="switchTab('mistakes')" id="nav-mistakes" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">錯題本</button>
                                 <button onclick="switchTab('favorites')" id="nav-favorites" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">最愛</button>
                                 <div class="ml-4 flex items-center pl-4 border-l-2 border-amber-400">
@@ -1176,25 +1175,15 @@
 
         window.switchTab = (tab) => {
             currentTab = tab;
-            ['learn', 'quiz', 'review', 'mistakes', 'favorites'].forEach(t => {
+            ['learn', 'quiz', 'mistakes', 'favorites'].forEach(t => {
                 const btn = el(`nav-${t}`);
                 if(btn) {
                     if(t === tab) {
-                        if (t === 'review') {
-                            btn.classList.add('bg-indigo-600', 'text-white');
-                            btn.classList.remove('text-indigo-600', 'hover:bg-indigo-600', 'hover:text-white');
-                        } else {
-                            btn.classList.add('bg-amber-700', 'text-white');
-                            btn.classList.remove('hover:bg-amber-700', 'hover:text-white');
-                        }
+                        btn.classList.add('bg-amber-700', 'text-white');
+                        btn.classList.remove('hover:bg-amber-700', 'hover:text-white');
                     } else {
-                        if (t === 'review') {
-                            btn.classList.remove('bg-indigo-600', 'text-white');
-                            btn.classList.add('text-indigo-600', 'hover:bg-indigo-600', 'hover:text-white');
-                        } else {
-                            btn.classList.remove('bg-amber-700', 'text-white');
-                            btn.classList.add('hover:bg-amber-700', 'hover:text-white');
-                        }
+                        btn.classList.remove('bg-amber-700', 'text-white');
+                        btn.classList.add('hover:bg-amber-700', 'hover:text-white');
                     }
                 }
             });
@@ -1202,7 +1191,6 @@
             const content = el('main-content');
             if(tab === 'learn') renderLearnView(content);
             if(tab === 'quiz') renderQuizView(content);
-            if(tab === 'review') renderReview(content);
             if(tab === 'mistakes') renderMistakes(content);
             if(tab === 'favorites') renderFavorites(content);
         };
@@ -1465,60 +1453,6 @@
                         <div class="space-y-4">
                             <button onclick="switchTab('mistakes')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 text-xl rounded-lg shadow transition">查看錯題本</button>
                             <button onclick="startQuiz()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 px-6 text-xl rounded-lg shadow transition">重新測驗</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        };
-
-        // --- 50題總複習 ---
-        window.renderReview = (container) => {
-            if(!container) container = el('main-content');
-            
-            // 直接取得所有 50 題 (不打亂順序)
-            const allQuestions = generate50Questions();
-            
-            let questionsHtml = allQuestions.map((q, i) => {
-                let optsHtml = q.opts.map((opt, idx) => {
-                    let isCorrect = (idx === q.ans);
-                    let btnClass = isCorrect 
-                        ? 'bg-emerald-100 text-emerald-800 font-bold border-2 border-emerald-300 shadow-sm' 
-                        : 'bg-gray-50 text-gray-500 border border-gray-200';
-                    let iconHtml = isCorrect 
-                        ? '<i class="fas fa-check ml-2"></i>(正確答案)' 
-                        : '';
-                    
-                    return `
-                        <div class="p-3 rounded-lg flex items-center ${btnClass}">
-                            <span>${String.fromCharCode(65+idx)}. ${opt}</span>
-                            ${iconHtml}
-                        </div>
-                    `;
-                }).join('');
-
-                return `
-                    <div class="bg-white p-6 md:p-8 rounded-xl shadow-md border-l-8 border-indigo-400 mb-6">
-                        <h3 class="font-bold text-gray-800 mb-5 text-xl md:text-2xl">${i+1}. ${q.q}</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-lg mb-6">
-                            ${optsHtml}
-                        </div>
-                        <div class="bg-indigo-50 p-5 rounded-lg border border-indigo-200 text-lg text-gray-700 leading-relaxed">
-                            <p class="font-bold text-indigo-800 border-b border-indigo-300 pb-2 mb-3"><i class="fas fa-lightbulb mr-2"></i>完整解析：</p>
-                            ${q.exp}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            container.innerHTML = `
-                <div class="w-full p-6 md:p-10 overflow-y-auto">
-                    <div class="max-w-4xl mx-auto">
-                        <div class="flex justify-between items-center border-b-4 border-indigo-300 pb-4 mb-8">
-                            <h2 class="text-3xl font-bold text-indigo-800"><i class="fas fa-list-alt mr-3"></i>50題總複習</h2>
-                            <span class="bg-indigo-100 text-indigo-800 py-1 px-3 rounded-full text-sm font-bold">瀑布流模式</span>
-                        </div>
-                        <div class="space-y-6">
-                            ${questionsHtml}
                         </div>
                     </div>
                 </div>
