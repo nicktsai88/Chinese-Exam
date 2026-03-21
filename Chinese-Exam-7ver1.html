@@ -73,7 +73,7 @@
         };
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'letters-app-default';
-        const COLLECTION_NAME = 'Chinese-Exam-7'; // 更新 Collection 名稱
+        const COLLECTION_NAME = 'Chinese-Exam-6'; // 更新 Collection 名稱
         
         let app, auth, db;
         let isFirebaseInitialized = false;
@@ -767,7 +767,6 @@
                             </div>
                             <div class="flex items-center space-x-2 sm:space-x-4">
                                 <button onclick="switchTab('learn')" id="nav-learn" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">重點精華</button>
-                                <button onclick="switchTab('review')" id="nav-review" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition text-indigo-600">80題總複習</button>
                                 <button onclick="switchTab('quiz')" id="nav-quiz" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition text-red-600">魔王測驗(80題)</button>
                                 <button onclick="switchTab('mistakes')" id="nav-mistakes" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">錯題本</button>
                                 <button onclick="switchTab('favorites')" id="nav-favorites" class="px-4 py-3 rounded-md text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">最愛</button>
@@ -843,20 +842,16 @@
 
         window.switchTab = (tab) => {
             currentTab = tab;
-            ['learn', 'review', 'quiz', 'mistakes', 'favorites'].forEach(t => {
+            ['learn', 'quiz', 'mistakes', 'favorites'].forEach(t => {
                 const btn = el(`nav-${t}`);
                 if(btn) {
                     if(t === tab) {
                         btn.classList.add('bg-amber-700', 'text-white');
-                        if (t !== 'quiz' && t !== 'review') btn.classList.remove('hover:bg-amber-700', 'hover:text-white', 'text-red-600', 'text-indigo-600');
-                        if (t === 'quiz') btn.classList.remove('text-red-600');
-                        if (t === 'review') btn.classList.remove('text-indigo-600');
+                        if (t !== 'quiz') btn.classList.remove('hover:bg-amber-700', 'hover:text-white', 'text-red-600');
                     } else {
                         btn.classList.remove('bg-amber-700', 'text-white');
                         if (t === 'quiz') {
                              btn.classList.add('hover:bg-amber-700', 'hover:text-white', 'text-red-600');
-                        } else if (t === 'review') {
-                             btn.classList.add('hover:bg-amber-700', 'hover:text-white', 'text-indigo-600');
                         } else {
                              btn.classList.add('hover:bg-amber-700', 'hover:text-white');
                         }
@@ -866,63 +861,9 @@
 
             const content = el('main-content');
             if(tab === 'learn') renderLearnView(content);
-            if(tab === 'review') renderReview(content);
             if(tab === 'quiz') renderQuizView(content);
             if(tab === 'mistakes') renderMistakes(content);
             if(tab === 'favorites') renderFavorites(content);
-        };
-
-        // --- 80題總複習區 ---
-        window.renderReview = (container) => {
-            if(!container) container = el('main-content');
-            
-            const allQuestions = generateAllQuestions();
-
-            let html = `
-                <div class="w-full p-6 md:p-10 overflow-y-auto">
-                    <div class="max-w-4xl mx-auto">
-                        <div class="flex justify-between items-center border-b-4 border-indigo-200 pb-4 mb-8">
-                            <div>
-                                <h2 class="text-3xl font-bold text-indigo-800"><i class="fas fa-list-alt mr-3"></i>80題總複習</h2>
-                                <p class="text-gray-600 mt-2 text-lg">考前衝刺！一次瀏覽所有題目與解析，<span class="font-bold text-emerald-600">綠色標示</span>為正確答案。</p>
-                            </div>
-                        </div>
-                        <div class="space-y-8">
-            `;
-
-            allQuestions.forEach((q, i) => {
-                let optionsHtml = '';
-                q.opts.forEach((opt, idx) => {
-                    const isCorrect = idx === q.ans;
-                    optionsHtml += `
-                        <div class="p-3 rounded-lg ${isCorrect ? 'bg-emerald-100 text-emerald-800 font-bold border-2 border-emerald-400 shadow-sm' : 'bg-gray-50 text-gray-500 border border-gray-200'} flex items-start">
-                            <span class="mt-1 shrink-0 w-6">${String.fromCharCode(65+idx)}.</span> 
-                            <span>${opt}</span>
-                            ${isCorrect ? '<i class="fas fa-check ml-2 mt-1 text-emerald-600"></i>' : ''}
-                        </div>
-                    `;
-                });
-
-                html += `
-                    <div class="bg-white p-6 md:p-8 rounded-xl shadow-md border-l-8 border-indigo-400">
-                        <h3 class="font-bold text-gray-800 mb-5 text-xl md:text-2xl">${i+1}. ${q.q}</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-lg mb-6">
-                            ${optionsHtml}
-                        </div>
-                        <div class="bg-indigo-50 p-5 rounded-lg border border-indigo-100 text-lg text-gray-700 leading-relaxed">
-                            <p class="font-bold text-indigo-800 border-b border-indigo-200 pb-2 mb-3"><i class="fas fa-lightbulb mr-2 text-yellow-500"></i>完整解析：</p>
-                            ${q.exp}
-                        </div>
-                    </div>
-                `;
-            });
-
-            html += `
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.innerHTML = html;
         };
 
         // --- 學習區 ---
