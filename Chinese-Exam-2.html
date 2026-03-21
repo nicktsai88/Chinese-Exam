@@ -112,7 +112,7 @@
         //  Firebase 設定與全域變數
         // ==========================================
         const firebaseConfig = {
-            apiKey: "AIzaSyAxQFt76ZPXE7d0i1XeNZ1yiiD2WYNIfHs", // 請替換為真實 API Key
+            apiKey: "AIzaSyAxQFt76ZPXE7d0i1XeNZ1yiiD2WYNIfHs", // 您的真實 API Key
             authDomain: "chinese-learning-47f4d.firebaseapp.com",
             projectId: "chinese-learning-47f4d",
             storageBucket: "chinese-learning-47f4d.firebasestorage.app",
@@ -120,8 +120,8 @@
             appId: "1:76289812052:web:898384a916f9f341f62fc1"
         };
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'chinese-exam-app-default';
-        const COLLECTION_NAME = 'Chinese-Exam-2'; // 更新 Collection 名稱以區隔舊資料
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'letters-app-default';
+        const COLLECTION_NAME = 'Chinese-Exam-2'; // 更新 Collection 名稱
         
         let app, auth, db;
         let isFirebaseInitialized = false;
@@ -166,10 +166,12 @@
 
         // 初始化 Firebase
         try {
+            // 若環境變數不存在，則預設使用寫死的 firebaseConfig
             const configStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
-            if (configStr) {
-                const firebaseConfig = JSON.parse(configStr);
-                app = initializeApp(firebaseConfig);
+            const finalConfig = configStr ? JSON.parse(configStr) : firebaseConfig;
+
+            if (finalConfig && finalConfig.apiKey) {
+                app = initializeApp(finalConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
                 isFirebaseInitialized = true;
@@ -178,6 +180,7 @@
                 connectionStatus = 'error';
             }
         } catch (error) {
+            console.error("Firebase init error:", error);
             connectionStatus = 'error';
         }
 
