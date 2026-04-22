@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>森林最優美的一天 - 互動學習系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        /* 加大預設字體大小 */
+        body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; background-color: #fcf9f2; color: #333; font-size: 1.125rem; line-height: 1.75; }
+        .tab-btn.active { border-bottom: 2px solid #b45309; color: #b45309; font-weight: bold; }
+        .bg-wood { background-color: #e5d3b3; }
+        .text-wood-dark { color: #5c3a21; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* 雲端狀態燈號 CSS */
+        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; }
+        .status-loading { background-color: #fbbf24; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .status-success { background-color: #34d399; }
+        .status-error { background-color: #ef4444; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <div id="app" class="w-full h-full flex flex-col">
+        <!-- 內容將由 JS 動態渲染 -->
+    </div>
+
+    <!-- Firebase SDK (v11.6.1) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        //  Firebase 設定與全域變數
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAxQFt76ZPXE7d0i1XeNZ1yiiD2WYNIfHs", // 替換為真實 API Key
+            authDomain: "chinese-learning-47f4d.firebaseapp.com",
+            projectId: "chinese-learning-47f4d",
+            storageBucket: "chinese-learning-47f4d.firebasestorage.app",
+            messagingSenderId: "76289812052",
+            appId: "1:76289812052:web:898384a916f9f341f62fc1"
+        };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'forest-app-default';
+        const COLLECTION_NAME = 'Chinese4-L6';
+        
+        let app, auth, db;
+        let isFirebaseInitialized = false;
+        let currentUser = null;
+        let username = '';
+        let userData = { favorites: [], mistakes: [] };
+        
+        let connectionStatus = 'loading';
+        let recentUsers = [];
+        
+        // ==========================================
+        //  音效系統 (Web Audio API)
+        // ==========================================
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        
+        const playTone = (freq, type, duration) => {
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = type;
+                oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + duration);
+            } catch(e) { console.log('Audio error:', e); }
+        };
+
+        const playCorrectSound = () => {
+            playTone(523.25, 'sine', 0.1); // C5 音
+            setTimeout(() => playTone(659.25, 'sine', 0.2), 100); // E5 音
+        };
+
+        const playWrongSound = () => {
+            playTone(300, 'sawtooth', 0.2);
+            setTimeout(() => playTone(200, 'sawtooth', 0.3), 150);
+        };
+
+        // 嘗試初始化 Firebase
+        try {
+            const actualConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : firebaseConfig;
+            
+            if (actualConfig.apiKey && actualConfig.apiKey !== "填入key" && actualConfig.apiKey !== "YOUR_API_KEY") {
+                app = initializeApp(actualConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                isFirebaseInitialized = true;
+                connectionStatus = 'success';
+                console.log("Firebase 成功初始化");
+            } else {
+                connectionStatus = 'error';
+                console.warn("Firebase 未設定正確 Key，目前為單機暫存模式 (重整後資料會消失)。");
+            }
+        } catch (error) {
+            connectionStatus = 'error';
+            console.error("Firebase Init Error:", error);
+        }
+
+        const initAuth = async () => {
+            if (!isFirebaseInitialized) return;
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Auth Initialization Error:", error);
+                connectionStatus = 'error';
+            }
+        };
+
+        // ==========================================
+        //  學習資料庫 (依照提供資料一字不漏建立)
+        // ==========================================
+        const learnData = [
+            {
+                id: 'sec1', title: '一、課文結構表',
+                content: `
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded shadow-sm text-lg md:text-xl border-l-8 border-green-600">
+                        <h3 class="font-bold text-green-800 text-2xl mb-3"><i class="fas fa-leaf mr-2"></i>前言 (一、二段)</h3>
+                        <ul class="list-disc ml-8 space-y-2 text-gray-700">
+                            <li>臺灣低海拔森林優美，極富特色，但很少人去關懷。</li>
+                            <li>以野人獻曝的心情，選擇森林最優美的一天，與讀者分享。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded shadow-sm text-lg md:text-xl border-l-8 border-green-600">
+                        <h3 class="font-bold text-green-800 text-2xl mb-3"><i class="fas fa-leaf mr-2"></i>五月山花香 (三至七段)</h3>
+                        <ul class="list-disc ml-8 space-y-2 text-gray-700">
+                            <li>揹起攝影裝備，進入森林，微涼山風飽含野花香氣，帶著五月的陽光味道，迎面拂來。</li>
+                            <li>嗅到香氣宜人、樸素高雅的金銀花，憶起童年往事。</li>
+                            <li>濃香嗆鼻的山黃梔，遠觀像是掛在樹上的星星，令人著迷。</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white p-6 rounded shadow-sm text-lg md:text-xl border-l-8 border-green-600">
+                        <h3 class="font-bold text-green-800 text-2xl mb-3"><i class="fas fa-leaf mr-2"></i>油桐花編織的祕徑 (八、九段)</h3>
+                        <ul class="list-disc ml-8 space-y-2 text-gray-700">
+                            <li>油桐落花編織成白色長地毯，花香令人愉悅。</li>
+                            <li>走在花徑上，比歡迎國王或總統的紅地毯更隆重、莊嚴，心靈得到完美昇華。</li>
+                        </ul>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec2', title: '二、形音義補充',
+                content: `
+                <div class="space-y-6 text-lg md:text-xl">
+                    <p class="text-gray-600 mb-4"><i class="fas fa-info-circle mr-2 text-green-700"></i>針對本課重要形似字、多音字進行辨析：</p>
+                    
+                    ${[
+                        [
+                            { w: "採", p: "ㄘㄞˇ", d: "<span class='text-green-800 font-semibold'>動</span> 摘取。如：採果實。" },
+                            { w: "踩", p: "ㄘㄞˇ", d: "<span class='text-green-800 font-semibold'>動</span> 用足踐踏。如：踩踏。" },
+                            { w: "睬", p: "ㄘㄞˇ", d: "<span class='text-green-800 font-semibold'>動</span> 理會。如：不理不睬。" },
+                            { w: "彩", p: "ㄘㄞˇ", d: "<span class='text-green-800 font-semibold'>(1)名</span> 顏色。如：五彩奪目。<br><span class='text-green-800 font-semibold'>(2)名</span> 獎。如：摸彩。<br><span class='text-green-800 font-semibold'>(3)形</span> 多種顏色的。如：彩霞。" }
+                        ],
+                        [
+                            { w: "遐", p: "ㄒㄧㄚˊ", d: "<span class='text-green-800 font-semibold'>(1)形</span> 遙遠。如：遐思、名聞遐邇。<br><span class='text-green-800 font-semibold'>(2)形</span> 長久、遠大。如：天賜遐齡。" },
+                            { w: "暇", p: "ㄒㄧㄚˊ", d: "<span class='text-green-800 font-semibold'>名</span> 空閒。如：閒暇、應接不暇、自顧不暇。" },
+                            { w: "瑕", p: "ㄒㄧㄚˊ", d: "<span class='text-green-800 font-semibold'>名</span> 過失、缺點。如：瑕疵。" }
+                        ],
+                        [
+                            { w: "薑", p: "ㄐㄧㄤ", d: "<span class='text-green-800 font-semibold'>名</span> 植物名。如：薑是老的辣(比喻年長經驗豐富，辦事老練)。" },
+                            { w: "僵", p: "ㄐㄧㄤ", d: "<span class='text-green-800 font-semibold'>(1)形</span> 硬化、不靈活。如：全身僵硬。<br><span class='text-green-800 font-semibold'>(2)動</span> 雙方相持不下，無法協調。如：僵持不下。" },
+                            { w: "疆", p: "ㄐㄧㄤ", d: "<span class='text-green-800 font-semibold'>(1)名</span> 極限、止境。如：萬壽無疆。<br><span class='text-green-800 font-semibold'>(2)名</span> 國土。如：版圖疆域。" },
+                            { w: "殭", p: "ㄐㄧㄤ", d: "<span class='text-green-800 font-semibold'>形</span> 動物死後屍體不腐朽的。如：殭屍。" }
+                        ],
+                        [
+                            { w: "兢", p: "ㄐㄧㄥ", d: "<span class='text-green-800 font-semibold'>形</span> 小心謹慎的樣子。如：戰戰兢兢、兢兢業業(形容謹肅恐懼，認真小心)。" },
+                            { w: "競", p: "ㄐㄧㄥˋ", d: "<span class='text-green-800 font-semibold'>(1)動</span> 比賽、爭逐。如：競選。<br><span class='text-green-800 font-semibold'>(2)副</span> 爭著。如：競相效尤(爭相仿效錯誤的行為)。" }
+                        ],
+                        [
+                            { w: "剎", p: "ㄔㄚˋ", d: "<span class='text-green-800 font-semibold'>名</span> 佛寺、寺廟。如：古剎、名剎。" },
+                            { w: "殺", p: "ㄕㄚ", d: "<span class='text-green-800 font-semibold'>(1)動</span> 使人或動物失去生命。如：殺豬宰羊。<br><span class='text-green-800 font-semibold'>(2)動</span> 削減。如：殺價。" }
+                        ]
+                    ].map(group => `
+                        <div class="overflow-hidden bg-white border-2 border-green-200 rounded-xl shadow-sm mb-6">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr class="bg-green-100 text-green-900 border-b-2 border-green-200 text-xl">
+                                        <th class="py-3 px-4 w-1/6 text-center font-bold">字</th>
+                                        <th class="py-3 px-4 w-1/6 text-center font-bold">注音</th>
+                                        <th class="py-3 px-6 w-1/2 text-left font-bold">釋義與例詞</th>
+                                        <th class="py-3 px-4 w-1/6 text-center font-bold">收藏</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${group.map((item, idx) => `
+                                        <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-green-50 transition-colors border-b border-gray-100 last:border-0">
+                                            <td class="py-4 px-4 text-center font-bold text-3xl text-gray-800">${item.w}</td>
+                                            <td class="py-4 px-4 text-center font-bold text-green-700 text-2xl">${item.p}</td>
+                                            <td class="py-4 px-6 text-left leading-relaxed text-gray-700">${item.d}</td>
+                                            <td class="py-4 px-4 text-center">
+                                                <button onclick="toggleFavorite('${item.w}')" class="text-gray-300 hover:text-red-500 fav-btn text-3xl transition-transform hover:scale-110" data-id="${item.w}"><i class="fas fa-heart"></i></button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `).join('')}
+
+                    <div class="bg-green-50 p-6 rounded-xl border-2 border-green-200 mt-8 shadow-sm">
+                        <h4 class="font-bold text-green-900 text-2xl mb-4 flex items-center"><i class="fas fa-exclamation-circle mr-3 text-green-700"></i>多音字 / 詞性辨析：</h4>
+                        <ul class="space-y-4 text-gray-800">
+                            <li class="bg-white p-4 rounded shadow-sm border border-green-100">
+                                <span class="font-bold text-xl text-green-800">【落】</span><br>
+                                虎「落」平陽被犬欺：<span class="text-red-600 font-bold">ㄌㄨㄛˋ</span><br>
+                                丟三「落」四：<span class="text-red-600 font-bold">ㄌㄚˋ</span>
+                            </li>
+                            <li class="bg-white p-4 rounded shadow-sm border border-green-100">
+                                <span class="font-bold text-xl text-green-800">【盛】</span><br>
+                                「盛」情難卻：<span class="text-green-700 font-bold">形</span> 濃厚的。(難以辭謝的濃厚情意。)<br>
+                                太平「盛」世：<span class="text-green-700 font-bold">形</span> 強壯、興旺的。與「衰」相對。(安定、強盛、繁榮、無內憂外患的時代。)<br>
+                                年輕氣「盛」：<span class="text-green-700 font-bold">形</span> 強烈、旺盛的。<br>
+                                繁花「盛」開：<span class="text-green-700 font-bold">副</span> 強烈、旺盛地。
+                            </li>
+                        </ul>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec3', title: '三、成語補充',
+                content: `
+                <div class="space-y-8 text-lg md:text-xl">
+                    <!-- 類別一 -->
+                    <div>
+                        <h3 class="font-bold text-xl md:text-2xl text-green-800 border-b-2 border-green-200 mb-4 pb-2"><i class="fas fa-tree mr-2"></i>一、與「植物形態」有關的成語</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${[
+                                "離離蔚蔚：非常茂盛的樣子。(註：與鬱鬱蔥蔥同義)",
+                                "鬱鬱蔥蔥：非常茂盛的樣子。",
+                                "盤根錯節：樹木的根幹枝節盤屈交錯。比喻事情複雜，不易理解。",
+                                "欣欣向榮：1. 草木生長繁盛的樣子。 2. 比喻蓬勃發展、繁榮興盛。",
+                                "枝葉扶疏：1. 枝葉繁密四布。形容樹木茂盛。 2. 比喻宗族繁衍昌盛。 3. 比喻文章詳細縝密、文詞華美。",
+                                "枝繁葉茂：樹木的枝葉繁密茂盛。比喻兒孫滿堂，子孫眾多。",
+                                "林蔭蔽天：林木繁密足以遮蔽天空。形容樹木極為茂盛。"
+                            ].map(item => `
+                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-green-500 flex justify-between items-start relative hover:shadow-md transition">
+                                    <div><span class="font-bold text-green-700 text-2xl">${item.split('：')[0]}</span><br><span class="text-gray-700 mt-2 block">${item.split('：')[1]}</span></div>
+                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl ml-2 shrink-0" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- 類別二 -->
+                    <div>
+                        <h3 class="font-bold text-xl md:text-2xl text-green-800 border-b-2 border-green-200 mb-4 pb-2"><i class="fas fa-wind mr-2"></i>二、由「氣味」延伸的成語</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${[
+                                "芝蘭氣味：比喻君子間的友情如芝蘭一般的芳香美好。",
+                                "十里飄香：酒菜的香味飄到很遠的地方。常用為祝賀餐館之詞。",
+                                "蘭薰桂馥：比喻德澤流芳，歷久不衰。薰、馥皆指香氣濃郁，久久不散。",
+                                "渾身銅臭：比喻人貪財、俗氣。銅，錢幣。臭，音 ㄒㄧㄡˋ，氣味。",
+                                "臭氣沖天：形容惡臭瀰漫。臭，音 ㄔㄡˋ，難聞的氣味；與「香」相對。",
+                                "遺臭萬年：惡名永遠流傳下去，遭人唾罵。臭，音 ㄔㄡˋ，惡名，不好的名聲。",
+                                "鮑魚之肆：賣醃魚的店鋪。比喻臭穢的地方、惡劣的環境或小人聚集的場所。",
+                                "乳臭未乾：比喻人年幼無知或經驗不足。臭，音 ㄒㄧㄡˋ，氣味。"
+                            ].map(item => `
+                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-blue-400 flex justify-between items-start hover:shadow-md transition">
+                                    <div><span class="font-bold text-blue-700 text-2xl">${item.split('：')[0]}</span><br><span class="text-gray-700 mt-2 block">${item.split('：')[1]}</span></div>
+                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl ml-2 shrink-0" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- 類別三 -->
+                    <div>
+                        <h3 class="font-bold text-xl md:text-2xl text-green-800 border-b-2 border-green-200 mb-4 pb-2"><i class="fas fa-layer-group mr-2"></i>三、其他成語</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${[
+                                "望梅止渴：比喻用空想來安慰自己。",
+                                "蕙質蘭心：比喻女子芳潔的心地、高雅的品德。",
+                                "椿萱並茂：比喻父母都健在。",
+                                "人面桃花：比喻思念的意中人或與意中人無緣再見面。(唐朝詩人崔護的故事)",
+                                "舌粲蓮花：形容口才好。粲，音 ㄘㄢˋ，原指明白、清楚；鮮明華美的樣子。"
+                            ].map(item => `
+                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-purple-400 flex justify-between items-start hover:shadow-md transition">
+                                    <div><span class="font-bold text-purple-700 text-2xl">${item.split('：')[0]}</span><br><span class="text-gray-700 mt-2 block">${item.split('：')[1]}</span></div>
+                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl ml-2 shrink-0" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec4', title: '四、與「自然」相關的名言錦句',
+                content: `
+                <div class="space-y-6 text-lg md:text-xl">
+                    <div class="bg-white p-8 rounded-xl shadow-sm border-t-4 border-green-500 relative">
+                        <i class="fas fa-quote-left text-4xl text-green-200 absolute top-4 left-4"></i>
+                        <p class="text-gray-800 font-semibold text-2xl italic pl-10 pr-4 leading-relaxed mb-4">
+                            (一) 自然景色的生命，是存在於人的心中的，要理解它，就需要對它有所感受。
+                        </p>
+                        <p class="text-right text-gray-600 font-bold">— 法國 盧梭</p>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-xl shadow-sm border-t-4 border-green-500 relative">
+                        <i class="fas fa-quote-left text-4xl text-green-200 absolute top-4 left-4"></i>
+                        <p class="text-gray-800 font-semibold text-2xl italic pl-10 pr-4 leading-relaxed mb-4">
+                            (二) 陽春召我以煙景，大塊假我以文章。
+                        </p>
+                        <p class="text-right text-gray-600 font-bold">— 唐代 李白</p>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-xl shadow-sm border-t-4 border-green-500 relative">
+                        <i class="fas fa-quote-left text-4xl text-green-200 absolute top-4 left-4"></i>
+                        <p class="text-gray-800 font-semibold text-2xl italic pl-10 pr-4 leading-relaxed mb-4">
+                            (三) 時夕陽在山，蒼翠欲滴；風葉露穗，搖蕩若千頃波；城外煙嵐，遠近接簇；悠然暢寄，書味滿胸。此樂非但忘貧，兼可入道。
+                        </p>
+                        <p class="text-right text-gray-600 font-bold">— 清代 李慈銘</p>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-xl shadow-sm border-t-4 border-green-500 relative">
+                        <i class="fas fa-quote-left text-4xl text-green-200 absolute top-4 left-4"></i>
+                        <p class="text-gray-800 font-semibold text-2xl italic pl-10 pr-4 leading-relaxed mb-4">
+                            (四) 最偉大的藥方就是大自然。自然界裡蘊藏著治療一切疾病的祕訣。
+                        </p>
+                        <p class="text-right text-gray-600 font-bold">— 美國 歐文·斯通</p>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec5', title: '五、佳文欣賞',
+                content: `
+                <div class="space-y-6 text-lg md:text-xl">
+                    <div class="bg-green-50 p-8 rounded-xl shadow-sm border border-green-200 text-gray-800 leading-relaxed">
+                        <h3 class="font-bold text-3xl text-center text-green-900 mb-8 border-b-2 border-green-300 pb-4">我看到植物的光和影 (節錄)</h3>
+                        
+                        <p class="mb-6 indent-8">
+                            我正在努力提醒我的朋友們，設法花十分鐘看一株樹。 ——<span class="font-bold text-green-700">王家祥</span>
+                        </p>
+                        
+                        <p class="mb-6 indent-8">
+                            我告訴他們一般人看見一株樹或者身旁周遭美麗的事物，實際上目光停留的時間往往不超過十秒，許多人的心靈皆太匆促了。
+                        </p>
+                        
+                        <p class="mb-6 indent-8">
+                            不過在說這句話之前，我會先帶他們走進樹林裡，請他們抬頭看一棵樹，暗中幫他們計算時間。結果的確是如此，少有人花上超過十秒的時間去瞧一棵樹，大多數的人在十秒前便把頭垂下來，奇怪地望著我為何叫他去看一棵樹，等待我的答案。
+                        </p>
+
+                        <p class="mb-6 indent-8">
+                            然後我的提醒便使得他們若有所悟：原來生活的心情太匆忙，即使是處於休息狀態，內心仍不得悠閒。
+                        </p>
+
+                        <p class="mb-6 indent-8">
+                            這是我從一本討論「環境教育」的書中學到的方法，這本書提醒我「重新看見」。即使我學習過正統的植物分類學，有過三、五年的賞鳥經驗，而我仍然發覺，要真正地用心去看待植物、鳥類、山林、自然萬物，就如同學佛修行一般不容易。如何從進入山林的過程之中，得到平心靜氣的好果，有了這般好果，當然觀察力、思考力便能充裕自如。而如此「平心靜氣」猶如入山朝聖的自我修練學習，正是最難達到，但也是最精妙愉悅的歷程。
+                        </p>
+
+                        <p class="indent-8 font-bold text-green-800">
+                            其實我想追求「面對荒野」的真正經驗，正是如此的單純過程。
+                        </p>
+                    </div>
+                </div>`
+            }
+        ];
+
+        // ==========================================
+        //  100題 精編測驗資料 (高難度、高鑑別度)
+        // ==========================================
+        const generate100Questions = () => {
+            const q = [];
+            
+            // 課文結構表 (1-10)
+            q.push({ q:"根據《森林最優美的一天》課文結構表，作者寫作本文的心情為何？", opts:["沽名釣譽的心情", "憂國憂民的心情", "野人獻曝的心情", "如釋重負的心情"], ans:2 });
+            q.push({ q:"關於課文結構的劃分，下列何者正確？", opts:["第一、二段為「五月山花香」", "第三至第七段為「前言」", "第八、九段為「油桐花編織的祕徑」", "本文最後一段重點為「呼籲環境保護」"], ans:2 });
+            q.push({ q:"在前言中，作者認為臺灣的何種環境極富特色，但卻很少人去關懷？", opts:["高海拔針葉林", "低海拔森林", "高山百岳", "熱帶雨林"], ans:1 });
+            q.push({ q:"在「五月山花香」的段落中，作者提到微涼的山風飽含野花香氣，並帶著什麼樣的味道？", opts:["秋季落葉的味道", "五月陽光的味道", "清晨露水的味道", "夏日雷雨的味道"], ans:1 });
+            q.push({ q:"作者在森林中嗅到了何種花香，因此憶起了童年往事？", opts:["山黃梔", "油桐花", "桂花", "金銀花"], ans:3 });
+            q.push({ q:"關於「山黃梔」的描述，下列何者符合講義中的內容？", opts:["香氣樸素高雅，勾起童年回憶", "落花編織成白色的長地毯", "濃香嗆鼻，遠觀像是掛在樹上的星星", "香氣微弱，需要靠近才能聞到"], ans:2 });
+            q.push({ q:"課文第八、九段描述「油桐花編織的祕徑」，作者覺得走在這條花徑上，有什麼樣的感受？", opts:["感覺自己像是君臨天下的帝王", "比歡迎國王或總統的紅地毯更隆重、莊嚴", "感受到生命的短暫與脆弱", "彷彿走入迷宮，充滿未知的恐懼"], ans:1 });
+            q.push({ q:"在「油桐花編織的祕徑」中，作者認為心靈得到了何種轉變？", opts:["完美昇華", "徹底釋放", "返璞歸真", "悲喜交集"], ans:0 });
+            q.push({ q:"下列何種植物「沒有」在課文結構表的重點中被提及？", opts:["油桐花", "金銀花", "臺灣百合", "山黃梔"], ans:2 });
+            q.push({ q:"若要替本文三個主要結構下標題，下列順序何者最符合講義內容？", opts:["前言 → 油桐花祕徑 → 結語", "臺灣森林概況 → 憶童年 → 花徑漫步", "前言 → 五月山花香 → 油桐花編織的祕徑", "野人獻曝 → 金銀花香 → 山黃梔之美"], ans:2 });
+
+            // 形音義補充：採/踩/睬/彩 (11-18)
+            q.push({ q:"「不理不睬」的「睬」，其詞性與字義為何？", opts:["名詞，顏色", "動詞，理會", "動詞，摘取", "動詞，踐踏"], ans:1 });
+            q.push({ q:"下列何者的「ㄘㄞˇ」與「五彩奪目」的「彩」字字形相同？", opts:["不理不_ ", "_ 踏草皮", "_ 摘果實", "中獎摸_ "], ans:3 });
+            q.push({ q:"下列何組選項的字音「完全相同」？", opts:["採/踩/睬/彩", "採/菜/睬/彩", "彩/睬/猜/踩", "踩/睬/彩/柴"], ans:0 });
+            q.push({ q:"「五彩奪目」的「彩」與「彩霞」的「彩」，兩者的詞性關係為何？", opts:["皆為名詞", "皆為形容詞", "前者名詞，後者形容詞", "前者形容詞，後者名詞"], ans:2 });
+            q.push({ q:"「他輕輕_在落花上，不忍_摘任何一朵。」空格中依序應填入？", opts:["採、踩", "踩、睬", "睬、彩", "踩、採"], ans:3 });
+            q.push({ q:"下列句子中的用字，何者「完全正確」？", opts:["他對別人的勸告總是不理不踩。", "妹妹開心地去果園採摘蘋果。", "天邊出現了美麗的睬霞。", "幸運中了大採，全家都很高興。"], ans:1 });
+            q.push({ q:"「彩」字有許多含義，在「摸彩」一詞中，「彩」的意思是？", opts:["顏色", "多種顏色的", "理會", "獎"], ans:3 });
+            q.push({ q:"下列關於「ㄘㄞˇ」字的辨析，何者「錯誤」？", opts:["「採」是指摘取，動詞", "「踩」是用足踐踏，動詞", "「睬」是指理會，名詞", "「彩」可作名詞或形容詞"], ans:2 });
+
+            // 形音義補充：遐/暇/瑕 (19-25)
+            q.push({ q:"「名聞遐邇」的「遐」，其意義為何？", opts:["空閒", "過失", "長久", "遙遠"], ans:3 });
+            q.push({ q:"「天賜遐齡」的「遐」，其詞性與意義為何？", opts:["名詞，遙遠", "形容詞，長久、遠大", "名詞，空閒", "形容詞，過失"], ans:1 });
+            q.push({ q:"「應接不暇」的「暇」，其意義與下列何者相同？", opts:["名聞遐邇", "閒暇", "瑕疵", "天賜遐齡"], ans:1 });
+            q.push({ q:"下列何者用字「有誤」？", opts:["白璧微瑕", "自顧不暇", "引人遐思", "應接不遐"], ans:3 });
+            q.push({ q:"「暇」字的詞性為何？", opts:["動詞", "形容詞", "名詞", "副詞"], ans:2 });
+            q.push({ q:"「他每天忙於工作，根本無_顧及家庭，這也成了他完美人生中的一個_疵。」空格依序應填入？", opts:["遐、瑕", "暇、遐", "暇、瑕", "瑕、暇"], ans:2 });
+            q.push({ q:"「瑕疵」一詞的詞義偏向於？", opts:["遙遠", "空閒", "優點", "過失、缺點"], ans:3 });
+
+            // 形音義補充：薑/僵/疆/殭 (26-34)
+            q.push({ q:"「薑是老的辣」中的「薑」是比喻什麼？", opts:["人老體弱", "年長經驗豐富，辦事老練", "態度強硬不屈", "脾氣暴躁"], ans:1 });
+            q.push({ q:"「僵持不下」的「僵」，其詞性與字義為何？", opts:["形容詞，硬化", "動詞，使...失去生命", "名詞，極限", "動詞，雙方相持不下，無法協調"], ans:3 });
+            q.push({ q:"「萬壽無疆」的「疆」，其意義為何？", opts:["國土", "極限、止境", "動物死後的屍體", "硬化"], ans:1 });
+            q.push({ q:"「版圖疆域」的「疆」，其意義為何？", opts:["極限、止境", "國土", "雙方相持不下", "不靈活"], ans:1 });
+            q.push({ q:"「殭屍」的「殭」，其解釋為何？", opts:["雙方相持不下", "動物死後屍體不腐朽的", "全身硬化", "極限"], ans:1 });
+            q.push({ q:"下列關於「ㄐㄧㄤ」的字形與詞性配對，何者「錯誤」？", opts:["薑：名詞", "疆：名詞", "僵(僵硬)：名詞", "殭：形容詞"], ans:2 });
+            q.push({ q:"「天氣太冷，凍得我全身_硬，連原本打算談判的_局也無法打破了。」空格依序應填入？", opts:["僵、僵", "殭、疆", "僵、疆", "殭、僵"], ans:0 });
+            q.push({ q:"下列成語用字，何者「完全正確」？", opts:["萬壽無僵", "僵持不下", "版圖殭域", "李代桃薑"], ans:1 });
+            q.push({ q:"「疆」與「僵」的比較，下列敘述何者正確？", opts:["兩者皆可當作動詞", "「疆」只有名詞詞性，而「僵」可作形容詞或動詞", "兩者意思相通，可完全互換", "「疆」指動物屍體，而「僵」指國土"], ans:1 });
+
+            // 形音義補充：兢/競 & 剎/殺 (35-42)
+            q.push({ q:"「戰戰兢兢」的「兢」，其字義為何？", opts:["比賽", "小心謹慎的樣子", "爭著", "恐懼發抖"], ans:1 });
+            q.push({ q:"「競相效尤」的「競」，其詞性與字義為何？", opts:["動詞，比賽", "形容詞，小心謹慎", "副詞，爭著", "名詞，極限"], ans:2 });
+            q.push({ q:"「競相效尤」一詞的意思是？", opts:["爭相仿效錯誤的行為", "小心謹慎地工作", "互相競爭以求進步", "害怕被別人超越"], ans:0 });
+            q.push({ q:"「兢兢業業」的注音與解釋為何？", opts:["ㄐㄧㄥˋ ㄐㄧㄥˋ ㄧㄝˋ ㄧㄝˋ，認真比賽", "ㄐㄧㄥ ㄐㄧㄥ ㄧㄝˋ ㄧㄝˋ，形容謹肅恐懼，認真小心", "ㄐㄧㄥˋ ㄐㄧㄥˋ ㄧㄝˋ ㄧㄝˋ，小心謹慎的樣子", "ㄐㄧㄥ ㄐㄧㄥ ㄧㄝˋ ㄧㄝˋ，爭相仿效錯誤的行為"], ans:1 });
+            q.push({ q:"「古剎」的「剎」，注音為何？", opts:["ㄕㄚ", "ㄕㄚˋ", "ㄔㄚˋ", "ㄘㄚˋ"], ans:2 });
+            q.push({ q:"「殺價」的「殺」，其字義為何？", opts:["使人或動物失去生命", "削減", "寺廟", "結束"], ans:1 });
+            q.push({ q:"下列何者的詞性與「殺豬宰羊」的「殺」字相同？", opts:["古「剎」", "名「剎」", "「殺」價", "「剎」那"], ans:2 });
+            q.push({ q:"關於「兢」與「競」的辨析，何者正確？", opts:["兩者讀音皆為ㄐㄧㄥ", "「兢」部首為儿部，「競」為立部", "「兢」帶有小心謹慎之意，「競」則有爭逐之意", "「競選」的競可替換為「兢」"], ans:2 });
+
+            // 形音義補充：落/盛 (43-52)
+            q.push({ q:"「虎落平陽被犬欺」的「落」，注音為何？", opts:["ㄌㄨㄛˋ", "ㄌㄚˋ", "ㄌㄠˋ", "ㄌㄜˋ"], ans:0 });
+            q.push({ q:"「丟三落四」的「落」，注音為何？", opts:["ㄌㄨㄛˋ", "ㄌㄚˋ", "ㄌㄠˋ", "ㄌㄜˋ"], ans:1 });
+            q.push({ q:"下列關於「盛」的讀音與詞義，何者配對「錯誤」？", opts:["盛情難卻：濃厚的", "太平盛世：強壯、興旺的", "年輕氣盛：強烈、旺盛的", "繁花盛開：強壯、興旺的"], ans:3 }); // 繁花盛開是 強烈、旺盛地 (副詞)
+            q.push({ q:"「盛情難卻」中的「盛」，詞性為何？", opts:["名詞", "動詞", "形容詞", "副詞"], ans:2 });
+            q.push({ q:"「繁花盛開」中的「盛」，詞性為何？", opts:["名詞", "動詞", "形容詞", "副詞"], ans:3 });
+            q.push({ q:"「年輕氣盛」與「繁花盛開」中的「盛」字，在詞性上有何差異？", opts:["皆為形容詞", "皆為副詞", "前者為形容詞，後者為副詞", "前者為副詞，後者為形容詞"], ans:2 });
+            q.push({ q:"「太平盛世」的「盛世」，其反義詞應為？", opts:["衰世", "亂世", "末世", "創世"], ans:0 });
+            q.push({ q:"若要表達「難以辭謝的濃厚情意」，應使用下列哪一個詞語？", opts:["太平盛世", "年輕氣盛", "盛情難卻", "繁花盛開"], ans:2 });
+            q.push({ q:"「他常常忘東忘西，做事總是丟三_四的。」空格中的字應讀作？", opts:["ㄌㄨㄛˋ", "ㄌㄚˋ", "ㄌㄠˋ", "ㄌㄜˋ"], ans:1 });
+            q.push({ q:"下列句子中「盛」字的字義，何者與其他三者「不同」？", opts:["「盛」情難卻", "太平「盛」世", "國力鼎「盛」", "氣焰極「盛」"], ans:0 }); // 濃厚 vs 強壯/興旺/旺盛
+
+            // 成語：植物形態 (53-63)
+            q.push({ q:"「離離蔚蔚」的意思是？", opts:["形容草木枯黃", "非常茂盛的樣子", "形容樹木根部盤根錯節", "形容花朵凋謝的樣子"], ans:1 });
+            q.push({ q:"下列哪一個成語與「離離蔚蔚」的意思最相近？", opts:["枝葉扶疏", "鬱鬱蔥蔥", "欣欣向榮", "盤根錯節"], ans:1 });
+            q.push({ q:"「盤根錯節」除了形容樹木根幹交錯外，常用來比喻？", opts:["感情深厚", "人脈廣闊", "事情複雜，不易理解", "家族勢力龐大"], ans:2 });
+            q.push({ q:"「欣欣向榮」的「欣欣」指的是什麼樣子？", opts:["草木生長繁盛的樣子", "心情愉悅的樣子", "天氣晴朗的樣子", "百花齊放的樣子"], ans:0 });
+            q.push({ q:"「枝葉扶疏」的「扶疏」意思最接近？", opts:["枯萎凋落", "繁密四布", "單調稀疏", "向日生長"], ans:1 });
+            q.push({ q:"除了形容樹木茂盛外，「枝葉扶疏」還可比喻？", opts:["宗族繁衍昌盛", "國家經濟起飛", "社會秩序良好", "人心團結一致"], ans:0 });
+            q.push({ q:"若有人文章寫得「詳細縝密、文詞華美」，我們可以用哪一個成語形容？", opts:["欣欣向榮", "枝繁葉茂", "枝葉扶疏", "盤根錯節"], ans:2 });
+            q.push({ q:"「枝繁葉茂」常被用來比喻什麼情況？", opts:["兒孫滿堂，子孫眾多", "事業版圖擴張", "學問淵博", "國家繁榮"], ans:0 });
+            q.push({ q:"「林蔭蔽天」形容樹木極為茂盛，其中「蔽天」的意思是？", opts:["通向天空", "遮蔽天空", "比天空還高", "與天空顏色相近"], ans:1 });
+            q.push({ q:"這家百年老店在經歷改革後，如今生意又變得_，充滿朝氣。", opts:["盤根錯節", "欣欣向榮", "林蔭蔽天", "離離蔚蔚"], ans:1 });
+            q.push({ q:"這件案子的關係人_，牽扯了許多高層，一時之間很難釐清真相。", opts:["鬱鬱蔥蔥", "枝葉扶疏", "盤根錯節", "林蔭蔽天"], ans:2 });
+
+            // 成語：氣味 (64-75)
+            q.push({ q:"「芝蘭氣味」是用來比喻什麼？", opts:["食物非常美味", "君子間的友情如芝蘭一般的芳香美好", "女子高雅的氣質", "自然環境的清新"], ans:1 });
+            q.push({ q:"「十里飄香」最常被用來作為什麼場合的祝賀詞？", opts:["花店開幕", "香水發表會", "餐館開幕", "新居落成"], ans:2 });
+            q.push({ q:"「蘭薰桂馥」中的「薰、馥」皆指什麼意思？", opts:["花朵美麗", "顏色鮮豔", "香氣濃郁，久久不散", "枝葉茂盛"], ans:2 });
+            q.push({ q:"「渾身銅臭」的「臭」，注音與詞義為何？", opts:["ㄔㄡˋ，惡臭", "ㄒㄧㄡˋ，氣味", "ㄔㄡˋ，不好的名聲", "ㄒㄧㄡˋ，腐敗"], ans:1 });
+            q.push({ q:"「臭氣沖天」與「遺臭萬年」中的「臭」，讀音是否相同？", opts:["皆讀作ㄒㄧㄡˋ", "皆讀作ㄔㄡˋ", "前者ㄔㄡˋ，後者ㄒㄧㄡˋ", "前者ㄒㄧㄡˋ，後者ㄔㄡˋ"], ans:1 });
+            q.push({ q:"「遺臭萬年」的「臭」，具體指的是什麼？", opts:["氣味", "腐爛的物品", "惡名，不好的名聲", "排泄物"], ans:2 });
+            q.push({ q:"「鮑魚之肆」原本是指賣醃魚的店鋪，後來用來比喻？", opts:["海鮮市場", "臭穢的地方或小人聚集的場所", "偏僻的鄉村", "繁華的商業區"], ans:1 });
+            q.push({ q:"「乳臭未乾」的「臭」，注音與意義為何？", opts:["ㄔㄡˋ，惡臭", "ㄒㄧㄡˋ，氣味", "ㄔㄡˋ，惡名", "ㄒㄧㄡˋ，液體"], ans:1 });
+            q.push({ q:"下列哪一個成語的「臭」字，讀音與其他三者「不同」？", opts:["渾身銅「臭」", "乳「臭」未乾", "遺「臭」萬年", "無色無「臭」"], ans:2 }); // 前二與最後是ㄒㄧㄡˋ，遺臭萬年是ㄔㄡˋ
+            q.push({ q:"這位大善人一生行善，死後依然_，受人景仰。", opts:["芝蘭氣味", "蘭薰桂馥", "十里飄香", "欣欣向榮"], ans:1 });
+            q.push({ q:"與壞人結交，就像進入_，久了也會沾染惡習。", opts:["芝蘭氣味", "鮑魚之肆", "盤根錯節", "遺臭萬年"], ans:1 });
+            q.push({ q:"他雖然年紀輕輕、_，但處理事情卻非常成熟穩重。", opts:["渾身銅臭", "乳臭未乾", "臭氣沖天", "遺臭萬年"], ans:1 });
+
+            // 成語：其他 (76-85)
+            q.push({ q:"「望梅止渴」的比喻義為何？", opts:["比喻目標遙不可及", "比喻用空想來安慰自己", "比喻極度口渴", "比喻準備充分"], ans:1 });
+            q.push({ q:"「蕙質蘭心」通常用來形容什麼對象？", opts:["有才華的男子", "年幼的兒童", "女子芳潔的心地、高雅的品德", "德高望重的老人"], ans:2 });
+            q.push({ q:"「椿萱並茂」中的「椿、萱」在古代文學中分別代表什麼？", opts:["兄弟", "師生", "父母", "夫妻"], ans:2 });
+            q.push({ q:"「人面桃花」的典故出自唐朝詩人崔護，這個成語用來比喻什麼？", opts:["女子容貌比桃花還美", "思念的意中人或與意中人無緣再見面", "春天百花盛開的景象", "短暫而美好的愛情"], ans:1 });
+            q.push({ q:"「舌粲蓮花」的「粲」，注音為何？", opts:["ㄘㄢˋ", "ㄔㄢˋ", "ㄘㄢˇ", "ㄔㄢˇ"], ans:0 });
+            q.push({ q:"「舌粲蓮花」原指明白、清楚或鮮明華美的樣子，現今用來形容人？", opts:["唱歌好聽", "吃飯斯文", "口才好", "懂得欣賞花朵"], ans:2 });
+            q.push({ q:"下列何者「不是」用來形容女子的成語？", opts:["蕙質蘭心", "小家碧玉", "椿萱並茂", "閉月羞花"], ans:2 });
+            q.push({ q:"想要學好英文，不能只靠看別人的成功經驗來_，必須自己下苦功才行。", opts:["望梅止渴", "人面桃花", "舌粲蓮花", "欣欣向榮"], ans:0 });
+            q.push({ q:"雖然那名推銷員說得_，但我還是不為所動。", opts:["蕙質蘭心", "舌粲蓮花", "人面桃花", "蘭薰桂馥"], ans:1 });
+            q.push({ q:"在朋友的婚禮上，祝賀對方_是不恰當的。(提示：對象錯誤)", opts:["百年好合", "永浴愛河", "椿萱並茂", "白頭偕老"], ans:2 }); // 椿萱並茂是祝父母健在
+
+            // 名言錦句 (86-91)
+            q.push({ q:"「自然景色的生命，是存在於人的心中的，要理解它，就需要對它有所感受。」此句名言出自何人之口？", opts:["李白", "盧梭", "李慈銘", "歐文·斯通"], ans:1 });
+            q.push({ q:"「陽春召我以煙景，大塊假我以文章。」此句名言出自何人？", opts:["李白", "盧梭", "李慈銘", "歐文·斯通"], ans:0 });
+            q.push({ q:"李白的詩句「大塊假我以文章」中，「大塊」指的是什麼？", opts:["大塊的石頭", "大面積的土地", "大自然", "大塊的文章"], ans:2 });
+            q.push({ q:"「時夕陽在山，蒼翠欲滴；風葉露穗，搖蕩若千頃波...」此段描述自然之美的文字出自？", opts:["李白", "盧梭", "李慈銘", "歐文·斯通"], ans:2 });
+            q.push({ q:"李慈銘認為在自然中獲得的快樂，「此樂非但忘貧，兼可入道」，其中「入道」是指？", opts:["出家為僧", "體會大自然的道埋/真理", "迷失在道路中", "學習道教法術"], ans:1 });
+            q.push({ q:"「最偉大的藥方就是大自然。自然界裡蘊藏著治療一切疾病的祕訣。」這句話的作者是？", opts:["李白", "盧梭", "李慈銘", "歐文·斯通"], ans:3 });
+
+            // 佳文欣賞 (92-100)
+            q.push({ q:"在《我看到植物的光和影》一文中，作者是誰？", opts:["李慈銘", "王家祥", "劉克襄", "徐仁修"], ans:1 });
+            q.push({ q:"作者努力提醒朋友們，設法花多少時間去看一株樹？", opts:["十秒", "一分鐘", "十分鐘", "半小時"], ans:2 });
+            q.push({ q:"作者觀察到，一般人看見一株樹，目光停留的時間往往不超過多久？", opts:["十秒", "一分鐘", "十分鐘", "半小時"], ans:0 });
+            q.push({ q:"當人們在十秒前便把頭垂下來，望著作者時，作者認為這反映了現代人什麼樣的心理狀態？", opts:["缺乏對植物學的認知", "對作者的行為感到憤怒", "生活心情太匆忙，內心不得悠閒", "害怕在森林中迷路"], ans:2 });
+            q.push({ q:"作者是從哪一類書籍中學到「重新看見」的方法？", opts:["植物分類學", "環境教育", "賞鳥圖鑑", "佛學經典"], ans:1 });
+            q.push({ q:"作者認為，要真正用心看待自然萬物，其難度就如同什麼一樣不容易？", opts:["學習高等微積分", "寫出一篇好文章", "學佛修行", "攀登百岳"], ans:2 });
+            q.push({ q:"作者認為，從進入山林的過程中得到「平心靜氣的好果」後，能帶來什麼好處？", opts:["身體變得更強壯", "觀察力、思考力能充裕自如", "能夠拍出更好的照片", "能夠寫出更好的詩句"], ans:1 });
+            q.push({ q:"作者將在山林中獲得「平心靜氣」的過程，比喻為什麼樣的學習？", opts:["入山朝聖的自我修練", "走馬看花的觀光", "野外求生的訓練", "學術研究的田野調查"], ans:0 });
+            q.push({ q:"文末作者提到，他想追求的真正經驗是什麼？", opts:["成為植物學家", "推廣環境教育", "面對荒野", "逃離都市生活"], ans:2 });
+
+            return q;
+        };
+
+        // ==========================================
+        //  應用程式狀態與邏輯
+        // ==========================================
+        let currentTab = 'login';
+        let learnSubTab = 'sec1';
+        let quizState = { active: false, currentQ: 0, score: 0, answers: [], questions: [], showExplanation: false, selectedAns: null };
+        let isLearnMenuOpen = false;
+
+        const el = id => document.getElementById(id);
+
+        // 彈出式側邊選單控制
+        window.toggleLearnMenu = (show) => {
+            isLearnMenuOpen = typeof show === 'boolean' ? show : !isLearnMenuOpen;
+            const drawer = el('learn-drawer');
+            const overlay = el('learn-overlay');
+            if(drawer && overlay) {
+                if(isLearnMenuOpen) {
+                    drawer.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden');
+                } else {
+                    drawer.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                }
+            }
+        };
+
+        // 載入全域最近登入名單
+        const loadRecentUsers = async () => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            try {
+                // 修正路徑層級 (需為偶數：collection -> doc -> collection -> doc ...)
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', COLLECTION_NAME);
+                const snap = await getDoc(ref);
+                if(snap.exists() && snap.data().users) {
+                    recentUsers = snap.data().users;
+                }
+            } catch(e) { console.error("Load Recent Users Error", e); }
+            if (currentTab === 'login') renderLogin();
+        };
+
+        // 儲存全域最近登入名單
+        const saveRecentUser = async (name) => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            try {
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', COLLECTION_NAME);
+                await setDoc(ref, {
+                    users: arrayUnion(name)
+                }, { merge: true });
+                
+                // 同步更新本地端狀態，確保登出後畫面能立刻顯示
+                if (!recentUsers.includes(name)) {
+                    recentUsers.push(name);
+                }
+            } catch(e) { console.error("Save Recent User Error", e); }
+        };
+
+        const initApp = async () => {
+            renderApp();
+            if (isFirebaseInitialized) {
+                await initAuth(); // 確保先初始化驗證
+                // Firebase Auth 監聽
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        // 嘗試讀取本地名稱暫存或 Firebase
+                        await loadUserData();
+                        await loadRecentUsers();
+                        if (username) {
+                            renderMain();
+                        } else {
+                            renderLogin();
+                        }
+                    } else {
+                        // 處理登出的狀態，若是剛進入則已在 initAuth 中處理匿名登入
+                        renderLogin();
+                    }
+                });
+            } else {
+                // 單機模式
+                if (username) renderMain(); else renderLogin();
+            }
+        };
+
+        window.handleLogin = async (name) => {
+            if(!name.trim()) {
+                const inputEl = document.getElementById('usernameInput');
+                inputEl.classList.add('border-red-500', 'bg-red-50');
+                inputEl.placeholder = "名稱不能為空！";
+                setTimeout(() => {
+                    inputEl.classList.remove('border-red-500', 'bg-red-50');
+                    inputEl.placeholder = "請輸入您的姓名/座號";
+                }, 2000);
+                return;
+            }
+            username = name;
+            
+            if (isFirebaseInitialized && currentUser) {
+                const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid);
+                await setDoc(userRef, { username, lastLogin: new Date() }, { merge: true });
+                
+                // 記錄登入 (符合規則1,2)
+                const loginRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_logs'));
+                await setDoc(loginRef, { type: 'login', time: new Date() });
+
+                // 儲存至全域最近登入
+                await saveRecentUser(name);
+            }
+            renderMain();
+        };
+
+        const loadUserData = async () => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
+            try {
+                const snap = await getDoc(ref);
+                if (snap.exists()) {
+                    userData = snap.data();
+                    if(!userData.favorites) userData.favorites = [];
+                    if(!userData.mistakes) userData.mistakes = [];
+                } else {
+                    await setDoc(ref, userData);
+                }
+            } catch(e) { console.error("Load Data Error", e); }
+        };
+
+        const saveUserData = async () => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
+            try {
+                await updateDoc(ref, userData);
+            } catch(e) { console.error("Save Data Error", e); }
+        };
+
+        window.toggleFavorite = async (itemId) => {
+            const idx = userData.favorites.indexOf(itemId);
+            if (idx > -1) {
+                userData.favorites.splice(idx, 1);
+            } else {
+                userData.favorites.push(itemId);
+            }
+            saveUserData();
+            // 重新渲染以更新愛心狀態
+            if(currentTab === 'learn') renderLearnContent();
+            if(currentTab === 'favorites') renderFavorites();
+        };
+
+        // ==========================================
+        //  UI 渲染邏輯
+        // ==========================================
+        const renderApp = () => {
+            el('app').innerHTML = `
+                <div id="view-container" class="w-full h-full flex flex-col"></div>
+            `;
+        };
+
+        window.renderLogin = () => {
+            currentTab = 'login';
+            el('view-container').innerHTML = `
+                <div class="flex-1 flex flex-col items-center justify-center bg-wood bg-opacity-30 relative overflow-hidden p-6">
+                    
+                    <div class="absolute top-6 right-6 z-20">
+                        <div class="flex flex-col items-end gap-3 w-full md:w-auto">
+                            <div class="flex items-center bg-gray-50 px-4 py-2 rounded-full border border-gray-200 shadow-inner text-base font-bold text-gray-700">
+                                <span class="status-dot ${connectionStatus === 'loading' ? 'status-loading' : connectionStatus === 'success' ? 'status-success' : 'status-error'}"></span>
+                                ${connectionStatus === 'loading' ? '雲端讀取中...' : connectionStatus === 'success' ? '雲端已同步' : '雲端連線失敗'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="absolute -top-20 -left-20 w-80 h-80 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+                    <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-emerald-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+                    
+                    <div class="bg-white p-10 rounded-xl shadow-2xl z-10 w-[28rem] max-w-full text-center border-t-8 border-green-600">
+                        <h1 class="text-4xl md:text-5xl font-bold text-wood-dark mb-4 tracking-widest leading-tight">森林最優美的<br>一天</h1>
+                        <p class="text-gray-500 mb-10 text-xl">互動學習系統</p>
+                        
+                        <div class="space-y-6">
+                            <input type="text" id="usernameInput" placeholder="請輸入您的姓名/座號" class="w-full px-5 py-4 text-lg rounded-lg border-2 border-gray-300 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 text-center transition-colors">
+                            <button onclick="handleLogin(document.getElementById('usernameInput').value)" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 text-xl rounded-lg shadow-md transition duration-200">
+                                開始學習
+                            </button>
+                        </div>
+                        
+                        <div class="mt-10 border-t-2 border-gray-100 pt-6">
+                            <p class="text-base text-gray-400 mb-3 font-medium">雲端最近登入</p>
+                            <div class="flex flex-wrap justify-center gap-3">
+                                ${recentUsers.length > 0 
+                                    ? recentUsers.slice(-5).map(u => `<button onclick="handleLogin('${u}')" class="text-base font-bold bg-green-50 border border-green-200 text-green-800 hover:bg-green-100 px-4 py-2 rounded shadow-sm transition">${u}</button>`).join('')
+                                    : `<span class="text-sm text-gray-400">尚無紀錄或尚未連線</span>`
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        window.renderMain = () => {
+            el('view-container').innerHTML = `
+                <!-- 導覽列 -->
+                <nav class="bg-wood text-wood-dark shadow-md z-20">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="flex justify-between h-20">
+                            <div class="flex items-center gap-4">
+                                <span class="font-bold text-xl md:text-2xl tracking-widest hidden sm:block"><i class="fas fa-leaf mr-3 text-green-700"></i>森林最優美的一天</span>
+                                <div class="flex items-center bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200 shadow-inner text-sm font-bold text-gray-700">
+                                    <span class="status-dot ${connectionStatus === 'loading' ? 'status-loading' : connectionStatus === 'success' ? 'status-success' : 'status-error'}"></span>
+                                    ${connectionStatus === 'loading' ? '讀取中' : connectionStatus === 'success' ? '雲端同步' : '連線失敗'}
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-1 sm:space-x-4">
+                                <button onclick="switchTab('learn')" id="nav-learn" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-green-700 hover:text-white transition">學習區</button>
+                                <button onclick="switchTab('quiz')" id="nav-quiz" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-green-700 hover:text-white transition">測驗(100題)</button>
+                                <button onclick="switchTab('mistakes')" id="nav-mistakes" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-green-700 hover:text-white transition">錯題本</button>
+                                <button onclick="switchTab('favorites')" id="nav-favorites" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-green-700 hover:text-white transition">最愛</button>
+                                <div class="ml-2 sm:ml-4 flex items-center pl-2 sm:pl-4 border-l-2 border-green-400">
+                                    <span class="text-sm sm:text-lg font-bold mr-2 sm:mr-3"><i class="fas fa-user-circle mr-1 sm:mr-2"></i>${username}</span>
+                                    <button onclick="logout()" class="text-lg text-red-600 hover:text-red-800" title="登出"><i class="fas fa-sign-out-alt"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                
+                <!-- 內容區 -->
+                <div id="main-content" class="flex-1 overflow-hidden bg-white bg-opacity-50 flex flex-col"></div>
+            `;
+            switchTab('learn');
+        };
+
+        window.logout = () => {
+            username = '';
+            userData = { favorites: [], mistakes: [] };
+            renderLogin();
+        };
+
+        window.switchTab = (tab) => {
+            currentTab = tab;
+            // 更新導覽列樣式
+            ['learn', 'quiz', 'mistakes', 'favorites'].forEach(t => {
+                const btn = el(`nav-${t}`);
+                if(btn) {
+                    if(t === tab) {
+                        btn.classList.add('bg-green-700', 'text-white');
+                        btn.classList.remove('hover:bg-green-700', 'hover:text-white');
+                    } else {
+                        btn.classList.remove('bg-green-700', 'text-white');
+                        btn.classList.add('hover:bg-green-700', 'hover:text-white');
+                    }
+                }
+            });
+
+            const content = el('main-content');
+            if(tab === 'learn') renderLearnView(content);
+            if(tab === 'quiz') renderQuizView(content);
+            if(tab === 'mistakes') renderMistakes(content);
+            if(tab === 'favorites') renderFavorites(content);
+        };
+
+        // --- 學習區 ---
+        const renderLearnView = (container) => {
+            const currentData = learnData.find(d => d.id === learnSubTab);
+            
+            container.innerHTML = `
+                <!-- 頂部：漢堡選單按鈕與標題 -->
+                <div class="w-full bg-green-50 border-b border-green-200 p-4 flex items-center shadow-sm z-10 shrink-0">
+                    <button onclick="toggleLearnMenu(true)" class="text-green-800 hover:text-green-600 focus:outline-none flex items-center px-4 py-2 bg-white rounded border border-green-300 shadow-sm mr-4 transition-colors">
+                        <i class="fas fa-bars text-2xl mr-3"></i>
+                        <span class="font-bold text-xl">單元選單</span>
+                    </button>
+                    <span class="font-bold text-2xl text-wood-dark" id="current-learn-title">${currentData ? currentData.title : ''}</span>
+                </div>
+
+                <!-- 覆蓋層 (Overlay) -->
+                <div id="learn-overlay" onclick="toggleLearnMenu(false)" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden transition-opacity"></div>
+
+                <!-- 彈出式左側選單 (Drawer) -->
+                <div id="learn-drawer" class="fixed inset-y-0 left-0 w-[22rem] bg-gray-50 border-r border-gray-200 z-40 transform -translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto shadow-2xl flex flex-col">
+                    <div class="p-6 bg-green-100 flex justify-between items-center border-b border-green-200 shrink-0">
+                        <span class="font-bold text-2xl text-green-900"><i class="fas fa-list-ul mr-3"></i>學習目錄</span>
+                        <button onclick="toggleLearnMenu(false)" class="text-green-800 hover:text-red-600 transition-colors"><i class="fas fa-times text-3xl"></i></button>
+                    </div>
+                    <ul class="py-4 flex-1">
+                        ${learnData.map(d => `
+                            <li>
+                                <button onclick="selectLearnTab('${d.id}')" id="ltab-${d.id}" class="w-full text-left px-8 py-5 text-xl font-bold hover:bg-green-100 transition-colors ${learnSubTab === d.id ? 'bg-green-100 text-green-800 border-l-8 border-green-600' : 'text-gray-600 border-l-8 border-transparent'}">
+                                    ${d.title}
+                                </button>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+                
+                <!-- 右側主要內容 -->
+                <div class="flex-1 p-6 md:p-10 overflow-y-auto" id="learn-content-area"></div>
+            `;
+            renderLearnContent();
+        };
+
+        window.selectLearnTab = (id) => {
+            learnSubTab = id;
+            const data = learnData.find(d => d.id === id);
+            
+            // 更新上方標題
+            const titleEl = el('current-learn-title');
+            if(titleEl && data) titleEl.innerText = data.title;
+            
+            // 更新選單樣式
+            learnData.forEach(d => {
+                const btn = el(`ltab-${d.id}`);
+                if(btn) {
+                    if(d.id === id) {
+                        btn.classList.add('bg-green-100', 'text-green-800', 'border-l-8', 'border-green-600');
+                        btn.classList.remove('text-gray-600', 'border-transparent');
+                    } else {
+                        btn.classList.remove('bg-green-100', 'text-green-800', 'border-l-8', 'border-green-600');
+                        btn.classList.add('text-gray-600', 'border-transparent');
+                    }
+                }
+            });
+            renderLearnContent();
+            
+            // 選擇單元後自動收起選單
+            toggleLearnMenu(false);
+        };
+
+        window.renderLearnContent = () => {
+            const area = el('learn-content-area');
+            if(!area) return;
+            const data = learnData.find(d => d.id === learnSubTab);
+            area.innerHTML = `
+                <div class="max-w-5xl mx-auto">
+                    <h2 class="text-3xl font-bold text-wood-dark mb-8 border-b-4 border-green-200 pb-3">${data.title}</h2>
+                    <div class="text-gray-800 leading-relaxed text-lg md:text-xl">${data.content}</div>
+                </div>
+            `;
+            // 更新愛心狀態
+            setTimeout(() => {
+                document.querySelectorAll('.fav-btn').forEach(btn => {
+                    const id = btn.getAttribute('data-id');
+                    if(userData.favorites.includes(id)) {
+                        btn.classList.remove('text-gray-300');
+                        btn.classList.add('text-red-500');
+                    }
+                });
+            }, 0);
+        };
+
+        // --- 測驗區 ---
+        const renderQuizView = (container) => {
+            if(!quizState.active) {
+                container.innerHTML = `
+                    <div class="w-full flex items-center justify-center p-6 mt-10">
+                        <div class="bg-white p-10 rounded-xl shadow-md text-center max-w-2xl border-t-8 border-emerald-600">
+                            <i class="fas fa-pencil-alt text-6xl text-emerald-600 mb-6"></i>
+                            <h2 class="text-3xl font-bold mb-6">綜合測驗 (共100題)</h2>
+                            <p class="text-gray-600 mb-8 text-xl">挑戰100題高鑑別度測驗！題目涵蓋課文細節、字音字形辨析與成語精熟度。選項經過特別設計，請務必仔細作答！</p>
+                            <button onclick="startQuiz()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-12 text-2xl rounded-full shadow-lg transition transform hover:scale-105">開始測驗</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                renderQuizQuestion(container);
+            }
+        };
+
+        window.startQuiz = () => {
+            // 隨機打亂100題
+            const qList = [...generate100Questions()].sort(() => 0.5 - Math.random());
+            quizState = { active: true, currentQ: 0, score: 0, answers: [], questions: qList, showExplanation: false, selectedAns: null };
+            renderQuizView(el('main-content'));
+        };
+
+        const renderQuizQuestion = (container) => {
+            const qIdx = quizState.currentQ;
+            if(qIdx >= quizState.questions.length) {
+                finishQuiz(container);
+                return;
+            }
+            
+            const q = quizState.questions[qIdx];
+            const progress = ((qIdx) / quizState.questions.length) * 100;
+
+            // 產生選項按鈕 HTML
+            let optionsHtml = '';
+            q.opts.forEach((opt, i) => {
+                let btnClass = "w-full text-left p-5 text-xl rounded-lg border-2 transition-all flex items-center group ";
+                let iconHtml = `<span class="w-10 h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mr-5 font-bold text-xl transition-colors">${String.fromCharCode(65+i)}</span>`;
+                
+                if (!quizState.showExplanation) {
+                    btnClass += "border-gray-300 hover:border-emerald-500 hover:bg-emerald-50 group-hover:bg-emerald-500 group-hover:text-white";
+                } else {
+                    if (i === q.ans) {
+                        // 正確答案高亮綠色
+                        btnClass += "border-emerald-500 bg-emerald-100 text-emerald-800 font-bold scale-100 shadow-md";
+                        iconHtml = `<span class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center mr-5 font-bold text-xl"><i class="fas fa-check"></i></span>`;
+                    } else if (i === quizState.selectedAns) {
+                        // 點錯的選項顯示紅色
+                        btnClass += "border-red-500 bg-red-50 text-red-800 font-bold scale-[0.98]";
+                        iconHtml = `<span class="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center mr-5 font-bold text-xl"><i class="fas fa-times"></i></span>`;
+                    } else {
+                        // 未選到的錯誤答案變淡
+                        btnClass += "border-gray-200 bg-gray-50 opacity-50";
+                    }
+                }
+
+                optionsHtml += `
+                    <button ${quizState.showExplanation ? 'disabled' : `onclick="answerQuestion(${i})"`} class="${btnClass}">
+                        ${iconHtml}
+                        <span>${opt}</span>
+                    </button>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="w-full flex flex-col items-center p-6 md:p-10 overflow-y-auto">
+                    <div class="w-full max-w-4xl bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                        <div class="bg-emerald-50 px-8 py-5 border-b border-emerald-100 flex justify-between items-center">
+                            <span class="font-bold text-emerald-800 text-xl">第 ${qIdx + 1} / 100 題</span>
+                            <div class="w-1/2 bg-gray-200 rounded-full h-3">
+                                <div class="bg-emerald-500 h-3 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                        <div class="p-8 md:p-12">
+                            <h3 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-relaxed">${q.q}</h3>
+                            <div class="space-y-4">
+                                ${optionsHtml}
+                            </div>
+                            
+                            ${quizState.showExplanation ? `
+                                <div class="mt-8 p-6 rounded-xl border-2 ${quizState.selectedAns === q.ans ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'} animate-fade-in shadow-inner">
+                                    <div class="flex items-center mb-4">
+                                        <i class="fas ${quizState.selectedAns === q.ans ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-red-500'} text-3xl mr-3"></i>
+                                        <span class="font-bold text-2xl">${quizState.selectedAns === q.ans ? '太棒了，答對了！' : '哎呀，答錯了！'}</span>
+                                    </div>
+                                    <div class="bg-white bg-opacity-70 p-5 rounded-lg border ${quizState.selectedAns === q.ans ? 'border-emerald-100' : 'border-red-100'}">
+                                        <p class="font-bold mb-2 text-xl"><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>完整題目解析：</p>
+                                        <p class="mt-2 text-lg">正確答案為 <strong class="${quizState.selectedAns === q.ans ? 'text-emerald-700' : 'text-red-700'} text-xl">(${String.fromCharCode(65+q.ans)}) ${q.opts[q.ans]}</strong>。</p>
+                                        <p class="mt-3 text-base text-gray-600">此題源自《森林最優美的一天》補充講義內容，建議可至「學習區」多加複習喔！</p>
+                                    </div>
+                                    <button onclick="nextQuestion()" class="mt-6 w-full ${quizState.selectedAns === q.ans ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'} text-white font-bold py-4 text-xl rounded-lg shadow-md transition transform hover:scale-[1.02]">我瞭解了，前往下一題 <i class="fas fa-arrow-right ml-2"></i></button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        window.answerQuestion = (optIdx) => {
+            const q = quizState.questions[quizState.currentQ];
+            const isCorrect = optIdx === q.ans;
+            
+            // 設定顯示狀態
+            quizState.selectedAns = optIdx;
+            quizState.showExplanation = true;
+            
+            // 音效與特效
+            if (isCorrect) {
+                playCorrectSound();
+                confetti({
+                    particleCount: 150,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    colors: ['#34d399', '#fbbf24', '#f87171', '#3b82f6']
+                });
+            } else {
+                playWrongSound();
+            }
+
+            renderQuizView(el('main-content'));
+        };
+
+        window.nextQuestion = () => {
+            const q = quizState.questions[quizState.currentQ];
+            const isCorrect = quizState.selectedAns === q.ans;
+
+            quizState.answers.push({
+                q: q.q,
+                opts: q.opts,
+                userAns: quizState.selectedAns,
+                correctAns: q.ans,
+                isCorrect: isCorrect
+            });
+
+            if(isCorrect) quizState.score++;
+            
+            // 如果答錯，加入錯題本
+            if(!isCorrect) {
+                const mistakeId = q.q; // 簡單用題目當ID
+                const exists = userData.mistakes.find(m => m.id === mistakeId);
+                if(!exists) {
+                    userData.mistakes.push({
+                        id: mistakeId,
+                        q: q.q,
+                        opts: q.opts,
+                        ans: q.ans,
+                        time: new Date().toISOString()
+                    });
+                    saveUserData();
+                }
+            }
+
+            // 進入下一題並重置狀態
+            quizState.currentQ++;
+            quizState.showExplanation = false;
+            quizState.selectedAns = null;
+            renderQuizView(el('main-content'));
+        };
+
+        const finishQuiz = async (container) => {
+            quizState.active = false;
+            const total = quizState.questions.length;
+            const score = Math.round((quizState.score / total) * 100);
+            
+            // 存入 Firebase
+            if(isFirebaseInitialized && currentUser) {
+                const docRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_quizzes'));
+                try {
+                    await setDoc(docRef, { score, date: new Date(), total });
+                } catch(e) { console.error("Save Quiz Error", e); }
+            }
+
+            container.innerHTML = `
+                <div class="w-full flex items-center justify-center p-6 overflow-y-auto mt-10">
+                    <div class="bg-white p-12 rounded-xl shadow-xl text-center max-w-2xl border-t-8 border-green-600">
+                        <i class="fas fa-trophy text-8xl text-yellow-500 mb-6"></i>
+                        <h2 class="text-4xl font-bold mb-4">測驗完成！</h2>
+                        <p class="text-7xl font-extrabold text-green-600 mb-8">${score} <span class="text-3xl text-gray-500">分</span></p>
+                        <p class="text-gray-600 mb-8 text-2xl">您答對了 <span class="text-green-600 font-bold">${quizState.score}</span> 題，共 ${total} 題。</p>
+                        <div class="space-y-4">
+                            <button onclick="switchTab('mistakes')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 text-xl rounded-lg shadow transition">查看錯題本</button>
+                            <button onclick="startQuiz()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 px-6 text-xl rounded-lg shadow transition">重新測驗</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // --- 錯題本 ---
+        window.renderMistakes = (container) => {
+            if(!container) container = el('main-content');
+            
+            if(userData.mistakes.length === 0) {
+                container.innerHTML = `
+                    <div class="w-full flex items-center justify-center p-6 text-gray-400 flex-col mt-20">
+                        <i class="fas fa-check-circle text-8xl mb-6 text-emerald-200"></i>
+                        <p class="text-2xl font-bold">太棒了！目前沒有錯題紀錄。</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="w-full p-6 md:p-10 overflow-y-auto">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="flex justify-between items-center border-b-4 border-red-200 pb-4 mb-8">
+                            <h2 class="text-3xl font-bold text-red-800"><i class="fas fa-book-dead mr-3"></i>錯題本</h2>
+                            <button onclick="clearMistakes()" class="text-lg text-red-500 hover:text-red-700 font-bold underline">清空錯題</button>
+                        </div>
+                        <div class="space-y-6">
+                            ${userData.mistakes.map((m, i) => `
+                                <div class="bg-white p-6 md:p-8 rounded-xl shadow-md border-l-8 border-red-400">
+                                    <h3 class="font-bold text-gray-800 mb-5 text-xl md:text-2xl">${i+1}. ${m.q}</h3>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-lg">
+                                        ${m.opts.map((opt, idx) => `
+                                            <div class="p-3 rounded-lg ${idx === m.ans ? 'bg-emerald-100 text-emerald-800 font-bold border-2 border-emerald-300 shadow-sm' : 'bg-gray-50 text-gray-500 border border-gray-200'}">
+                                                ${String.fromCharCode(65+idx)}. ${opt}
+                                                ${idx === m.ans ? '<i class="fas fa-check ml-2"></i>(正確答案)' : ''}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `).reverse().join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        window.clearMistakes = () => {
+            if(confirm('確定要清空所有錯題紀錄嗎？')) {
+                userData.mistakes = [];
+                saveUserData();
+                renderMistakes();
+            }
+        };
+
+        // --- 我的最愛 ---
+        window.renderFavorites = (container) => {
+            if(!container) container = el('main-content');
+            
+            if(userData.favorites.length === 0) {
+                container.innerHTML = `
+                    <div class="w-full flex items-center justify-center p-6 text-gray-400 flex-col mt-20">
+                        <i class="fas fa-heart-broken text-8xl mb-6 text-pink-200"></i>
+                        <p class="text-2xl font-bold">目前還沒有收藏任何項目。</p>
+                        <p class="text-lg mt-3">到「學習區」點擊愛心圖示即可收藏！</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="w-full p-6 md:p-10 overflow-y-auto">
+                    <div class="max-w-5xl mx-auto">
+                        <h2 class="text-3xl font-bold text-pink-800 border-b-4 border-pink-200 pb-4 mb-8"><i class="fas fa-heart mr-3"></i>我的最愛</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                            ${userData.favorites.map(favId => `
+                                <div class="bg-white p-6 rounded-xl shadow-md border-2 border-pink-100 flex justify-between items-center group relative overflow-hidden transition-shadow hover:shadow-lg">
+                                    <div class="absolute inset-0 bg-pink-50 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                                    <span class="font-bold text-gray-800 z-10 text-xl md:text-2xl">${favId}</span>
+                                    <button onclick="toggleFavorite('${favId}')" class="text-pink-500 hover:text-red-600 z-10 text-3xl"><i class="fas fa-heart"></i></button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // 啟動應用
+        initApp();
+
+    </script>
+</body>
+</html>
