@@ -834,8 +834,8 @@
         const renderQuizView = (container) => {
             if(!quizState.active) {
                 container.innerHTML = `
-                    <div class="w-full flex items-center justify-center p-6 mt-10">
-                        <div class="bg-white p-10 rounded-xl shadow-md text-center max-w-2xl border-t-8 border-orange-600">
+                    <div class="w-full flex-1 flex items-center justify-center p-6 overflow-y-auto">
+                        <div class="bg-white p-10 rounded-xl shadow-md text-center max-w-2xl border-t-8 border-orange-600 shrink-0">
                             <i class="fas fa-pencil-alt text-6xl text-orange-600 mb-6"></i>
                             <h2 class="text-3xl font-bold mb-6">綜合測驗 (共100題)</h2>
                             <p class="text-gray-600 mb-8 text-xl">挑戰100題高鑑別度測驗！題目涵蓋課文細節、字音字形辨析與成語精熟度。選項經過特別設計，請務必仔細作答！</p>
@@ -897,8 +897,8 @@
             });
 
             container.innerHTML = `
-                <div class="w-full flex flex-col items-center p-6 md:p-10 overflow-y-auto">
-                    <div class="w-full max-w-4xl bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                <div class="w-full flex-1 flex flex-col items-center p-4 md:p-10 overflow-y-auto pb-24">
+                    <div class="w-full max-w-4xl bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 shrink-0">
                         <div class="bg-orange-50 px-8 py-5 border-b border-orange-100 flex justify-between items-center">
                             <span class="font-bold text-orange-800 text-xl">第 ${qIdx + 1} / 100 題</span>
                             <div class="w-1/2 bg-gray-200 rounded-full h-3">
@@ -1010,8 +1010,8 @@
             }
 
             container.innerHTML = `
-                <div class="w-full flex items-center justify-center p-6 overflow-y-auto mt-10">
-                    <div class="bg-white p-12 rounded-xl shadow-xl text-center max-w-2xl border-t-8 border-orange-600">
+                <div class="w-full flex-1 flex items-center justify-center p-6 overflow-y-auto pb-24">
+                    <div class="bg-white p-12 rounded-xl shadow-xl text-center max-w-2xl border-t-8 border-orange-600 shrink-0">
                         <i class="fas fa-trophy text-8xl text-yellow-500 mb-6"></i>
                         <h2 class="text-4xl font-bold mb-4">測驗完成！</h2>
                         <p class="text-7xl font-extrabold text-orange-600 mb-8">${score} <span class="text-3xl text-gray-500">分</span></p>
@@ -1031,7 +1031,7 @@
             
             if(userData.mistakes.length === 0) {
                 container.innerHTML = `
-                    <div class="w-full flex items-center justify-center p-6 text-gray-400 flex-col mt-20">
+                    <div class="w-full flex-1 flex items-center justify-center p-6 text-gray-400 flex-col">
                         <i class="fas fa-check-circle text-8xl mb-6 text-amber-300"></i>
                         <p class="text-2xl font-bold">太棒了！目前沒有錯題紀錄。</p>
                     </div>`;
@@ -1039,7 +1039,7 @@
             }
 
             container.innerHTML = `
-                <div class="w-full p-6 md:p-10 overflow-y-auto">
+                <div class="w-full flex-1 p-6 md:p-10 overflow-y-auto pb-24">
                     <div class="max-w-4xl mx-auto">
                         <div class="flex justify-between items-center border-b-4 border-red-200 pb-4 mb-8">
                             <h2 class="text-3xl font-bold text-red-800"><i class="fas fa-book-dead mr-3"></i>錯題本</h2>
@@ -1079,7 +1079,7 @@
             
             if(userData.favorites.length === 0) {
                 container.innerHTML = `
-                    <div class="w-full flex items-center justify-center p-6 text-gray-400 flex-col mt-20">
+                    <div class="w-full flex-1 flex items-center justify-center p-6 text-gray-400 flex-col">
                         <i class="fas fa-heart-broken text-8xl mb-6 text-pink-200"></i>
                         <p class="text-2xl font-bold">目前還沒有收藏任何項目。</p>
                         <p class="text-lg mt-3">到「學習區」點擊愛心圖示即可收藏！</p>
@@ -1088,7 +1088,7 @@
             }
 
             container.innerHTML = `
-                <div class="w-full p-6 md:p-10 overflow-y-auto">
+                <div class="w-full flex-1 p-6 md:p-10 overflow-y-auto pb-24">
                     <div class="max-w-5xl mx-auto">
                         <h2 class="text-3xl font-bold text-pink-800 border-b-4 border-pink-200 pb-4 mb-8"><i class="fas fa-heart mr-3"></i>我的最愛</h2>
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
