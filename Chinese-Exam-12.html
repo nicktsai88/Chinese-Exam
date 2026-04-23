@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>道明中學 2 年級童軍期中考</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-xl shadow-lg">
+        <h1 class="text-3xl font-bold text-center mb-8 text-gray-900">道明中學 2 年級童軍期中考</h1>
+
+        <!-- 學生資訊區 -->
+        <div class="flex flex-wrap items-center gap-4 mb-8 pb-6 border-b-2 border-gray-200 text-lg" id="score-section">
+            <div class="flex items-center">
+                <label for="year" class="font-bold">年：</label>
+                <input type="text" id="year" class="border-b-2 border-gray-400 focus:border-blue-500 outline-none w-12 text-center ml-1">
+            </div>
+            <div class="flex items-center">
+                <label for="class" class="font-bold">班：</label>
+                <input type="text" id="class" class="border-b-2 border-gray-400 focus:border-blue-500 outline-none w-12 text-center ml-1">
+            </div>
+            <div class="flex items-center">
+                <label for="seat" class="font-bold">座號：</label>
+                <input type="text" id="seat" class="border-b-2 border-gray-400 focus:border-blue-500 outline-none w-16 text-center ml-1">
+            </div>
+            <div class="flex items-center">
+                <label for="name" class="font-bold">姓名：</label>
+                <input type="text" id="name" class="border-b-2 border-gray-400 focus:border-blue-500 outline-none w-32 text-center ml-1">
+            </div>
+            <div class="ml-auto font-bold text-2xl bg-gray-100 px-4 py-2 rounded-lg border">
+                得分：<span id="scoreDisplay" class="text-blue-600">___</span>
+            </div>
+        </div>
+
+        <p class="font-bold text-xl mb-6 text-blue-800">一、選擇-:(每題 4 分。共 100.0 分)：</p>
+
+        <form id="quizForm">
+            <!-- 題庫開始 -->
+
+            <!-- Q1 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q1-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    1. ( &nbsp;&nbsp;&nbsp; )請問下面哪一張圖片已完成「正置地圖」？<br>
+                    甲、<br>
+                    乙、<br>
+                    丙、<br>
+                    丁、
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q1" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)甲</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q1" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)乙</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q1" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)丙</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q1" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)丁。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》A</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q2-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    2. ( &nbsp;&nbsp;&nbsp; )志峰在課堂上總是容易打瞌睡，尤其坐在靠窗的位置，常常不小心靠著窗臺就睡著了。但是每到下午第七堂課，陽光總是從他左邊的窗戶照進來，有時還會刺的眼睛睜不開。請問：志峰的教室窗戶可能是朝向哪一方？
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q2" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)東</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q2" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)南</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q2" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)西</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q2" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)北。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》C</strong><br>
+                        詳解：窗戶應該是朝向西方，受西曬的影響。
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q3-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    3. ( &nbsp;&nbsp;&nbsp; )阿強想報名參加每年故宮博物院舉辦的定向活動，參加比賽的他在跑定向比賽時身上會攜帶的物品有哪些？請選出正確的選項。 甲、地圖 乙、打卡器 丙、核對卡 丁、放大鏡 戊、指北針 己、定向橘白燈籠。
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q3" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)甲乙丙</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q3" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)甲丙戊</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q3" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)乙丁己</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q3" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)乙丁戊。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》B</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q4 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q4-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    4. ( &nbsp;&nbsp;&nbsp; )白天需要判別方位時，可依照太陽運行的軌跡，有時因太陽光較強而無法直接觀察，可轉用時錶法確認方位，但是使用此法有天氣及時間上的限制，一是必須在好天氣且有太陽的情況下才能使用，另一個是需要避開的時段，請從甲～戊選出使用時錶法應避開的時段。 甲、清晨6點 乙、上午10點 丙、正午12點 丁、傍晚4點 戊、傍晚6點。
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q4" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)甲乙丙</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q4" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)甲丙戊</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q4" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)甲丁戊</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q4" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)乙丙丁。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》B</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q5 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q5-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    5. ( &nbsp;&nbsp;&nbsp; )請選出定向越野地圖與一般地圖不一樣的地方。 甲、定向越野地圖中地域名稱是不必要的 乙、定向越野地圖必須更詳盡的記錄地表的情況 丙、利用等高線表示山的形狀及斜度 丁、利用各種顏色表示前進的易難、植物分布。
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q5" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)甲乙丙</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q5" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)甲乙丁</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q5" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)乙丙丁</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q5" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)甲乙丙丁。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》D</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q6 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q6-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    6. ( &nbsp;&nbsp;&nbsp; )定向地圖的七種顏色代表各種地貌特徵，請選出下列正確的配對。 (甲)藍色——水系地徵 (乙)白色—建築物 (丙)黑色——石頭 (丁)黃色——空曠地區 (戊)綠色——容易穿越的樹林 (己)紫紅色——賽程標示的起終點 (庚)棕色——等高線、泥土。
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q6" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)甲乙丙丁戊</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q6" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)甲丙丁己庚</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q6" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)乙丙丁戊己</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q6" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)乙丁戊己庚。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》B</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q7 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q7-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    7. ( &nbsp;&nbsp;&nbsp; )透過觀察獵戶座找北極星的適用季節為何？
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q7" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)春</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q7" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)夏</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q7" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)秋</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q7" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)冬。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》D</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q8 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q8-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    8. ( &nbsp;&nbsp;&nbsp; )關於正置地圖的操作敘述，請選出正確的描述。 甲、正置地圖的過程不用觀察周遭景物 乙、正置地圖的過程地圖應觀察周遭景物 丙、轉動地圖使人圖景合一 丁、不可轉動地圖，地圖北方僅能朝向地圖上方。
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q8" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)甲丙</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q8" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)甲丁</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q8" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)乙丙</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q8" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)乙丁。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》C</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q9 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q9-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    9. ( &nbsp;&nbsp;&nbsp; )小新就讀的向日葵班，即將到宜蘭的生態方舟公園參加綠色博覽會，老師預先發下地圖希望他們在出發前一起討論行程及規畫集合和返家時間。請問：在地圖上估算兩點間的「路線距離」，進而推算所搭乘的交通工具需花費多少時間，以便安排好行程，此時他們需要什麼？
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q9" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)GPS</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q9" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)指北針</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q9" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)比例尺</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q9" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)指針手錶。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》C</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q10 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q10-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    10. ( &nbsp;&nbsp;&nbsp; )在不熟悉的場地進行定向越野活動時，最容易迷路，此時可以先找出自己身處的線形特徵(如小路)，亦可用明顯特徵物(水池、人造物)來標定自己所在的位置，使用已知的點來判斷方位。請問：這是指哪一種方法？
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q10" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)時錶法</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q10" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)後方交會法</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q10" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)奈史密斯定律</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q10" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)4S。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》B</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q11 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q11-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    11. ( &nbsp;&nbsp;&nbsp; )學校旁邊的店家到了傍晚都會拉下窗簾，請問店家門窗可能朝向哪一方？
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q11" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)東</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q11" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)西</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q11" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)南</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q11" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)北。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》B</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q12 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q12-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    12. ( &nbsp;&nbsp;&nbsp; )美美與小隊夥伴在討論操作指北針時，須注意哪些事項以避免影響測量結果。請問：哪些夥伴的推測，是可能造成指北針測量方位有誤差的原因？<br>
+                    美美：我可能是因為太過急促，沒有等到磁針穩定即判讀，所以造成誤差過大。<br>
+                    奇奇：也有可能是我的金屬皮帶頭造成指北針有誤差。<br>
+                    欣欣：可能是附近高樓阻擋訊號所造成的影響。<br>
+                    蒂蒂：可能是在使指北針時沒有平放在手掌上。
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q12" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)美美、奇奇、蒂蒂</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q12" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)奇奇、欣欣、蒂蒂</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q12" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)欣欣、蒂蒂、美美</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q12" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)美美、奇奇、欣欣。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》A</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q13 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q13-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    13. ( &nbsp;&nbsp;&nbsp; )以下是使用指北針測量146度方位角的操作方法，請選出正確的操作順序。<br>
+                    甲、旋轉方位盤，將方位盤刻度圈上的指定方位146度對準指示目標箭頭。<br>
+                    乙、轉動底盤，直到方位盤的方位指標與紅色磁針重疊。<br>
+                    丙、指北針平放。
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q13" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)甲乙丙</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q13" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)乙丙甲</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q13" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)丙甲乙</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q13" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)丙乙甲。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》C</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q14 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q14-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    14. ( &nbsp;&nbsp;&nbsp; )老師希望今夏的班遊由同學們規畫，希望大家先想一想在規畫路線時可以使用哪些方法來安排整體行程。請問關於路線規畫的言論發表哪些正確？<br>
+                    小夫：我會使用比例尺來確認實際距離。<br>
+                    胖虎：我們可以奈史密斯定律大概估算一下到目的地需要走多遠。<br>
+                    大雄：可以使用 Google Maps 查詢出不同交通方式計算路線所需時間。<br>
+                    哆啦A夢：別忘了評估自身體能狀況及旅行的景點安排，才不會將行程路線排得太長太累。
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q14" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)小夫、胖虎、大雄、哆啦A夢</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q14" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)小夫、胖虎、大雄</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q14" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)小夫、大雄、哆啦A夢</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q14" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)胖虎、大雄、哆啦A夢。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》C</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q15 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q15-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    15. ( &nbsp;&nbsp;&nbsp; )以下是使用時錶法找方位的步驟，請選出正確的操作順序。 甲、將手錶平放 乙、立一根火柴棒在錶面圓周任一處 丙、立一根火柴棒在錶面圓心處 丁、轉動錶面使火柴棒的影子與時針重合 戊、轉動錶面使火柴棒的影子與分針重合 己、時針與12時之較小角的角平分線即指向北方 庚、時針與6時之較小角的角平分線即指向北方。
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q15" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)甲乙丁己</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q15" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)甲乙戊庚</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q15" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)甲丙丁己</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q15" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)甲丙戊庚。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》C</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q16 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q16-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    16. ( &nbsp;&nbsp;&nbsp; )在戶外使用地圖及指北針導航有哪些優點？
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q16" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)可避開壅塞路段</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q16" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)可以掌握家人、朋友確切的位置</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q16" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)有街景功能更方便使用者</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q16" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)在任何環境下使用皆能快速辨別方位，且不需要電池，也不擔心受潮。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》D</strong><br>
+                        詳解：(A)、(B)、(C)皆為智慧型手機及App的導航功能。
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q17 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q17-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    17. ( &nbsp;&nbsp;&nbsp; )小志在暑假參加了定向越野營隊，營隊的最後一天，必須獨自跑完一場定向越野賽。出發前，教練告訴學員們這是一場除了體力也要花費腦力的比賽，並交代每位選手每到一個路口，或遇到岔路和迷失方向時，就要停下來運用什麼技巧再繼續跑？
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q17" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)時錶法</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q17" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)後方交會法</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q17" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)奈史密斯定律</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q17" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)4S。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》D</strong><br>
+                        詳解：定向 4S 技巧：停步、正置地圖、選擇正確路線、再次正置地圖。
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q18 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q18-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    18. ( &nbsp;&nbsp;&nbsp; )人在地上走，指在圖上移，這句話的意思是能夠讓自己更快找到身處地圖裡的位置。請問：是指定向越野中的哪一個技巧？
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q18" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)拇指輔行</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q18" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)正置地圖</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q18" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)扶手法</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q18" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)路線抉擇。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》A</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q19 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q19-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    19. ( &nbsp;&nbsp;&nbsp; )許多人會以為所謂環保就是「不丟垃圾」「不抓動物」，但無痕山林的宗旨其實是「讓入山活動對環境造成的衝擊減到最低」。而無痕山林的第一項「充分的行前規畫與準備」，看似與環保沒有任何關係，卻是無痕山林的「起點」。請問：「充分的行前規畫與準備」可能包含哪些？(甲)風險管理(乙)認識野生動植物(丙)路線規畫與探查(丁)裝備整理與負重訓練。
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q19" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)甲乙丁</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q19" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)乙丙丁</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q19" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)甲丙丁</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q19" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)甲乙丙丁。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》D</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q20 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q20-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    20. ( &nbsp;&nbsp;&nbsp; )常見線狀地徵包括步道、柵欄、建物邊緣、石牆、溪流、植被分界等，沿著這些線狀地徵前進，能增強信心，減少犯錯機會，又可以較高的速度行進。請問：這是定向運動的哪一個技巧？
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q20" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)拇指輔行</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q20" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)正置地圖</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q20" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)扶手法</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q20" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)路向抉擇。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》C</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q21 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q21-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    21. ( &nbsp;&nbsp;&nbsp; )從事戶外活動時，如果手機沒電或訊號不良，身上也沒有指北針時，該如何透過環境的訊息，辨識方向？請選出可找出方位的選項。<br>
+                    甲、日月星辰皆可幫忙。<br>
+                    乙、候鳥飛行方向。<br>
+                    丙、建築物坐落方向。<br>
+                    丁、植物生長情況。
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q21" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)甲乙</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q21" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)乙丙丁</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q21" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)甲乙丁</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q21" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)甲乙丙丁。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》D</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q22 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q22-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    22. ( &nbsp;&nbsp;&nbsp; )在有經緯線的地圖中，經緯度常為定向的標準；沒有經緯線但繪有圖框的地圖若沒有方向標，習慣以地圖的哪一個方向為北方？
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q22" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)上</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q22" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)下</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q22" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)左</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q22" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)右。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》A</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q23 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q23-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    23. ( &nbsp;&nbsp;&nbsp; )莉莉艾與夥伴們一起參加定向比賽，根據定向地圖顯示，他們第一個要去的點位於噴水池旁，為了確認前進方向跟地圖上的標示是否正確，以下是夥伴們討論如何測量目標物噴水池的步驟，請將小隊夥伴成員發表的意見排列成正確的操作順序。<br>
+                    小光：指北針平放。<br>
+                    莉莉艾：使指示目標箭頭對準噴水池的方向。<br>
+                    小茂：方位盤刻度圈上的度數(300度)即為目標物噴水池的方位。<br>
+                    大木：旋轉方位盤，使方位盤的方位指標與紅色磁針重疊。
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q23" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)小光→小茂→大木→莉莉艾</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q23" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)小光→莉莉艾→大木→小茂</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q23" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)小光→大木→小茂→莉莉艾</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q23" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)小光→莉莉艾→小茂→大木。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》B</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q24 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q24-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    24. ( &nbsp;&nbsp;&nbsp; )柯南一群人上完童軍方位課後大家你一言我一語的討論著。請問：哪些人的觀念較為正確？<br>
+                    元太說：只要有手機就好了，根本不需要什麼正置地圖。<br>
+                    光彥說：手機導航也需要正置地圖，才不會多走冤枉路。<br>
+                    步美說：我現在出門已經不能沒有手機了，元太說的對，只要有手機導航也不需要拇指輔行。<br>
+                    柯南則說：拇指輔行法很實用，去遊樂園玩時可以運用這個技巧，讓自己更快速的知道接下來的路線規畫。
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q24" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)元太、柯南</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q24" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)光彥、步美</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q24" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)步美、柯南</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q24" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)光彥、柯南。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》D</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q25 -->
+            <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q25-container">
+                <div class="text-lg mb-4 text-gray-800 leading-relaxed">
+                    25. ( &nbsp;&nbsp;&nbsp; )東北角及宜蘭海岸國家風景區為了振興東北旅遊風氣，喊出了「北頭城南墾丁」的口號，並經頭城外澳沙灘打造成衝浪聖地。璇璇和三五好友打算利用假日坐火車到頭城來趟衝浪初體驗，他們抵達頭城火車站後，運用Google Maps知道火車站到外澳沙灘的總距離為 3.1 公里。請問：若以步行方式前往，需要步行多少時間？
+                </div>
+                <div class="flex flex-col gap-3 ml-4 md:ml-8">
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q25" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(A)37分鐘</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q25" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(B)47分鐘</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q25" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(C)57分鐘</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="radio" name="q25" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="ml-3">(D)67分鐘。</span>
+                    </label>
+                </div>
+                <div class="feedback hidden mt-4 pt-4 border-t border-gray-200">
+                    <p class="answer-status mb-2"></p>
+                    <div class="explanation bg-blue-50 text-blue-800 p-4 rounded-md">
+                        <strong>《答案》B</strong><br>
+                        詳解：3.1K／4K=0.775，0.775×60=46.5 分鐘。
+                    </div>
+                </div>
+            </div>
+
+            <!-- 提交按鈕 -->
+            <div class="text-center mt-10 mb-4">
+                <button type="button" onclick="submitQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-full shadow-lg text-xl transition-colors w-full sm:w-auto">
+                    提交測驗看成績
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // 設定標準答案
+        const answers = {
+            q1: "A", q2: "C", q3: "B", q4: "B", q5: "D",
+            q6: "B", q7: "D", q8: "C", q9: "C", q10: "B",
+            q11: "B", q12: "A", q13: "C", q14: "C", q15: "C",
+            q16: "D", q17: "D", q18: "A", q19: "D", q20: "C",
+            q21: "D", q22: "A", q23: "B", q24: "D", q25: "B"
+        };
+
+        function submitQuiz() {
+            let score = 0;
+            let unAnsweredCount = 0;
+
+            // 檢查是否每題都已作答 (可選，目前允許空缺算錯)
+            // 這裡直接進行計算
+            for (let i = 1; i <= 25; i++) {
+                const qName = 'q' + i;
+                const selected = document.querySelector(`input[name="${qName}"]:checked`);
+                const container = document.getElementById(`${qName}-container`);
+                const feedback = container.querySelector('.feedback');
+                const status = container.querySelector('.answer-status');
+
+                // 顯示回饋區域
+                feedback.classList.remove('hidden');
+
+                if (selected && selected.value === answers[qName]) {
+                    // 答對加 4 分
+                    score += 4;
+                    status.innerHTML = "✅ 答對了！";
+                    status.className = "answer-status text-green-600 font-bold text-lg mb-2";
+                    container.classList.add('border-green-400', 'bg-green-50');
+                    container.classList.remove('border-gray-200', 'bg-white');
+                } else {
+                    // 答錯或是未作答
+                    const userAns = selected ? selected.value : '未作答';
+                    status.innerHTML = `❌ 答錯了！您的答案：${userAns}，正確答案：${answers[qName]}`;
+                    status.className = "answer-status text-red-600 font-bold text-lg mb-2";
+                    container.classList.add('border-red-400', 'bg-red-50');
+                    container.classList.remove('border-gray-200', 'bg-white');
+                }
+
+                // 將所有 radio 設定為 disabled，避免再次修改
+                const radios = container.querySelectorAll('input[type="radio"]');
+                radios.forEach(r => r.disabled = true);
+            }
+
+            // 更新畫面上方的分數
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            scoreDisplay.innerText = score;
+            
+            // 分數顏色變化
+            if (score >= 80) {
+                scoreDisplay.className = "text-green-600 font-black";
+            } else if (score >= 60) {
+                scoreDisplay.className = "text-yellow-600 font-black";
+            } else {
+                scoreDisplay.className = "text-red-600 font-black";
+            }
+
+            // 自動平滑捲動回到頂端看分數
+            document.getElementById('score-section').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
