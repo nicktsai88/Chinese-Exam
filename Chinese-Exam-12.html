@@ -9,10 +9,10 @@
         .hidden { display: none; }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans p-4 md:p-8">
+<body class="bg-gray-100 text-gray-800 font-sans p-2 md:p-4">
 
-    <div class="max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-xl shadow-lg">
-        <h1 class="text-3xl font-bold text-center mb-8 text-gray-900">道明中學 2 年級童軍期中考</h1>
+    <div class="max-w-7xl w-full mx-auto bg-white p-4 md:p-8 rounded-xl shadow-lg">
+        <h1 class="text-4xl font-bold text-center mb-10 text-gray-900">道明中學 2 年級童軍期中考</h1>
 
         <!-- 學生資訊區 -->
         <div class="flex flex-wrap items-center gap-4 mb-8 pb-6 border-b-2 border-gray-200 text-lg" id="score-section">
@@ -33,14 +33,14 @@
                 <input type="text" id="name" class="border-b-2 border-gray-400 focus:border-blue-500 outline-none w-32 text-center ml-1">
             </div>
             <div class="ml-auto font-bold text-2xl bg-gray-100 px-4 py-2 rounded-lg border">
-                得分：<span id="scoreDisplay" class="text-blue-600">___</span>
-            </div>
+            得分：<span id="scoreDisplay" class="text-blue-600">___</span>
         </div>
+    </div>
 
-        <p class="font-bold text-xl mb-6 text-blue-800">一、選擇-:(每題 4 分。共 100.0 分)：</p>
+    <p class="font-bold text-2xl mb-8 text-blue-800">一、選擇-:(每題 4 分。共 100.0 分)：</p>
 
-        <form id="quizForm">
-            <!-- 題庫開始 -->
+    <form id="quizForm">
+        <!-- 題庫開始 -->
 
             <!-- Q1 -->
             <div class="mb-6 p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white" id="q1-container">
@@ -871,18 +871,24 @@
 
         // 網頁載入完成後初始化
         document.addEventListener('DOMContentLoaded', () => {
+            // 動態加大題目的字體
+            document.querySelectorAll('div[id$="-container"] > div:first-child').forEach(q => {
+                q.classList.remove('text-lg', 'mb-4');
+                q.classList.add('text-2xl', 'mb-6', 'font-medium', 'leading-loose');
+            });
+
             // 動態加大所有選項按鈕的樣式
             document.querySelectorAll('label.cursor-pointer').forEach(label => {
                 // 移除舊的較小樣式
                 label.classList.remove('p-2', 'rounded', 'hover:bg-gray-50');
-                // 加入新的加大樣式 (更大的 padding、圓角、字體)
-                label.classList.add('p-4', 'rounded-xl', 'bg-gray-50', 'border-2', 'border-gray-200', 'hover:bg-blue-100', 'hover:border-blue-300', 'transition-all', 'text-xl');
+                // 加入新的加大樣式 (更大的 padding、圓角、更大字體 text-2xl)
+                label.classList.add('p-4', 'rounded-xl', 'bg-gray-50', 'border-2', 'border-gray-200', 'hover:bg-blue-100', 'hover:border-blue-300', 'transition-all', 'text-2xl');
                 
                 const radio = label.querySelector('input[type="radio"]');
                 if (radio) {
                     // 加大 Radio Button 圓圈本身
-                    radio.classList.remove('h-5', 'w-5');
-                    radio.classList.add('h-7', 'w-7');
+                    radio.classList.remove('h-5', 'w-5', 'h-7', 'w-7');
+                    radio.classList.add('h-8', 'w-8');
                     
                     // 綁定「點擊選項即刻對答案」的事件
                     radio.addEventListener('change', function() {
