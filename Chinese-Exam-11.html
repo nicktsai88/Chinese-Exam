@@ -515,7 +515,7 @@
         // ==========================================
         let currentTab = 'login';
         let learnSubTab = 'sec1';
-        let quizState = { active: false, currentQ: 0, score: 0, answers: [], questions: [], showExplanation: false, selectedAns: null };
+        let quizState = { active: false, score: 0, questions: [], userAnswers: [] };
         let isLearnMenuOpen = false;
 
         const el = id => document.getElementById(id);
@@ -865,162 +865,203 @@
                     <div class="w-full flex items-center justify-center p-6 mt-10">
                         <div class="bg-white p-10 rounded-xl shadow-md text-center max-w-2xl border-t-8 border-orange-600">
                             <i class="fas fa-pencil-alt text-6xl text-orange-600 mb-6"></i>
-                            <h2 class="text-3xl font-bold mb-6">綜合測驗 (共100題)</h2>
-                            <p class="text-gray-600 mb-8 text-xl">挑戰100題高鑑別度測驗！題目涵蓋課文細節、字音字形辨析與成語精熟度。選項經過特別設計，請務必仔細作答！</p>
+                            <h2 class="text-3xl font-bold mb-6">綜合測驗 (共100題) - 瀑布流模式</h2>
+                            <p class="text-gray-600 mb-8 text-xl">挑戰100題高鑑別度測驗！題目採用瀑布流呈現，答題後立即顯示解析，讓您快速作答與複習。選項經過特別設計，請務必仔細作答！</p>
                             <button onclick="startQuiz()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-12 text-2xl rounded-full shadow-lg transition transform hover:scale-105">開始測驗</button>
                         </div>
                     </div>
                 `;
             } else {
-                renderQuizQuestion(container);
+                const answeredCount = quizState.userAnswers.filter(a => a !== null).length;
+                let html = `
+                    <div class="w-full flex flex-col items-center p-6 md:p-10 overflow-y-auto relative" id="quiz-scroll-container">
+                        <div class="w-full max-w-4xl">
+                            <!-- 浮動進度條 -->
+                            <div class="sticky top-0 z-20 bg-white bg-opacity-95 backdrop-blur rounded-xl shadow-md p-5 mb-8 border border-orange-100" id="quiz-progress-container">
+                                ${renderProgressContent()}
+                            </div>
+                            
+                            <!-- 題目列表 -->
+                            <div class="space-y-8" id="quiz-questions-list">
+                                ${quizState.questions.map((_, idx) => renderQuestionCard(idx)).join('')}
+                            </div>
+
+                            <!-- 交卷區 -->
+                            <div id="quiz-finish-area" class="mt-12 mb-20">
+                                ${renderFinishArea()}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML = html;
             }
         };
 
         window.startQuiz = () => {
-            // 隨機打亂100題
             const qList = [...generate100Questions()].sort(() => 0.5 - Math.random());
-            quizState = { active: true, currentQ: 0, score: 0, answers: [], questions: qList, showExplanation: false, selectedAns: null };
+            quizState = { active: true, score: 0, questions: qList, userAnswers: new Array(qList.length).fill(null) };
             renderQuizView(el('main-content'));
+            // 滾動到頂部
+            setTimeout(() => {
+                const scrollContainer = el('quiz-scroll-container');
+                if(scrollContainer) scrollContainer.scrollTop = 0;
+            }, 50);
         };
 
-        const renderQuizQuestion = (container) => {
-            const qIdx = quizState.currentQ;
-            if(qIdx >= quizState.questions.length) {
-                finishQuiz(container);
-                return;
-            }
-            
-            const q = quizState.questions[qIdx];
-            const progress = ((qIdx) / quizState.questions.length) * 100;
-
-            // 產生選項按鈕 HTML
-            let optionsHtml = '';
-            q.opts.forEach((opt, i) => {
-                let btnClass = "w-full text-left p-5 text-xl rounded-lg border-2 transition-all flex items-center group ";
-                let iconHtml = `<span class="w-10 h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mr-5 font-bold text-xl transition-colors">${String.fromCharCode(65+i)}</span>`;
-                
-                if (!quizState.showExplanation) {
-                    btnClass += "border-gray-300 hover:border-orange-500 hover:bg-orange-50 group-hover:bg-orange-500 group-hover:text-white";
-                } else {
-                    if (i === q.ans) {
-                        // 正確答案高亮綠色 (保持翡翠綠作為正確提示)
-                        btnClass += "border-emerald-500 bg-emerald-100 text-emerald-800 font-bold scale-100 shadow-md";
-                        iconHtml = `<span class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center mr-5 font-bold text-xl"><i class="fas fa-check"></i></span>`;
-                    } else if (i === quizState.selectedAns) {
-                        // 點錯的選項顯示紅色
-                        btnClass += "border-red-500 bg-red-50 text-red-800 font-bold scale-[0.98]";
-                        iconHtml = `<span class="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center mr-5 font-bold text-xl"><i class="fas fa-times"></i></span>`;
-                    } else {
-                        // 未選到的錯誤答案變淡
-                        btnClass += "border-gray-200 bg-gray-50 opacity-50";
-                    }
-                }
-
-                optionsHtml += `
-                    <button ${quizState.showExplanation ? 'disabled' : `onclick="answerQuestion(${i})"`} class="${btnClass}">
-                        ${iconHtml}
-                        <span>${opt}</span>
-                    </button>
-                `;
-            });
-
-            container.innerHTML = `
-                <div class="w-full flex flex-col items-center p-6 md:p-10 overflow-y-auto">
-                    <div class="w-full max-w-4xl bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-                        <div class="bg-orange-50 px-8 py-5 border-b border-orange-100 flex justify-between items-center">
-                            <span class="font-bold text-orange-800 text-xl">第 ${qIdx + 1} / 100 題</span>
-                            <div class="w-1/2 bg-gray-200 rounded-full h-3">
-                                <div class="bg-orange-500 h-3 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
-                            </div>
-                        </div>
-                        <div class="p-8 md:p-12">
-                            <h3 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-relaxed">${q.q}</h3>
-                            <div class="space-y-4">
-                                ${optionsHtml}
-                            </div>
-                            
-                            ${quizState.showExplanation ? `
-                                <div class="mt-8 p-6 rounded-xl border-2 ${quizState.selectedAns === q.ans ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'} animate-fade-in shadow-inner">
-                                    <div class="flex items-center mb-4">
-                                        <i class="fas ${quizState.selectedAns === q.ans ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-red-500'} text-3xl mr-3"></i>
-                                        <span class="font-bold text-2xl">${quizState.selectedAns === q.ans ? '太棒了，答對了！' : '哎呀，答錯了！'}</span>
-                                    </div>
-                                    <div class="bg-white bg-opacity-70 p-5 rounded-lg border ${quizState.selectedAns === q.ans ? 'border-emerald-100' : 'border-red-100'}">
-                                        <p class="font-bold mb-2 text-xl"><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>完整題目解析：</p>
-                                        <p class="mt-2 text-lg">正確答案為 <strong class="${quizState.selectedAns === q.ans ? 'text-emerald-700' : 'text-red-700'} text-xl">(${String.fromCharCode(65+q.ans)}) ${q.opts[q.ans]}</strong>。</p>
-                                        <p class="mt-3 text-base text-gray-600">此題源自《森林最優美的一天》補充講義內容，建議可至「學習區」多加複習喔！</p>
-                                    </div>
-                                    <button onclick="nextQuestion()" class="mt-6 w-full ${quizState.selectedAns === q.ans ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'} text-white font-bold py-4 text-xl rounded-lg shadow-md transition transform hover:scale-[1.02]">我瞭解了，前往下一題 <i class="fas fa-arrow-right ml-2"></i></button>
-                                </div>
-                            ` : ''}
-                        </div>
+        const renderProgressContent = () => {
+            const total = quizState.questions.length;
+            const answeredCount = quizState.userAnswers.filter(a => a !== null).length;
+            const progress = (answeredCount / total) * 100;
+            return `
+                <div class="flex justify-between items-center mb-3">
+                    <span class="font-bold text-orange-800 text-xl md:text-2xl"><i class="fas fa-tasks mr-2"></i>作答進度：<span class="text-orange-600">${answeredCount}</span> / ${total} 題</span>
+                    ${answeredCount === total ? '<span class="text-emerald-600 font-bold text-lg animate-pulse"><i class="fas fa-check-double mr-1"></i>作答完成</span>' : `<span class="text-gray-500 text-sm">尚餘 ${total - answeredCount} 題</span>`}
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-4 shadow-inner overflow-hidden">
+                    <div class="bg-gradient-to-r from-orange-400 to-orange-600 h-4 rounded-full transition-all duration-500 ease-out relative" style="width: ${progress}%">
+                        <div class="absolute inset-0 bg-white opacity-20" style="background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent); background-size: 1rem 1rem;"></div>
                     </div>
                 </div>
             `;
         };
 
-        window.answerQuestion = (optIdx) => {
-            const q = quizState.questions[quizState.currentQ];
-            const isCorrect = optIdx === q.ans;
-            
-            // 設定顯示狀態
-            quizState.selectedAns = optIdx;
-            quizState.showExplanation = true;
-            
-            // 音效與特效
-            if (isCorrect) {
-                playCorrectSound();
-                confetti({
-                    particleCount: 150,
-                    spread: 80,
-                    origin: { y: 0.6 },
-                    colors: ['#f59e0b', '#ea580c', '#ef4444', '#fbbf24']
-                });
-            } else {
-                playWrongSound();
-            }
+        const renderQuestionCard = (qIdx) => {
+            const q = quizState.questions[qIdx];
+            const userAns = quizState.userAnswers[qIdx];
+            const isAnswered = userAns !== null;
+            const isCorrect = userAns === q.ans;
 
-            renderQuizView(el('main-content'));
-        };
+            let optionsHtml = '';
+            q.opts.forEach((opt, i) => {
+                let btnClass = "w-full text-left p-4 md:p-5 text-lg md:text-xl rounded-xl border-2 transition-all flex items-center group relative overflow-hidden ";
+                let iconHtml = `<span class="w-10 h-10 shrink-0 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mr-4 font-bold text-xl transition-colors z-10">${String.fromCharCode(65+i)}</span>`;
+                
+                if (!isAnswered) {
+                    btnClass += "border-gray-200 hover:border-orange-500 hover:bg-orange-50 cursor-pointer bg-white";
+                } else {
+                    btnClass += "cursor-default ";
+                    if (i === q.ans) {
+                        btnClass += "border-emerald-500 bg-emerald-50 text-emerald-900 font-bold shadow-md scale-[1.02] z-10";
+                        iconHtml = `<span class="w-10 h-10 shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center mr-4 font-bold text-xl z-10"><i class="fas fa-check"></i></span>`;
+                    } else if (i === userAns) {
+                        btnClass += "border-red-400 bg-red-50 text-red-800 font-bold scale-[0.98]";
+                        iconHtml = `<span class="w-10 h-10 shrink-0 rounded-full bg-red-500 text-white flex items-center justify-center mr-4 font-bold text-xl z-10"><i class="fas fa-times"></i></span>`;
+                    } else {
+                        btnClass += "border-gray-100 bg-gray-50 text-gray-400 opacity-60";
+                    }
+                }
 
-        window.nextQuestion = () => {
-            const q = quizState.questions[quizState.currentQ];
-            const isCorrect = quizState.selectedAns === q.ans;
-
-            quizState.answers.push({
-                q: q.q,
-                opts: q.opts,
-                userAns: quizState.selectedAns,
-                correctAns: q.ans,
-                isCorrect: isCorrect
+                optionsHtml += `
+                    <button ${isAnswered ? 'disabled' : `onclick="answerQuestion(${qIdx}, ${i})"`} class="${btnClass}">
+                        ${!isAnswered ? '<div class="absolute inset-0 bg-orange-500 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-in-out opacity-10"></div>' : ''}
+                        ${iconHtml}
+                        <span class="z-10">${opt}</span>
+                    </button>
+                `;
             });
 
-            if(isCorrect) quizState.score++;
+            return `
+                <div class="bg-white rounded-2xl shadow-md border ${isAnswered ? (isCorrect ? 'border-emerald-200 shadow-emerald-100' : 'border-red-200 shadow-red-100') : 'border-gray-200 hover:border-orange-300 hover:shadow-lg'} overflow-hidden transition-all duration-300" id="q-card-${qIdx}">
+                    <div class="${isAnswered ? (isCorrect ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100') : 'bg-gradient-to-r from-orange-50 to-amber-50 border-orange-100'} px-6 md:px-8 py-4 border-b flex justify-between items-center transition-colors">
+                        <span class="font-bold ${isAnswered ? (isCorrect ? 'text-emerald-800' : 'text-red-800') : 'text-orange-800'} text-xl">第 ${qIdx + 1} 題</span>
+                        ${isAnswered ? (isCorrect ? '<span class="text-emerald-600 font-bold text-xl animate-fade-in"><i class="fas fa-check-circle mr-2"></i>答對</span>' : '<span class="text-red-600 font-bold text-xl animate-fade-in"><i class="fas fa-times-circle mr-2"></i>答錯</span>') : ''}
+                    </div>
+                    <div class="p-6 md:p-8">
+                        <h3 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-relaxed">${q.q}</h3>
+                        <div class="space-y-4">
+                            ${optionsHtml}
+                        </div>
+                        
+                        ${isAnswered ? `
+                            <div class="mt-8 p-6 rounded-xl border-2 ${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-900'} animate-fade-in shadow-sm">
+                                <div class="flex items-center mb-3">
+                                    <i class="fas ${isCorrect ? 'fa-lightbulb text-yellow-500' : 'fa-exclamation-triangle text-red-500'} text-2xl mr-3"></i>
+                                    <p class="font-bold text-xl">題目解析</p>
+                                </div>
+                                <div class="bg-white bg-opacity-70 p-4 rounded-lg">
+                                    <p class="text-lg">正確答案為 <strong class="${isCorrect ? 'text-emerald-700' : 'text-red-700'} text-xl">(${String.fromCharCode(65+q.ans)}) ${q.opts[q.ans]}</strong>。</p>
+                                    <p class="mt-2 text-base text-gray-600">本題測驗範圍：課文結構與字音字義、成語補充。</p>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderFinishArea = () => {
+            const total = quizState.questions.length;
+            const answeredCount = quizState.userAnswers.filter(a => a !== null).length;
             
-            // 如果答錯，加入錯題本
-            if(!isCorrect) {
-                const mistakeId = q.q; // 簡單用題目當ID
+            if (answeredCount === total) {
+                return `
+                    <div class="py-10 px-6 text-center animate-fade-in bg-gradient-to-br from-orange-50 to-amber-100 rounded-2xl border-2 border-orange-200 shadow-lg">
+                        <i class="fas fa-party-horn text-6xl text-orange-500 mb-4 animate-bounce"></i>
+                        <h3 class="text-3xl font-bold text-orange-900 mb-6">太棒了！您已完成所有 100 題</h3>
+                        <button onclick="finishQuiz()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-5 px-12 text-2xl rounded-full shadow-xl transition transform hover:scale-110 hover:-translate-y-1">
+                            <i class="fas fa-paper-plane mr-3"></i>正式交卷並查看成績
+                        </button>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="py-10 px-6 text-center bg-gray-50 rounded-2xl border border-gray-200 shadow-inner">
+                        <h3 class="text-2xl font-bold text-gray-700 mb-3">測驗尚未完成</h3>
+                        <p class="text-xl text-gray-500 mb-6">請作答完所有題目後再進行交卷。<br>尚有 <span class="text-red-500 font-extrabold text-2xl">${total - answeredCount}</span> 題未作答。</p>
+                        <button onclick="if(confirm('確定要提前交卷嗎？未作答的題目將不予計分。')) finishQuiz()" class="text-gray-500 hover:text-gray-700 font-bold py-2 px-6 text-lg transition underline">
+                            強制提前交卷
+                        </button>
+                    </div>
+                `;
+            }
+        };
+
+        window.answerQuestion = (qIdx, optIdx) => {
+            if (quizState.userAnswers[qIdx] !== null) return;
+
+            const q = quizState.questions[qIdx];
+            quizState.userAnswers[qIdx] = optIdx;
+            const isCorrect = optIdx === q.ans;
+
+            if (isCorrect) {
+                quizState.score++;
+                playCorrectSound();
+                
+                // 如果是最後一題作答完成，放個小煙火
+                if (quizState.userAnswers.filter(a => a !== null).length === quizState.questions.length) {
+                    confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#f59e0b', '#ea580c', '#ef4444', '#10b981'] });
+                }
+            } else {
+                playWrongSound();
+                const mistakeId = q.q;
                 const exists = userData.mistakes.find(m => m.id === mistakeId);
                 if(!exists) {
                     userData.mistakes.push({
-                        id: mistakeId,
-                        q: q.q,
-                        opts: q.opts,
-                        ans: q.ans,
-                        time: new Date().toISOString()
+                        id: mistakeId, q: q.q, opts: q.opts, ans: q.ans, time: new Date().toISOString()
                     });
                     saveUserData();
                 }
             }
 
-            // 進入下一題並重置狀態
-            quizState.currentQ++;
-            quizState.showExplanation = false;
-            quizState.selectedAns = null;
-            renderQuizView(el('main-content'));
+            // 更新當前題目的卡片 DOM (避免重繪整個列表導致捲動跳位)
+            const cardContainer = el(`q-card-${qIdx}`);
+            if(cardContainer) {
+                cardContainer.outerHTML = renderQuestionCard(qIdx);
+            }
+
+            // 更新進度條與交卷區
+            const progressContainer = el('quiz-progress-container');
+            if (progressContainer) {
+                progressContainer.innerHTML = renderProgressContent();
+            }
+            
+            const finishArea = el('quiz-finish-area');
+            if(finishArea) {
+                finishArea.innerHTML = renderFinishArea();
+            }
         };
 
-        const finishQuiz = async (container) => {
+        window.finishQuiz = async () => {
             quizState.active = false;
             const total = quizState.questions.length;
             const score = Math.round((quizState.score / total) * 100);
@@ -1033,20 +1074,26 @@
                 } catch(e) { console.error("Save Quiz Error", e); }
             }
 
+            const container = el('main-content');
             container.innerHTML = `
                 <div class="w-full flex items-center justify-center p-6 overflow-y-auto mt-10">
-                    <div class="bg-white p-12 rounded-xl shadow-xl text-center max-w-2xl border-t-8 border-orange-600">
+                    <div class="bg-white p-12 rounded-xl shadow-2xl text-center max-w-2xl border-t-8 border-orange-600 animate-fade-in">
                         <i class="fas fa-trophy text-8xl text-yellow-500 mb-6"></i>
-                        <h2 class="text-4xl font-bold mb-4">測驗完成！</h2>
-                        <p class="text-7xl font-extrabold text-orange-600 mb-8">${score} <span class="text-3xl text-gray-500">分</span></p>
-                        <p class="text-gray-600 mb-8 text-2xl">您答對了 <span class="text-orange-600 font-bold">${quizState.score}</span> 題，共 ${total} 題。</p>
+                        <h2 class="text-4xl font-bold mb-4 text-gray-800">測驗完成！</h2>
+                        <p class="text-8xl font-extrabold text-orange-600 mb-8 drop-shadow-md">${score} <span class="text-4xl text-gray-500">分</span></p>
+                        <div class="bg-orange-50 p-6 rounded-xl mb-8">
+                            <p class="text-gray-700 text-2xl font-bold">您答對了 <span class="text-emerald-600 text-3xl mx-2">${quizState.score}</span> 題</p>
+                            <p class="text-gray-500 text-lg mt-2">共 ${total} 題，答錯或未答 ${total - quizState.score} 題</p>
+                        </div>
                         <div class="space-y-4">
-                            <button onclick="switchTab('mistakes')" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-6 text-xl rounded-lg shadow transition">查看錯題本</button>
-                            <button onclick="startQuiz()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 px-6 text-xl rounded-lg shadow transition">重新測驗</button>
+                            <button onclick="switchTab('mistakes')" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-6 text-xl rounded-xl shadow-lg transition transform hover:scale-[1.02]"><i class="fas fa-book-dead mr-2"></i>立刻複習錯題</button>
+                            <button onclick="startQuiz()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 px-6 text-xl rounded-xl shadow transition"><i class="fas fa-redo mr-2"></i>重新挑戰 100 題</button>
                         </div>
                     </div>
                 </div>
             `;
+            
+            confetti({ particleCount: 300, spread: 120, origin: { y: 0.5 } });
         };
 
         // --- 錯題本 ---
