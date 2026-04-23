@@ -14,6 +14,16 @@
     <div class="max-w-7xl w-full mx-auto bg-white p-4 md:p-8 rounded-xl shadow-lg">
         <h1 class="text-4xl font-bold text-center mb-10 text-gray-900">道明中學 2 年級童軍期中考</h1>
 
+        <!-- 模式切換按鈕 -->
+        <div class="flex flex-col sm:flex-row justify-center items-center mb-10 gap-6">
+            <button type="button" onclick="switchMode('learn')" id="btn-learn" class="px-8 py-4 rounded-full text-2xl font-bold bg-green-600 text-white shadow-lg transition-colors">
+                📖 學習模式 (看答案背誦)
+            </button>
+            <button type="button" onclick="switchMode('quiz')" id="btn-quiz" class="px-8 py-4 rounded-full text-2xl font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors">
+                📝 測驗模式 (隱藏並作答)
+            </button>
+        </div>
+
         <!-- 學生資訊區 -->
         <div class="flex flex-wrap items-center gap-4 mb-8 pb-6 border-b-2 border-gray-200 text-lg" id="score-section">
             <div class="flex items-center">
@@ -849,7 +859,7 @@
             </div>
 
             <!-- 提交按鈕 -->
-            <div class="text-center mt-10 mb-4">
+            <div class="text-center mt-10 mb-4" id="submit-btn-container">
                 <button type="button" onclick="submitQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-full shadow-lg text-2xl transition-colors w-full sm:w-auto">
                     結算最終成績
                 </button>
@@ -868,6 +878,7 @@
         };
 
         let currentScore = 0;
+        let currentMode = 'quiz';
 
         // 網頁載入完成後初始化
         document.addEventListener('DOMContentLoaded', () => {
@@ -892,11 +903,101 @@
                     
                     // 綁定「點擊選項即刻對答案」的事件
                     radio.addEventListener('change', function() {
-                        handleImmediateFeedback(this.name, this.value);
+                        if (currentMode === 'quiz') {
+                            handleImmediateFeedback(this.name, this.value);
+                        }
                     });
                 }
             });
+
+            // 初始預設進入「學習模式」，讓學生先背誦
+            switchMode('learn', true);
         });
+
+        function switchMode(mode, isInit = false) {
+            if (mode === 'quiz' && currentMode === 'learn' && !isInit) {
+                if(!confirm("切換到「測驗模式」將會清空畫面讓您開始作答。確定要開始測驗嗎？")) return;
+            }
+
+            currentMode = mode;
+            const btnLearn = document.getElementById('btn-learn');
+            const btnQuiz = document.getElementById('btn-quiz');
+            const scoreSection = document.getElementById('score-section');
+            const submitBtn = document.getElementById('submit-btn-container');
+
+            if (mode === 'learn') {
+                // 學習模式 UI 設定
+                btnLearn.className = "px-8 py-4 rounded-full text-2xl font-bold bg-green-600 text-white shadow-lg transition-colors";
+                btnQuiz.className = "px-8 py-4 rounded-full text-2xl font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors cursor-pointer";
+                scoreSection.classList.add('hidden');
+                submitBtn.classList.add('hidden');
+
+                // 顯示所有答案
+                for (let i = 1; i <= 25; i++) {
+                    const qName = 'q' + i;
+                    const container = document.getElementById(`${qName}-container`);
+                    const feedback = container.querySelector('.feedback');
+                    const status = container.querySelector('.answer-status');
+                    const correctAnswer = answers[qName];
+
+                    // 移除測驗時的錯誤/正確邊框
+                    container.classList.remove('border-red-500', 'bg-red-50', 'border-green-500', 'bg-green-50', 'border-yellow-400', 'border-4');
+                    container.classList.add('border-gray-200', 'bg-white', 'border');
+
+                    // 顯示詳解區，但隱藏對錯文字
+                    feedback.classList.remove('hidden');
+                    status.classList.add('hidden');
+
+                    const radios = container.querySelectorAll('input[type="radio"]');
+                    radios.forEach(r => {
+                        r.disabled = true; // 禁止點擊
+                        const label = r.closest('label');
+                        // 重置樣式
+                        label.className = "flex items-center p-4 rounded-xl border-2 transition-all text-2xl";
+                        
+                        if (r.value === correctAnswer) {
+                            r.checked = true;
+                            label.classList.add('ring-4', 'ring-green-400', 'bg-green-100', 'border-green-500');
+                        } else {
+                            r.checked = false;
+                            label.classList.add('bg-gray-50', 'border-gray-200', 'opacity-50', 'cursor-not-allowed');
+                        }
+                    });
+                }
+            } else {
+                // 測驗模式 UI 設定
+                currentScore = 0;
+                updateScoreDisplay();
+                
+                btnQuiz.className = "px-8 py-4 rounded-full text-2xl font-bold bg-blue-600 text-white shadow-lg transition-colors";
+                btnLearn.className = "px-8 py-4 rounded-full text-2xl font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors cursor-pointer";
+                scoreSection.classList.remove('hidden');
+                submitBtn.classList.remove('hidden');
+
+                // 清空答案並恢復作答狀態
+                for (let i = 1; i <= 25; i++) {
+                    const qName = 'q' + i;
+                    const container = document.getElementById(`${qName}-container`);
+                    const feedback = container.querySelector('.feedback');
+                    const status = container.querySelector('.answer-status');
+
+                    container.classList.remove('border-red-500', 'bg-red-50', 'border-green-500', 'bg-green-50', 'border-yellow-400', 'border-4');
+                    container.classList.add('border-gray-200', 'bg-white', 'border');
+
+                    feedback.classList.add('hidden');
+                    status.classList.remove('hidden');
+                    status.innerHTML = '';
+
+                    const radios = container.querySelectorAll('input[type="radio"]');
+                    radios.forEach(r => {
+                        r.disabled = false;
+                        r.checked = false;
+                        const label = r.closest('label');
+                        label.className = "flex items-center p-4 rounded-xl bg-gray-50 border-2 border-gray-200 hover:bg-blue-100 hover:border-blue-300 transition-all text-2xl cursor-pointer";
+                    });
+                }
+            }
+        }
 
         function handleImmediateFeedback(qName, selectedValue) {
             const container = document.getElementById(`${qName}-container`);
