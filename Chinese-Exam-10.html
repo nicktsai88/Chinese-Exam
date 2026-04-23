@@ -708,14 +708,34 @@
                 <nav class="bg-wood text-wood-dark shadow-md z-20">
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div class="flex justify-between h-20">
-                            <div class="flex items-center gap-4">
-                                <span class="font-bold text-xl md:text-2xl tracking-widest hidden sm:block"><i class="fas fa-scroll mr-3 text-amber-700"></i>陋室銘</span>
-                                <div class="flex items-center bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200 shadow-inner text-sm font-bold text-gray-700">
+                            <div class="flex items-center gap-2 md:gap-4 overflow-hidden">
+                                <span class="font-bold text-xl md:text-2xl tracking-widest hidden sm:block shrink-0"><i class="fas fa-scroll mr-3 text-amber-700"></i>陋室銘</span>
+                                <div class="flex items-center bg-gray-50 px-2 sm:px-3 py-1.5 rounded-full border border-gray-200 shadow-inner text-sm font-bold text-gray-700 shrink-0">
                                     <span class="status-dot ${connectionStatus === 'loading' ? 'status-loading' : connectionStatus === 'success' ? 'status-success' : 'status-error'}"></span>
-                                    ${connectionStatus === 'loading' ? '讀取中' : connectionStatus === 'success' ? '雲端同步' : '連線失敗'}
+                                    <span class="hidden md:inline">${connectionStatus === 'loading' ? '讀取中' : connectionStatus === 'success' ? '雲端同步' : '連線失敗'}</span>
+                                </div>
+                                
+                                <!-- 新增：固定於導覽列的測驗統計 (預設隱藏) -->
+                                <div id="nav-quiz-stats" class="hidden items-center gap-2 lg:gap-4 shrink-0 transition-opacity">
+                                    <!-- 進度條 (大螢幕顯示) -->
+                                    <div class="hidden lg:flex items-center gap-2">
+                                        <div class="w-16 xl:w-24 bg-gray-200 rounded-full h-2.5 shadow-inner">
+                                            <div id="quiz-progress-bar" class="bg-orange-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                        </div>
+                                        <span id="quiz-progress-text" class="text-sm font-bold text-orange-800">0 / 100</span>
+                                    </div>
+                                    <!-- 答對答錯 -->
+                                    <div class="flex items-center gap-1.5 sm:gap-2 text-sm font-bold">
+                                        <div class="flex items-center text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full shadow-sm">
+                                            <i class="fas fa-check-circle sm:mr-1 text-emerald-500"></i><span id="quiz-correct-count" class="ml-1 sm:ml-0">0</span>
+                                        </div>
+                                        <div class="flex items-center text-red-700 bg-red-50 border border-red-200 px-2 py-1 rounded-full shadow-sm">
+                                            <i class="fas fa-times-circle sm:mr-1 text-red-500"></i><span id="quiz-wrong-count" class="ml-1 sm:ml-0">0</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-1 sm:space-x-4">
+                            <div class="flex items-center space-x-1 sm:space-x-4 shrink-0">
                                 <button onclick="switchTab('learn')" id="nav-learn" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">學習區</button>
                                 <button onclick="switchTab('quiz')" id="nav-quiz" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">測驗(100題)</button>
                                 <button onclick="switchTab('mistakes')" id="nav-mistakes" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">錯題本</button>
@@ -762,6 +782,18 @@
             if(tab === 'quiz') renderQuizView(content);
             if(tab === 'mistakes') renderMistakes(content);
             if(tab === 'favorites') renderFavorites(content);
+
+            // 控制導覽列測驗統計的顯示與隱藏
+            const statsEl = el('nav-quiz-stats');
+            if (statsEl) {
+                if (tab === 'quiz' && quizState.active) {
+                    statsEl.classList.remove('hidden');
+                    statsEl.classList.add('flex');
+                } else {
+                    statsEl.classList.add('hidden');
+                    statsEl.classList.remove('flex');
+                }
+            }
         };
 
         // --- 學習區 ---
@@ -880,34 +912,22 @@
                 questions: qList, 
                 userAnswers: new Array(qList.length).fill(null) 
             };
+
+            // 顯示導覽列測驗統計
+            const statsEl = el('nav-quiz-stats');
+            if (statsEl) {
+                statsEl.classList.remove('hidden');
+                statsEl.classList.add('flex');
+            }
+
             renderQuizView(el('main-content'));
         };
 
         const renderWaterfallQuiz = (container) => {
             const total = quizState.questions.length;
             
-            let html = `<div class="w-full flex-1 p-4 md:p-10 overflow-y-auto pb-24 relative">`;
-            
-            // Sticky 吸頂進度條與統計 (優化 iOS/iPad 顯示與排版)
-            html += `
-                <div class="sticky top-2 sm:top-4 z-40 bg-white/95 backdrop-blur-md shadow-lg border border-orange-200 rounded-xl p-3 sm:p-4 mb-8 max-w-5xl mx-auto flex flex-col md:flex-row gap-4 justify-between items-center">
-                    <div class="flex justify-between items-center w-full md:flex-1">
-                        <span class="font-bold text-orange-800 text-lg hidden sm:block shrink-0">測驗進度</span>
-                        <div class="flex-1 bg-gray-200 rounded-full h-3 mx-3 sm:mx-5">
-                            <div id="quiz-progress-bar" class="bg-orange-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
-                        </div>
-                        <span id="quiz-progress-text" class="font-bold text-orange-800 text-lg shrink-0">0 / ${total}</span>
-                    </div>
-                    <div class="flex justify-center w-full md:w-auto gap-4 text-base font-bold shrink-0">
-                        <div class="flex items-center text-emerald-700 bg-emerald-50 border border-emerald-200 px-4 py-1.5 rounded-full shadow-sm">
-                            <i class="fas fa-check-circle mr-2 text-emerald-500"></i>答對：<span id="quiz-correct-count" class="ml-1 text-lg">0</span>
-                        </div>
-                        <div class="flex items-center text-red-700 bg-red-50 border border-red-200 px-4 py-1.5 rounded-full shadow-sm">
-                            <i class="fas fa-times-circle mr-2 text-red-500"></i>答錯：<span id="quiz-wrong-count" class="ml-1 text-lg">0</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="max-w-5xl mx-auto space-y-8">
+            let html = `<div class="w-full flex-1 p-4 md:p-10 overflow-y-auto pb-24 relative">
+                <div class="max-w-5xl mx-auto space-y-8 mt-4">
             `;
 
             // 渲染所有題目的卡片容器
@@ -1077,6 +1097,14 @@
 
         window.finishWaterfallQuiz = async () => {
             quizState.active = false;
+            
+            // 隱藏導覽列測驗統計
+            const statsEl = el('nav-quiz-stats');
+            if (statsEl) {
+                statsEl.classList.add('hidden');
+                statsEl.classList.remove('flex');
+            }
+
             const total = quizState.questions.length;
             const score = Math.round((quizState.score / total) * 100);
             
