@@ -860,14 +860,59 @@
             renderQuizView(el('main-content'));
         };
 
+        // 更新即時統計資料的獨立函數
+        window.updateQuizStats = () => {
+            let correct = 0;
+            let incorrect = 0;
+            let answered = 0;
+            const total = quizState.questions.length;
+
+            quizState.questions.forEach(q => {
+                if (q.showExplanation) {
+                    answered++;
+                    if (q.isCorrect) correct++;
+                    else incorrect++;
+                }
+            });
+
+            const progressPercent = (answered / total) * 100;
+
+            const elCorrect = document.getElementById('stat-correct');
+            const elIncorrect = document.getElementById('stat-incorrect');
+            const elBar = document.getElementById('stat-progress-bar');
+            const elText = document.getElementById('stat-progress-text');
+
+            if (elCorrect) elCorrect.innerText = correct;
+            if (elIncorrect) elIncorrect.innerText = incorrect;
+            if (elBar) elBar.style.width = progressPercent + '%';
+            if (elText) elText.innerText = `作答進度：${answered} / ${total} 題`;
+        };
+
         const renderQuizWaterfall = (container) => {
+            const total = quizState.questions.length;
             let html = `
                 <div class="w-full flex-1 p-4 md:p-10 overflow-y-auto pb-24 scrollbar-hide bg-gray-50/50" id="quiz-scroll-container">
-                    <div class="max-w-4xl mx-auto space-y-8 relative">
-                        <div class="bg-orange-50 px-8 py-5 border-b-4 border-orange-200 rounded-xl shadow-sm text-center sticky top-0 z-20">
-                            <h2 class="font-bold text-orange-900 text-2xl md:text-3xl mb-2">綜合測驗 (共 ${quizState.questions.length} 題)</h2>
-                            <p class="text-orange-700 text-lg">請依序作答，點選後立即顯示解析。全部作答完畢請點擊最下方按鈕交卷。</p>
+                    <div class="max-w-4xl mx-auto relative">
+                        
+                        <!-- 帶有進度條與統計的 Sticky Header -->
+                        <div class="bg-white px-6 md:px-8 py-5 border-b-4 border-orange-400 rounded-xl shadow-lg sticky top-0 z-30 mb-8 transition-all">
+                            <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-3">
+                                <h2 class="font-bold text-orange-900 text-xl md:text-2xl">綜合測驗 <span class="text-base font-normal text-gray-500 ml-2">隨選即答</span></h2>
+                                <div class="flex gap-4 md:gap-6 text-lg md:text-xl font-bold bg-gray-50 px-4 py-2 md:px-5 rounded-lg border border-gray-100 shadow-inner">
+                                    <span class="text-emerald-600 flex items-center"><i class="fas fa-check-circle mr-2 md:text-2xl"></i>答對 <span id="stat-correct" class="ml-1 md:ml-2 md:text-2xl">0</span></span>
+                                    <div class="w-px bg-gray-300 h-auto my-1"></div>
+                                    <span class="text-red-500 flex items-center"><i class="fas fa-times-circle mr-2 md:text-2xl"></i>答錯 <span id="stat-incorrect" class="ml-1 md:ml-2 md:text-2xl">0</span></span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3 md:h-4 shadow-inner overflow-hidden">
+                                <div id="stat-progress-bar" class="bg-gradient-to-r from-orange-400 to-orange-600 h-full rounded-full transition-all duration-500 relative" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-sm md:text-base mt-3 text-gray-600 font-bold">
+                                <span id="stat-progress-text">作答進度：0 / ${total} 題</span>
+                                <span class="text-orange-600 cursor-pointer hover:text-orange-800 transition" onclick="document.getElementById('quiz-scroll-container').scrollTo({top: document.getElementById('quiz-scroll-container').scrollHeight, behavior: 'smooth'})">跳至最底交卷 <i class="fas fa-arrow-down"></i></span>
+                            </div>
                         </div>
+
                         <div id="questions-list" class="space-y-8">
             `;
 
@@ -997,6 +1042,9 @@
             if (block) {
                 block.innerHTML = generateSingleQuestionHtml(qIdx);
             }
+
+            // 更新上方總進度與統計
+            updateQuizStats();
         };
 
         window.finishQuizWaterfall = async () => {
