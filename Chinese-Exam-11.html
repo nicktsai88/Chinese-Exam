@@ -719,6 +719,8 @@
                                     <span class="status-dot ${connectionStatus === 'loading' ? 'status-loading' : connectionStatus === 'success' ? 'status-success' : 'status-error'}"></span>
                                     ${connectionStatus === 'loading' ? '讀取中' : connectionStatus === 'success' ? '雲端同步' : '連線失敗'}
                                 </div>
+                                <!-- 測驗狀態區 (智慧隱藏/顯示) -->
+                                <div id="nav-quiz-stats" class="hidden transition-all shrink-0"></div>
                             </div>
                             <div class="flex items-center space-x-1 sm:space-x-4">
                                 <button onclick="switchTab('learn')" id="nav-learn" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">學習區</button>
@@ -767,6 +769,9 @@
             if(tab === 'quiz') renderQuizView(content);
             if(tab === 'mistakes') renderMistakes(content);
             if(tab === 'favorites') renderFavorites(content);
+            
+            // 切換分頁時更新導覽列的測驗統計顯示狀態
+            if(typeof updateNavQuizStats === 'function') updateNavQuizStats();
         };
 
         // --- 學習區 ---
@@ -876,11 +881,6 @@
                 let html = `
                     <div class="w-full flex flex-col items-center p-6 md:p-10 overflow-y-auto relative" id="quiz-scroll-container">
                         <div class="w-full max-w-4xl">
-                            <!-- 浮動進度條 -->
-                            <div class="sticky top-0 z-20 bg-white bg-opacity-95 backdrop-blur rounded-xl shadow-md p-5 mb-8 border border-orange-100" id="quiz-progress-container">
-                                ${renderProgressContent()}
-                            </div>
-                            
                             <!-- 題目列表 -->
                             <div class="space-y-8" id="quiz-questions-list">
                                 ${quizState.questions.map((_, idx) => renderQuestionCard(idx)).join('')}
@@ -901,6 +901,7 @@
             const qList = [...generate100Questions()].sort(() => 0.5 - Math.random());
             quizState = { active: true, score: 0, questions: qList, userAnswers: new Array(qList.length).fill(null) };
             renderQuizView(el('main-content'));
+            updateNavQuizStats(); // 顯示導覽列統計
             // 滾動到頂部
             setTimeout(() => {
                 const scrollContainer = el('quiz-scroll-container');
@@ -908,21 +909,49 @@
             }, 50);
         };
 
-        const renderProgressContent = () => {
-            const total = quizState.questions.length;
-            const answeredCount = quizState.userAnswers.filter(a => a !== null).length;
-            const progress = (answeredCount / total) * 100;
-            return `
-                <div class="flex justify-between items-center mb-3">
-                    <span class="font-bold text-orange-800 text-xl md:text-2xl"><i class="fas fa-tasks mr-2"></i>作答進度：<span class="text-orange-600">${answeredCount}</span> / ${total} 題</span>
-                    ${answeredCount === total ? '<span class="text-emerald-600 font-bold text-lg animate-pulse"><i class="fas fa-check-double mr-1"></i>作答完成</span>' : `<span class="text-gray-500 text-sm">尚餘 ${total - answeredCount} 題</span>`}
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-4 shadow-inner overflow-hidden">
-                    <div class="bg-gradient-to-r from-orange-400 to-orange-600 h-4 rounded-full transition-all duration-500 ease-out relative" style="width: ${progress}%">
-                        <div class="absolute inset-0 bg-white opacity-20" style="background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent); background-size: 1rem 1rem;"></div>
+        window.updateNavQuizStats = () => {
+            const statsEl = el('nav-quiz-stats');
+            if (!statsEl) return;
+
+            if (currentTab === 'quiz' && quizState.active) {
+                statsEl.classList.remove('hidden');
+                statsEl.classList.add('flex');
+                
+                const total = quizState.questions.length;
+                const answeredCount = quizState.userAnswers.filter(a => a !== null).length;
+                const progress = (answeredCount / total) * 100;
+                
+                let correctCount = 0;
+                let wrongCount = 0;
+                quizState.userAnswers.forEach((ans, idx) => {
+                    if (ans !== null) {
+                        if (ans === quizState.questions[idx].ans) correctCount++;
+                        else wrongCount++;
+                    }
+                });
+
+                statsEl.innerHTML = `
+                    <!-- 手機版：空間小，僅顯示答對/答錯數 -->
+                    <div class="md:hidden flex items-center gap-2 text-sm font-bold bg-white px-2 py-1 rounded-lg border shadow-sm">
+                        <span class="text-emerald-600"><i class="fas fa-check"></i> ${correctCount}</span>
+                        <span class="text-red-500"><i class="fas fa-times"></i> ${wrongCount}</span>
                     </div>
-                </div>
-            `;
+                    <!-- 桌機/平板版：空間大，顯示完整進度與答對/答錯數 -->
+                    <div class="hidden md:flex items-center gap-3 bg-white px-3 py-1 rounded-full border shadow-sm ml-2">
+                        <span class="text-sm font-bold text-gray-600 whitespace-nowrap">進度 ${answeredCount}/${total}</span>
+                        <div class="w-24 lg:w-32 bg-gray-200 rounded-full h-2 overflow-hidden shrink-0">
+                            <div class="bg-orange-500 h-2 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm font-bold ml-1 border-l pl-3 border-gray-200 shrink-0">
+                            <span class="text-emerald-600"><i class="fas fa-check"></i> ${correctCount}</span>
+                            <span class="text-red-500"><i class="fas fa-times"></i> ${wrongCount}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                statsEl.classList.add('hidden');
+                statsEl.classList.remove('flex');
+            }
         };
 
         const renderQuestionCard = (qIdx) => {
@@ -1049,11 +1078,8 @@
                 cardContainer.outerHTML = renderQuestionCard(qIdx);
             }
 
-            // 更新進度條與交卷區
-            const progressContainer = el('quiz-progress-container');
-            if (progressContainer) {
-                progressContainer.innerHTML = renderProgressContent();
-            }
+            // 更新導覽列進度與統計
+            updateNavQuizStats();
             
             const finishArea = el('quiz-finish-area');
             if(finishArea) {
@@ -1063,6 +1089,7 @@
 
         window.finishQuiz = async () => {
             quizState.active = false;
+            updateNavQuizStats(); // 隱藏導覽列統計
             const total = quizState.questions.length;
             const score = Math.round((quizState.score / total) * 100);
             
