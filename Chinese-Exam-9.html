@@ -775,8 +775,8 @@
                     </ul>
                 </div>
                 
-                <!-- 右側主要內容 -->
-                <div class="flex-1 p-6 md:p-10 overflow-y-auto" id="learn-content-area"></div>
+                <!-- 右側主要內容 (縮小 Padding) -->
+                <div class="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto w-full" id="learn-content-area"></div>
             `;
             renderLearnContent();
         };
@@ -813,8 +813,9 @@
             if(!area) return;
             const data = learnData.find(d => d.id === learnSubTab);
             area.innerHTML = `
-                <div class="max-w-5xl mx-auto">
-                    <h2 class="text-3xl font-bold text-wood-dark mb-8 border-b-4 border-amber-200 pb-3">${data.title}</h2>
+                <!-- 放大可視範圍至 max-w-6xl -->
+                <div class="max-w-6xl mx-auto w-full">
+                    <h2 class="text-3xl md:text-4xl font-bold text-wood-dark mb-8 border-b-4 border-amber-200 pb-3">${data.title}</h2>
                     <div class="text-gray-800 leading-relaxed text-lg md:text-xl">${data.content}</div>
                 </div>
             `;
@@ -834,11 +835,11 @@
         const renderQuizView = (container) => {
             if(!quizState.active) {
                 container.innerHTML = `
-                    <div class="w-full flex-1 flex items-center justify-center p-6 overflow-y-auto">
-                        <div class="bg-white p-10 rounded-xl shadow-md text-center max-w-2xl border-t-8 border-orange-600 shrink-0">
+                    <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+                        <div class="bg-white p-10 rounded-xl shadow-md text-center max-w-4xl w-full border-t-8 border-orange-600 shrink-0">
                             <i class="fas fa-stream text-6xl text-orange-600 mb-6"></i>
-                            <h2 class="text-3xl font-bold mb-6">瀑布流綜合測驗 (共100題)</h2>
-                            <p class="text-gray-600 mb-8 text-xl leading-relaxed">挑戰100題高鑑別度測驗！題目涵蓋課文細節、字音字形辨析與成語精熟度。<br><br><span class="bg-orange-100 text-orange-800 font-bold px-2 py-1 rounded">全新瀑布流模式：</span>點擊選項後立即顯示解析，無須換頁，快速複習最有效率！</p>
+                            <h2 class="text-3xl md:text-4xl font-bold mb-6">瀑布流綜合測驗 (共100題)</h2>
+                            <p class="text-gray-600 mb-8 text-xl md:text-2xl leading-relaxed">挑戰100題高鑑別度測驗！題目涵蓋課文細節、字音字形辨析與成語精熟度。<br><br><span class="bg-orange-100 text-orange-800 font-bold px-2 py-1 rounded">全新瀑布流模式：</span>點擊選項後立即顯示解析，無須換頁，快速複習最有效率！</p>
                             <button onclick="startQuiz()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-12 text-2xl rounded-full shadow-lg transition transform hover:scale-105">開始測驗</button>
                         </div>
                     </div>
@@ -891,8 +892,10 @@
         const renderQuizWaterfall = (container) => {
             const total = quizState.questions.length;
             let html = `
-                <div class="w-full flex-1 p-4 md:p-10 overflow-y-auto pb-24 scrollbar-hide bg-gray-50/50" id="quiz-scroll-container">
-                    <div class="max-w-4xl mx-auto relative">
+                <!-- 縮小測驗區左右 Padding -->
+                <div class="w-full flex-1 p-3 md:p-6 lg:p-8 overflow-y-auto pb-24 scrollbar-hide bg-gray-50/50" id="quiz-scroll-container">
+                    <!-- 放大測驗區寬度至 max-w-6xl -->
+                    <div class="max-w-6xl mx-auto relative w-full">
                         
                         <!-- 帶有進度條與統計的 Sticky Header -->
                         <div class="bg-white px-6 md:px-8 py-5 border-b-4 border-orange-400 rounded-xl shadow-lg sticky top-0 z-30 mb-8 transition-all">
@@ -907,13 +910,13 @@
                             <div class="w-full bg-gray-200 rounded-full h-3 md:h-4 shadow-inner overflow-hidden">
                                 <div id="stat-progress-bar" class="bg-gradient-to-r from-orange-400 to-orange-600 h-full rounded-full transition-all duration-500 relative" style="width: 0%"></div>
                             </div>
-                            <div class="flex justify-between text-sm md:text-base mt-3 text-gray-600 font-bold">
+                            <div class="flex justify-between text-sm md:text-lg mt-3 text-gray-600 font-bold">
                                 <span id="stat-progress-text">作答進度：0 / ${total} 題</span>
                                 <span class="text-orange-600 cursor-pointer hover:text-orange-800 transition" onclick="document.getElementById('quiz-scroll-container').scrollTo({top: document.getElementById('quiz-scroll-container').scrollHeight, behavior: 'smooth'})">跳至最底交卷 <i class="fas fa-arrow-down"></i></span>
                             </div>
                         </div>
 
-                        <div id="questions-list" class="space-y-8">
+                        <div id="questions-list" class="space-y-8 w-full">
             `;
 
             quizState.questions.forEach((_, qIdx) => {
@@ -940,8 +943,10 @@
             let optionsHtml = '';
             
             q.opts.forEach((opt, i) => {
-                let btnClass = "w-full text-left p-4 md:p-5 text-lg md:text-xl rounded-lg border-2 transition-all flex items-center group ";
-                let iconHtml = `<span class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mr-4 font-bold text-lg md:text-xl transition-colors shrink-0">${String.fromCharCode(65+i)}</span>`;
+                // 放大選項按鈕與文字大小 (text-xl md:text-2xl)
+                let btnClass = "w-full text-left p-5 md:p-6 text-xl md:text-2xl rounded-lg border-2 transition-all flex items-center group ";
+                // 放大選項圓圈字母圖標
+                let iconHtml = `<span class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mr-4 md:mr-6 font-bold text-xl md:text-2xl transition-colors shrink-0">${String.fromCharCode(65+i)}</span>`;
                 
                 if (!q.showExplanation) {
                     btnClass += "border-gray-300 hover:border-orange-500 hover:bg-orange-50 group-hover:bg-orange-500 group-hover:text-white cursor-pointer";
@@ -949,11 +954,11 @@
                     if (i === q.ans) {
                         // 正確答案高亮
                         btnClass += "border-emerald-500 bg-emerald-100 text-emerald-800 font-bold scale-[1.01] shadow-md z-10 relative";
-                        iconHtml = `<span class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center mr-4 font-bold text-lg md:text-xl shrink-0"><i class="fas fa-check"></i></span>`;
+                        iconHtml = `<span class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center mr-4 md:mr-6 font-bold text-xl md:text-2xl shrink-0"><i class="fas fa-check"></i></span>`;
                     } else if (i === q.selectedAns) {
                         // 點錯的選項
                         btnClass += "border-red-500 bg-red-50 text-red-800 font-bold scale-[0.99]";
-                        iconHtml = `<span class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-red-500 text-white flex items-center justify-center mr-4 font-bold text-lg md:text-xl shrink-0"><i class="fas fa-times"></i></span>`;
+                        iconHtml = `<span class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-500 text-white flex items-center justify-center mr-4 md:mr-6 font-bold text-xl md:text-2xl shrink-0"><i class="fas fa-times"></i></span>`;
                     } else {
                         // 未選到的錯誤答案
                         btnClass += "border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed";
@@ -972,17 +977,17 @@
             if (q.showExplanation) {
                 const isCorrect = q.selectedAns === q.ans;
                 explanationHtml = `
-                    <div class="mt-6 p-5 md:p-6 rounded-xl border-2 ${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'} animate-fade-in shadow-inner">
-                        <div class="flex items-center mb-4">
-                            <i class="fas ${isCorrect ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-red-500'} text-3xl mr-3"></i>
-                            <span class="font-bold text-2xl">${isCorrect ? '太棒了，答對了！' : '哎呀，答錯了！'}</span>
+                    <div class="mt-8 p-6 md:p-8 rounded-xl border-2 ${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'} animate-fade-in shadow-inner">
+                        <div class="flex items-center mb-6">
+                            <i class="fas ${isCorrect ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-red-500'} text-4xl mr-4"></i>
+                            <span class="font-bold text-3xl">${isCorrect ? '太棒了，答對了！' : '哎呀，答錯了！'}</span>
                         </div>
-                        <div class="bg-white bg-opacity-70 p-4 md:p-5 rounded-lg border ${isCorrect ? 'border-emerald-100' : 'border-red-100'}">
-                            <p class="font-bold mb-2 text-xl"><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>完整題目解析：</p>
-                            <p class="mt-2 text-lg">正確答案為 <strong class="${isCorrect ? 'text-emerald-700' : 'text-red-700'} text-xl">(${String.fromCharCode(65+q.ans)}) ${q.opts[q.ans]}</strong>。</p>
-                            <div class="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg text-orange-900 shadow-sm">
-                                <p class="font-bold text-lg mb-1"><i class="fas fa-book-reader mr-2 text-orange-700"></i>深度解析：</p>
-                                <p class="text-lg leading-relaxed">${q.exp}</p>
+                        <div class="bg-white bg-opacity-70 p-5 md:p-8 rounded-lg border ${isCorrect ? 'border-emerald-100' : 'border-red-100'}">
+                            <p class="font-bold mb-3 text-2xl"><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>完整題目解析：</p>
+                            <p class="mt-3 text-xl">正確答案為 <strong class="${isCorrect ? 'text-emerald-700' : 'text-red-700'} text-2xl">(${String.fromCharCode(65+q.ans)}) ${q.opts[q.ans]}</strong>。</p>
+                            <div class="mt-5 p-5 md:p-6 bg-orange-50 border border-orange-200 rounded-lg text-orange-900 shadow-sm">
+                                <p class="font-bold text-xl mb-2"><i class="fas fa-book-reader mr-2 text-orange-700"></i>深度解析：</p>
+                                <p class="text-xl leading-relaxed">${q.exp}</p>
                             </div>
                         </div>
                     </div>
@@ -990,17 +995,18 @@
             }
 
             return `
-                <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center transition-colors ${q.showExplanation ? (q.selectedAns === q.ans ? 'bg-emerald-50' : 'bg-red-50') : ''}">
-                    <span class="font-bold text-gray-700 text-lg">第 ${qIdx + 1} 題</span>
+                <div class="bg-gray-50 px-6 md:px-8 py-5 border-b border-gray-100 flex justify-between items-center transition-colors ${q.showExplanation ? (q.selectedAns === q.ans ? 'bg-emerald-50' : 'bg-red-50') : ''}">
+                    <span class="font-bold text-gray-700 text-xl">第 ${qIdx + 1} 題</span>
                     ${q.showExplanation 
                         ? (q.selectedAns === q.ans 
-                            ? '<span class="text-emerald-600 font-bold text-lg"><i class="fas fa-check mr-1"></i>答對</span>' 
-                            : '<span class="text-red-600 font-bold text-lg"><i class="fas fa-times mr-1"></i>答錯</span>') 
-                        : '<span class="text-gray-400 font-medium"><i class="fas fa-pen mr-1"></i>尚未作答</span>'}
+                            ? '<span class="text-emerald-600 font-bold text-xl"><i class="fas fa-check mr-1"></i>答對</span>' 
+                            : '<span class="text-red-600 font-bold text-xl"><i class="fas fa-times mr-1"></i>答錯</span>') 
+                        : '<span class="text-gray-400 font-medium text-lg"><i class="fas fa-pen mr-1"></i>尚未作答</span>'}
                 </div>
-                <div class="p-6 md:p-8">
-                    <h3 class="text-xl md:text-2xl font-bold text-gray-800 mb-6 leading-relaxed">${q.q}</h3>
-                    <div class="space-y-4">
+                <div class="p-6 md:p-10">
+                    <!-- 放大題目標題大小 (text-2xl md:text-3xl) -->
+                    <h3 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-relaxed">${q.q}</h3>
+                    <div class="space-y-5">
                         ${optionsHtml}
                     </div>
                     ${explanationHtml}
@@ -1079,15 +1085,15 @@
 
             const container = el('main-content');
             container.innerHTML = `
-                <div class="w-full flex-1 flex items-center justify-center p-6 overflow-y-auto pb-24">
-                    <div class="bg-white p-12 rounded-xl shadow-xl text-center max-w-2xl border-t-8 border-orange-600 shrink-0">
+                <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 overflow-y-auto pb-24">
+                    <div class="bg-white p-12 rounded-xl shadow-xl text-center max-w-4xl w-full border-t-8 border-orange-600 shrink-0">
                         <i class="fas fa-trophy text-8xl text-yellow-500 mb-6"></i>
-                        <h2 class="text-4xl font-bold mb-4">測驗完成！</h2>
-                        <p class="text-7xl font-extrabold text-orange-600 mb-8">${scorePercent} <span class="text-3xl text-gray-500">分</span></p>
-                        <p class="text-gray-600 mb-8 text-2xl">您答對了 <span class="text-orange-600 font-bold">${correctCount}</span> 題，共作答 ${answeredCount} 題 (總題數 ${total} 題)。</p>
-                        <div class="space-y-4">
-                            <button onclick="switchTab('mistakes')" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-6 text-xl rounded-lg shadow transition">查看錯題本</button>
-                            <button onclick="startQuiz()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 px-6 text-xl rounded-lg shadow transition">重新測驗</button>
+                        <h2 class="text-4xl md:text-5xl font-bold mb-6">測驗完成！</h2>
+                        <p class="text-7xl md:text-8xl font-extrabold text-orange-600 mb-10">${scorePercent} <span class="text-3xl md:text-4xl text-gray-500">分</span></p>
+                        <p class="text-gray-600 mb-10 text-2xl md:text-3xl">您答對了 <span class="text-orange-600 font-bold">${correctCount}</span> 題，共作答 ${answeredCount} 題 <br><span class="text-xl md:text-2xl mt-3 inline-block">(總題數 ${total} 題)</span></p>
+                        <div class="space-y-5">
+                            <button onclick="switchTab('mistakes')" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-5 px-6 text-2xl rounded-lg shadow transition">查看錯題本</button>
+                            <button onclick="startQuiz()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-5 px-6 text-2xl rounded-lg shadow transition">重新測驗</button>
                         </div>
                     </div>
                 </div>
@@ -1103,27 +1109,27 @@
             
             if(userData.mistakes.length === 0) {
                 container.innerHTML = `
-                    <div class="w-full flex-1 flex items-center justify-center p-6 text-gray-400 flex-col">
-                        <i class="fas fa-check-circle text-8xl mb-6 text-amber-300"></i>
-                        <p class="text-2xl font-bold">太棒了！目前沒有錯題紀錄。</p>
+                    <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 text-gray-400 flex-col">
+                        <i class="fas fa-check-circle text-8xl md:text-9xl mb-6 text-amber-300"></i>
+                        <p class="text-2xl md:text-3xl font-bold">太棒了！目前沒有錯題紀錄。</p>
                     </div>`;
                 return;
             }
 
             container.innerHTML = `
-                <div class="w-full flex-1 p-6 md:p-10 overflow-y-auto pb-24">
-                    <div class="max-w-4xl mx-auto">
+                <div class="w-full flex-1 p-3 md:p-6 lg:p-8 overflow-y-auto pb-24">
+                    <div class="max-w-6xl mx-auto w-full">
                         <div class="flex justify-between items-center border-b-4 border-red-200 pb-4 mb-8">
-                            <h2 class="text-3xl font-bold text-red-800"><i class="fas fa-book-dead mr-3"></i>錯題本</h2>
-                            <button onclick="clearMistakes()" class="text-lg text-red-500 hover:text-red-700 font-bold underline">清空錯題</button>
+                            <h2 class="text-3xl md:text-4xl font-bold text-red-800"><i class="fas fa-book-dead mr-3"></i>錯題本</h2>
+                            <button onclick="clearMistakes()" class="text-xl text-red-500 hover:text-red-700 font-bold underline">清空錯題</button>
                         </div>
-                        <div class="space-y-6">
+                        <div class="space-y-8">
                             ${userData.mistakes.map((m, i) => `
-                                <div class="bg-white p-6 md:p-8 rounded-xl shadow-md border-l-8 border-red-400">
-                                    <h3 class="font-bold text-gray-800 mb-5 text-xl md:text-2xl">${i+1}. ${m.q}</h3>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-lg">
+                                <div class="bg-white p-6 md:p-10 rounded-xl shadow-md border-l-8 border-red-400 w-full">
+                                    <h3 class="font-bold text-gray-800 mb-6 text-2xl md:text-3xl">${i+1}. ${m.q}</h3>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xl">
                                         ${m.opts.map((opt, idx) => `
-                                            <div class="p-3 rounded-lg ${idx === m.ans ? 'bg-emerald-100 text-emerald-800 font-bold border-2 border-emerald-300 shadow-sm' : 'bg-gray-50 text-gray-500 border border-gray-200'}">
+                                            <div class="p-4 md:p-5 rounded-lg ${idx === m.ans ? 'bg-emerald-100 text-emerald-800 font-bold border-2 border-emerald-300 shadow-sm' : 'bg-gray-50 text-gray-600 border border-gray-200'}">
                                                 ${String.fromCharCode(65+idx)}. ${opt}
                                                 ${idx === m.ans ? '<i class="fas fa-check ml-2"></i>(正確答案)' : ''}
                                             </div>
@@ -1151,24 +1157,24 @@
             
             if(userData.favorites.length === 0) {
                 container.innerHTML = `
-                    <div class="w-full flex-1 flex items-center justify-center p-6 text-gray-400 flex-col">
-                        <i class="fas fa-heart-broken text-8xl mb-6 text-pink-200"></i>
-                        <p class="text-2xl font-bold">目前還沒有收藏任何項目。</p>
-                        <p class="text-lg mt-3">到「學習區」點擊愛心圖示即可收藏！</p>
+                    <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 text-gray-400 flex-col">
+                        <i class="fas fa-heart-broken text-8xl md:text-9xl mb-6 text-pink-200"></i>
+                        <p class="text-2xl md:text-3xl font-bold">目前還沒有收藏任何項目。</p>
+                        <p class="text-xl mt-4">到「學習區」點擊愛心圖示即可收藏！</p>
                     </div>`;
                 return;
             }
 
             container.innerHTML = `
-                <div class="w-full flex-1 p-6 md:p-10 overflow-y-auto pb-24">
-                    <div class="max-w-5xl mx-auto">
-                        <h2 class="text-3xl font-bold text-pink-800 border-b-4 border-pink-200 pb-4 mb-8"><i class="fas fa-heart mr-3"></i>我的最愛</h2>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                <div class="w-full flex-1 p-3 md:p-6 lg:p-8 overflow-y-auto pb-24">
+                    <div class="max-w-6xl mx-auto w-full">
+                        <h2 class="text-3xl md:text-4xl font-bold text-pink-800 border-b-4 border-pink-200 pb-4 mb-8"><i class="fas fa-heart mr-3"></i>我的最愛</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
                             ${userData.favorites.map(favId => `
-                                <div class="bg-white p-6 rounded-xl shadow-md border-2 border-pink-100 flex justify-between items-center group relative overflow-hidden transition-shadow hover:shadow-lg">
+                                <div class="bg-white p-6 md:p-8 rounded-xl shadow-md border-2 border-pink-100 flex justify-between items-center group relative overflow-hidden transition-shadow hover:shadow-lg w-full">
                                     <div class="absolute inset-0 bg-pink-50 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                                    <span class="font-bold text-gray-800 z-10 text-xl md:text-2xl">${favId}</span>
-                                    <button onclick="toggleFavorite('${favId}')" class="text-pink-500 hover:text-red-600 z-10 text-3xl"><i class="fas fa-heart"></i></button>
+                                    <span class="font-bold text-gray-800 z-10 text-2xl md:text-3xl">${favId}</span>
+                                    <button onclick="toggleFavorite('${favId}')" class="text-pink-500 hover:text-red-600 z-10 text-4xl"><i class="fas fa-heart"></i></button>
                                 </div>
                             `).join('')}
                         </div>
