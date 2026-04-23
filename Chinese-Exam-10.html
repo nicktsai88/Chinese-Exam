@@ -937,18 +937,20 @@
             
             let optionsHtml = '';
             q.opts.forEach((opt, optIdx) => {
-                let btnClass = "w-full text-left p-5 text-xl rounded-lg border-2 transition-all flex items-center group ";
-                let iconHtml = `<span class="w-10 h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mr-5 font-bold text-xl transition-colors">${String.fromCharCode(65+optIdx)}</span>`;
+                // 將字體加大為 text-2xl，並稍微加大 padding 讓點擊範圍更舒適
+                let btnClass = "w-full text-left p-6 text-2xl rounded-lg border-2 transition-all flex items-center group ";
+                // 將圓圈圖示也等比例加大 (w-12 h-12 text-2xl)，並加上 shrink-0 防止文字過長時擠壓變形
+                let iconHtml = `<span class="w-12 h-12 shrink-0 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mr-5 font-bold text-2xl transition-colors">${String.fromCharCode(65+optIdx)}</span>`;
                 
                 if (!isAnswered) {
                     btnClass += "border-gray-300 hover:border-orange-500 hover:bg-orange-50 group-hover:bg-orange-500 group-hover:text-white cursor-pointer";
                 } else {
                     if (optIdx === q.ans) {
                         btnClass += "border-emerald-500 bg-emerald-100 text-emerald-800 font-bold shadow-sm";
-                        iconHtml = `<span class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center mr-5 font-bold text-xl"><i class="fas fa-check"></i></span>`;
+                        iconHtml = `<span class="w-12 h-12 shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center mr-5 font-bold text-2xl"><i class="fas fa-check"></i></span>`;
                     } else if (optIdx === userAns) {
                         btnClass += "border-red-500 bg-red-50 text-red-800 font-bold opacity-80";
-                        iconHtml = `<span class="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center mr-5 font-bold text-xl"><i class="fas fa-times"></i></span>`;
+                        iconHtml = `<span class="w-12 h-12 shrink-0 rounded-full bg-red-500 text-white flex items-center justify-center mr-5 font-bold text-2xl"><i class="fas fa-times"></i></span>`;
                     } else {
                         btnClass += "border-gray-100 bg-gray-50 opacity-40 cursor-not-allowed";
                     }
@@ -957,7 +959,7 @@
                 optionsHtml += `
                     <button ${isAnswered ? 'disabled' : `onclick="answerWaterfall(${i}, ${optIdx})"`} class="${btnClass}">
                         ${iconHtml}
-                        <span>${opt}</span>
+                        <span class="leading-relaxed">${opt}</span>
                     </button>
                 `;
             });
