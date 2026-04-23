@@ -499,7 +499,7 @@
 
             // --- 「丁」字義 (98-100) ---
             q.push({ q:"「目不識丁」的「丁」，其意義為何？", opts:["人", "方形小塊", "極小", "字"], ans:3, exp:"「丁」字的形狀極其簡單，連最簡單的「丁」字都不認識。故此處的丁解釋為「文字」。" });
-            q.push({ q:"「宮保雞丁」的「丁」，其意義為何？", opts:["字", "平民", "人", "方形的小塊"], ans:1, exp:"在烹飪術語中，將肉類或蔬菜切成立方體的小塊狀，稱為「丁」，如肉丁、雞丁。" });
+            q.push({ q:"「宮保雞丁」的「丁」，其意義為何？", opts:["字", "平民", "人", "方形的小塊"], ans:3, exp:"在烹飪術語中，將肉類或蔬菜切成立方體的小塊狀，稱為「丁」，如肉丁、雞丁。" });
             q.push({ q:"「往來無白丁」的「白丁」，指的是什麼人？", opts:["沒有學問的平民", "穿白衣服的人", "膚色白皙的人", "年幼的兒童"], ans:0, exp:"古代平民沒有功名，不能穿著有顏色的官服，只能穿白色粗布衣，故以「白丁」借代為沒有學問的平民。" });
 
             return q;
@@ -888,20 +888,14 @@
             
             let html = `<div class="w-full flex-1 p-4 md:p-10 overflow-y-auto pb-24 relative">`;
             
-            // Sticky 吸頂進度條與統計
+            // Sticky 吸頂進度條
             html += `
-                <div class="sticky top-0 z-20 bg-white/95 backdrop-blur shadow-sm border border-orange-100 rounded-xl p-4 mb-8 max-w-5xl mx-auto flex flex-col gap-3">
-                    <div class="flex justify-between items-center w-full">
-                        <span class="font-bold text-orange-800 text-xl hidden sm:block shrink-0">測驗進度</span>
-                        <div class="flex-1 bg-gray-200 rounded-full h-3 mx-4 sm:mx-6">
-                            <div id="quiz-progress-bar" class="bg-orange-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
-                        </div>
-                        <span id="quiz-progress-text" class="font-bold text-orange-800 text-lg shrink-0">0 / ${total}</span>
+                <div class="sticky top-0 z-20 bg-white/95 backdrop-blur shadow-sm border border-orange-100 rounded-xl p-4 mb-8 flex justify-between items-center max-w-5xl mx-auto">
+                    <span class="font-bold text-orange-800 text-xl hidden sm:block">測驗進度</span>
+                    <div class="flex-1 bg-gray-200 rounded-full h-3 mx-4 sm:mx-6">
+                        <div id="quiz-progress-bar" class="bg-orange-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
                     </div>
-                    <div class="flex justify-center sm:justify-end gap-4 sm:gap-6 text-base font-bold px-2">
-                        <span class="text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full shadow-sm"><i class="fas fa-check-circle mr-1 text-emerald-500"></i>答對：<span id="quiz-correct-count">0</span></span>
-                        <span class="text-red-700 bg-red-50 border border-red-200 px-3 py-1 rounded-full shadow-sm"><i class="fas fa-times-circle mr-1 text-red-500"></i>答錯：<span id="quiz-wrong-count">0</span></span>
-                    </div>
+                    <span id="quiz-progress-text" class="font-bold text-orange-800 text-lg">0 / ${total}</span>
                 </div>
                 <div class="max-w-5xl mx-auto space-y-8">
             `;
@@ -1030,36 +1024,16 @@
         };
 
         window.updateQuizProgress = () => {
-            let answeredCount = 0;
-            let correctCount = 0;
-            let wrongCount = 0;
-
-            // 計算目前答題狀況
-            quizState.userAnswers.forEach((ans, idx) => {
-                if (ans !== null) {
-                    answeredCount++;
-                    if (ans === quizState.questions[idx].ans) {
-                        correctCount++;
-                    } else {
-                        wrongCount++;
-                    }
-                }
-            });
-
+            const answeredCount = quizState.userAnswers.filter(a => a !== null).length;
             const total = quizState.questions.length;
             const progress = (answeredCount / total) * 100;
             
             const bar = el('quiz-progress-bar');
             const text = el('quiz-progress-text');
-            const correctEl = el('quiz-correct-count');
-            const wrongEl = el('quiz-wrong-count');
             const btn = el('finish-quiz-btn');
             
-            // 更新 UI
             if(bar) bar.style.width = `${progress}%`;
             if(text) text.innerText = `${answeredCount} / ${total}`;
-            if(correctEl) correctEl.innerText = correctCount;
-            if(wrongEl) wrongEl.innerText = wrongCount;
             
             if(answeredCount === total && btn) {
                 btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
@@ -1138,10 +1112,6 @@
                                                 ${idx === m.ans ? '<i class="fas fa-check ml-2"></i>(正確答案)' : ''}
                                             </div>
                                         `).join('')}
-                                    </div>
-                                    <div class="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg text-orange-900 shadow-sm text-lg">
-                                        <p class="font-bold mb-1"><i class="fas fa-book-reader mr-2 text-orange-700"></i>深度解析：</p>
-                                        <p class="leading-relaxed">${generate100Questions().find(q => q.q === m.q)?.exp || '請參考講義內容。'}</p>
                                     </div>
                                 </div>
                             `).reverse().join('')}
