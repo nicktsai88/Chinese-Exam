@@ -685,14 +685,29 @@
                 <nav class="bg-wood text-wood-dark shadow-md z-20">
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div class="flex justify-between h-20">
-                            <div class="flex items-center gap-4">
-                                <span class="font-bold text-xl md:text-2xl tracking-widest hidden sm:block"><i class="fas fa-book-open mr-3 text-amber-700"></i>我所知道的康橋</span>
-                                <div class="flex items-center bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200 shadow-inner text-sm font-bold text-gray-700">
+                            <div class="flex items-center gap-2 sm:gap-4 flex-1 overflow-hidden min-w-0">
+                                <span class="font-bold text-xl md:text-2xl tracking-widest hidden lg:block shrink-0"><i class="fas fa-book-open mr-3 text-amber-700"></i>我所知道的康橋</span>
+                                <div class="flex items-center bg-gray-50 px-2 sm:px-3 py-1.5 rounded-full border border-gray-200 shadow-inner text-xs sm:text-sm font-bold text-gray-700 shrink-0">
                                     <span class="status-dot ${connectionStatus === 'loading' ? 'status-loading' : connectionStatus === 'success' ? 'status-success' : 'status-error'}"></span>
-                                    ${connectionStatus === 'loading' ? '讀取中' : connectionStatus === 'success' ? '雲端同步' : '連線失敗'}
+                                    <span class="hidden sm:inline">${connectionStatus === 'loading' ? '讀取中' : connectionStatus === 'success' ? '雲端同步' : '連線失敗'}</span>
+                                </div>
+                                
+                                <!-- 新增：導覽列測驗即時統計 (預設隱藏) -->
+                                <div id="nav-quiz-stats" class="hidden items-center ml-1 sm:ml-4 animate-fade-in shrink-0 min-w-0">
+                                    <div class="flex items-center bg-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-gray-200 shadow-sm text-sm sm:text-base font-bold shrink-0">
+                                        <span class="text-emerald-600 flex items-center"><i class="fas fa-check-circle mr-1"></i><span id="nav-stat-correct">0</span></span>
+                                        <div class="w-px bg-gray-300 h-4 mx-2 sm:mx-3"></div>
+                                        <span class="text-red-500 flex items-center"><i class="fas fa-times-circle mr-1"></i><span id="nav-stat-incorrect">0</span></span>
+                                    </div>
+                                    <!-- 進度條 (手機版自動隱藏，保留空間) -->
+                                    <div class="hidden md:flex flex-col w-24 lg:w-32 ml-3 shrink-0">
+                                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden shadow-inner">
+                                            <div id="nav-stat-progress-bar" class="bg-gradient-to-r from-orange-400 to-orange-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-1 sm:space-x-4">
+                            <div class="flex items-center space-x-1 sm:space-x-4 shrink-0">
                                 <button onclick="switchTab('learn')" id="nav-learn" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">學習區</button>
                                 <button onclick="switchTab('quiz')" id="nav-quiz" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">測驗(100題)</button>
                                 <button onclick="switchTab('mistakes')" id="nav-mistakes" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">錯題本</button>
@@ -715,6 +730,7 @@
         window.logout = () => {
             username = '';
             userData = { favorites: [], mistakes: [] };
+            quizState = { active: false, currentQ: 0, score: 0, answers: [], questions: [], showExplanation: false, selectedAns: null };
             renderLogin();
         };
 
@@ -733,6 +749,19 @@
                     }
                 }
             });
+
+            // 智慧顯示/隱藏導覽列的測驗統計
+            const navStats = el('nav-quiz-stats');
+            if (navStats) {
+                if (tab === 'quiz' && quizState.active) {
+                    navStats.classList.remove('hidden');
+                    navStats.classList.add('flex');
+                    updateQuizStats();
+                } else {
+                    navStats.classList.add('hidden');
+                    navStats.classList.remove('flex');
+                }
+            }
 
             const content = el('main-content');
             if(tab === 'learn') renderLearnView(content);
@@ -859,10 +888,20 @@
             }));
             quizState = { active: true, questions: qList };
             renderQuizView(el('main-content'));
+            
+            // 開始測驗時，顯示導覽列統計
+            const navStats = el('nav-quiz-stats');
+            if (navStats) {
+                navStats.classList.remove('hidden');
+                navStats.classList.add('flex');
+            }
+            updateQuizStats();
         };
 
-        // 更新即時統計資料的獨立函數
+        // 更新即時統計資料的獨立函數 (綁定導覽列元件)
         window.updateQuizStats = () => {
+            if (!quizState.active) return;
+            
             let correct = 0;
             let incorrect = 0;
             let answered = 0;
@@ -878,45 +917,24 @@
 
             const progressPercent = (answered / total) * 100;
 
-            const elCorrect = document.getElementById('stat-correct');
-            const elIncorrect = document.getElementById('stat-incorrect');
-            const elBar = document.getElementById('stat-progress-bar');
-            const elText = document.getElementById('stat-progress-text');
+            const elCorrect = document.getElementById('nav-stat-correct');
+            const elIncorrect = document.getElementById('nav-stat-incorrect');
+            const elBar = document.getElementById('nav-stat-progress-bar');
 
             if (elCorrect) elCorrect.innerText = correct;
             if (elIncorrect) elIncorrect.innerText = incorrect;
             if (elBar) elBar.style.width = progressPercent + '%';
-            if (elText) elText.innerText = `作答進度：${answered} / ${total} 題`;
         };
 
         const renderQuizWaterfall = (container) => {
             const total = quizState.questions.length;
             let html = `
-                <!-- 縮小測驗區左右 Padding -->
+                <!-- 完全乾淨的測驗區背景 -->
                 <div class="w-full flex-1 p-3 md:p-6 lg:p-8 overflow-y-auto pb-24 scrollbar-hide bg-gray-50/50" id="quiz-scroll-container">
-                    <!-- 放大測驗區寬度至 max-w-6xl -->
                     <div class="max-w-6xl mx-auto relative w-full">
                         
-                        <!-- 帶有進度條與統計的 Sticky Header -->
-                        <div class="bg-white px-6 md:px-8 py-5 border-b-4 border-orange-400 rounded-xl shadow-lg sticky top-0 z-30 mb-8 transition-all">
-                            <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-3">
-                                <h2 class="font-bold text-orange-900 text-xl md:text-2xl">綜合測驗 <span class="text-base font-normal text-gray-500 ml-2">隨選即答</span></h2>
-                                <div class="flex gap-4 md:gap-6 text-lg md:text-xl font-bold bg-gray-50 px-4 py-2 md:px-5 rounded-lg border border-gray-100 shadow-inner">
-                                    <span class="text-emerald-600 flex items-center"><i class="fas fa-check-circle mr-2 md:text-2xl"></i>答對 <span id="stat-correct" class="ml-1 md:ml-2 md:text-2xl">0</span></span>
-                                    <div class="w-px bg-gray-300 h-auto my-1"></div>
-                                    <span class="text-red-500 flex items-center"><i class="fas fa-times-circle mr-2 md:text-2xl"></i>答錯 <span id="stat-incorrect" class="ml-1 md:ml-2 md:text-2xl">0</span></span>
-                                </div>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-3 md:h-4 shadow-inner overflow-hidden">
-                                <div id="stat-progress-bar" class="bg-gradient-to-r from-orange-400 to-orange-600 h-full rounded-full transition-all duration-500 relative" style="width: 0%"></div>
-                            </div>
-                            <div class="flex justify-between text-sm md:text-lg mt-3 text-gray-600 font-bold">
-                                <span id="stat-progress-text">作答進度：0 / ${total} 題</span>
-                                <span class="text-orange-600 cursor-pointer hover:text-orange-800 transition" onclick="document.getElementById('quiz-scroll-container').scrollTo({top: document.getElementById('quiz-scroll-container').scrollHeight, behavior: 'smooth'})">跳至最底交卷 <i class="fas fa-arrow-down"></i></span>
-                            </div>
-                        </div>
-
-                        <div id="questions-list" class="space-y-8 w-full">
+                        <!-- 題目列表區 -->
+                        <div id="questions-list" class="space-y-8 w-full mt-4">
             `;
 
             quizState.questions.forEach((_, qIdx) => {
@@ -1049,7 +1067,7 @@
                 block.innerHTML = generateSingleQuestionHtml(qIdx);
             }
 
-            // 更新上方總進度與統計
+            // 更新導覽列的即時統計
             updateQuizStats();
         };
 
@@ -1075,6 +1093,13 @@
             const total = quizState.questions.length;
             const scorePercent = Math.round((correctCount / total) * 100);
             
+            // 隱藏導覽列測驗統計
+            const navStats = el('nav-quiz-stats');
+            if (navStats) {
+                navStats.classList.add('hidden');
+                navStats.classList.remove('flex');
+            }
+
             // 存入 Firebase
             if(isFirebaseInitialized && currentUser) {
                 const docRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_quizzes'));
