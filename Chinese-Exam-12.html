@@ -850,8 +850,8 @@
 
             <!-- 提交按鈕 -->
             <div class="text-center mt-10 mb-4">
-                <button type="button" onclick="submitQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-full shadow-lg text-xl transition-colors w-full sm:w-auto">
-                    提交測驗看成績
+                <button type="button" onclick="submitQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-full shadow-lg text-2xl transition-colors w-full sm:w-auto">
+                    結算最終成績
                 </button>
             </div>
         </form>
@@ -867,58 +867,111 @@
             q21: "D", q22: "A", q23: "B", q24: "D", q25: "B"
         };
 
-        function submitQuiz() {
-            let score = 0;
-            let unAnsweredCount = 0;
+        let currentScore = 0;
 
-            // 檢查是否每題都已作答 (可選，目前允許空缺算錯)
-            // 這裡直接進行計算
-            for (let i = 1; i <= 25; i++) {
-                const qName = 'q' + i;
-                const selected = document.querySelector(`input[name="${qName}"]:checked`);
-                const container = document.getElementById(`${qName}-container`);
-                const feedback = container.querySelector('.feedback');
-                const status = container.querySelector('.answer-status');
-
-                // 顯示回饋區域
-                feedback.classList.remove('hidden');
-
-                if (selected && selected.value === answers[qName]) {
-                    // 答對加 4 分
-                    score += 4;
-                    status.innerHTML = "✅ 答對了！";
-                    status.className = "answer-status text-green-600 font-bold text-lg mb-2";
-                    container.classList.add('border-green-400', 'bg-green-50');
-                    container.classList.remove('border-gray-200', 'bg-white');
-                } else {
-                    // 答錯或是未作答
-                    const userAns = selected ? selected.value : '未作答';
-                    status.innerHTML = `❌ 答錯了！您的答案：${userAns}，正確答案：${answers[qName]}`;
-                    status.className = "answer-status text-red-600 font-bold text-lg mb-2";
-                    container.classList.add('border-red-400', 'bg-red-50');
-                    container.classList.remove('border-gray-200', 'bg-white');
+        // 網頁載入完成後初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 動態加大所有選項按鈕的樣式
+            document.querySelectorAll('label.cursor-pointer').forEach(label => {
+                // 移除舊的較小樣式
+                label.classList.remove('p-2', 'rounded', 'hover:bg-gray-50');
+                // 加入新的加大樣式 (更大的 padding、圓角、字體)
+                label.classList.add('p-4', 'rounded-xl', 'bg-gray-50', 'border-2', 'border-gray-200', 'hover:bg-blue-100', 'hover:border-blue-300', 'transition-all', 'text-xl');
+                
+                const radio = label.querySelector('input[type="radio"]');
+                if (radio) {
+                    // 加大 Radio Button 圓圈本身
+                    radio.classList.remove('h-5', 'w-5');
+                    radio.classList.add('h-7', 'w-7');
+                    
+                    // 綁定「點擊選項即刻對答案」的事件
+                    radio.addEventListener('change', function() {
+                        handleImmediateFeedback(this.name, this.value);
+                    });
                 }
+            });
+        });
 
-                // 將所有 radio 設定為 disabled，避免再次修改
-                const radios = container.querySelectorAll('input[type="radio"]');
-                radios.forEach(r => r.disabled = true);
+        function handleImmediateFeedback(qName, selectedValue) {
+            const container = document.getElementById(`${qName}-container`);
+            const feedback = container.querySelector('.feedback');
+            const status = container.querySelector('.answer-status');
+            const correctAnswer = answers[qName];
+
+            // 顯示詳解與回饋區域
+            feedback.classList.remove('hidden');
+
+            if (selectedValue === correctAnswer) {
+                // 答對加分
+                currentScore += 4;
+                status.innerHTML = "✅ 答對了！";
+                status.className = "answer-status text-green-600 font-bold text-2xl mb-3";
+                container.classList.add('border-green-500', 'bg-green-50', 'border-2');
+                container.classList.remove('border-gray-200', 'bg-white');
+            } else {
+                // 答錯立即顯示正確答案
+                status.innerHTML = `❌ 答錯了！正確答案是：<span class="text-3xl mx-2 text-blue-700 font-black">${correctAnswer}</span>`;
+                status.className = "answer-status text-red-600 font-bold text-2xl mb-3";
+                container.classList.add('border-red-500', 'bg-red-50', 'border-2');
+                container.classList.remove('border-gray-200', 'bg-white');
             }
 
-            // 更新畫面上方的分數
+            // 鎖定該題所有選項，避免重複作答或竄改
+            const radios = container.querySelectorAll('input[type="radio"]');
+            radios.forEach(r => {
+                r.disabled = true;
+                const label = r.closest('label');
+                label.classList.remove('hover:bg-blue-100', 'hover:border-blue-300', 'cursor-pointer');
+                label.classList.add('cursor-not-allowed', 'opacity-60');
+                
+                // 無論對錯，給予正確答案特別的「綠色光圈」高亮標示
+                if (r.value === correctAnswer) {
+                    label.classList.remove('opacity-60');
+                    label.classList.add('ring-4', 'ring-green-400', 'bg-green-100', 'border-green-500');
+                }
+            });
+
+            // 即時更新最上方的總分顯示
+            updateScoreDisplay();
+        }
+
+        function updateScoreDisplay() {
             const scoreDisplay = document.getElementById('scoreDisplay');
-            scoreDisplay.innerText = score;
+            scoreDisplay.innerText = currentScore;
             
-            // 分數顏色變化
-            if (score >= 80) {
+            // 依據分數變換顏色
+            if (currentScore >= 80) {
                 scoreDisplay.className = "text-green-600 font-black";
-            } else if (score >= 60) {
+            } else if (currentScore >= 60) {
                 scoreDisplay.className = "text-yellow-600 font-black";
             } else {
                 scoreDisplay.className = "text-red-600 font-black";
             }
+        }
 
-            // 自動平滑捲動回到頂端看分數
-            document.getElementById('score-section').scrollIntoView({ behavior: 'smooth' });
+        function submitQuiz() {
+            let allAnswered = true;
+            let unAnsweredList = [];
+            
+            // 檢查是否有遺漏未答的題目
+            for (let i = 1; i <= 25; i++) {
+                if (!document.querySelector(`input[name="q${i}"]:checked`)) {
+                    allAnswered = false;
+                    unAnsweredList.push(i);
+                    // 標記未答的題目為黃色粗邊框
+                    document.getElementById(`q${i}-container`).classList.add('border-yellow-400', 'border-4');
+                } else {
+                    document.getElementById(`q${i}-container`).classList.remove('border-yellow-400', 'border-4');
+                }
+            }
+
+            if (!allAnswered) {
+                alert(`提醒：您還有題目未作答喔！\n未作答題號：${unAnsweredList.join(', ')}\n\n已為您用黃色粗邊框標記出來。`);
+            } else {
+                alert(`恭喜測驗完成！\n您的最終得分為：${currentScore} 分`);
+                // 自動平滑捲動回到頂端看分數
+                document.getElementById('score-section').scrollIntoView({ behavior: 'smooth' });
+            }
         }
     </script>
 </body>
