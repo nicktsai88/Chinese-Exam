@@ -33,7 +33,7 @@
         .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* 玻璃擬真特效 (改為暖色系琥珀/橘紅色底) */
+        /* 玻璃擬真特效 (暖色系琥珀/橘紅色底) */
         .glass-nav { background: rgba(194, 65, 12, 0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
         .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
     </style>
@@ -136,7 +136,7 @@
         };
 
         // ==========================================
-        //  學習資料庫 (全面套用暖色漸層設計)
+        //  學習資料庫 (講義內容一字不漏)
         // ==========================================
         const learnData = [
             {
@@ -144,34 +144,35 @@
                 content: `
                 <div class="space-y-8 text-lg md:text-xl text-gray-800">
                     <div class="bg-gradient-to-br from-orange-50 to-amber-50 p-6 md:p-8 rounded-2xl border-l-8 border-orange-500 shadow-lg">
+                        <div class="text-center font-black text-2xl md:text-3xl text-orange-950 mb-6 border-b-2 border-orange-200 pb-2">重點整理 第四課 我所知道的康橋/徐志摩</div>
                         <h3 class="font-extrabold text-orange-900 text-2xl md:text-3xl mb-5 flex items-center"><i class="fas fa-book-open mr-3 text-orange-600"></i>一、課文提要</h3>
-                        <ol class="list-decimal ml-6 space-y-4 text-orange-950 leading-relaxed">
-                            <li><span class="font-bold text-orange-700 bg-orange-100 px-2 py-1 rounded">文體</span> 記敘兼抒情文。</li>
-                            <li><span class="font-bold text-orange-700 bg-orange-100 px-2 py-1 rounded">文章出處</span> 《徐志摩全集》。</li>
-                            <li><span class="font-bold text-orange-700 bg-orange-100 px-2 py-1 rounded">內容大要</span> 作者以細膩生動的筆觸，描述康橋初春的風光，及漫遊其間的樂趣。</li>
-                            <li><span class="font-bold text-orange-700 bg-orange-100 px-2 py-1 rounded">作法分析</span> 本文以「時間」為主軸(早晨→白天→黃昏)，配合「空間」的轉移，對康橋景物深入描繪。全文共分四段：
-                                <ul class="list-none space-y-5 mt-4 ml-2">
-                                    <li class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
-                                        <span class="font-bold text-orange-800 text-xl border-b-2 border-orange-200 pb-1 mb-2 inline-block">(1)第一段：寫康橋初春早晨的自然風光。</span><br>
-                                        ①以視覺和聽覺摹寫康橋春晨的風光。<br>
-                                        ②本段清晨尋春，作者選了兩種截然不同又具有代表性的景色：一是晨霧籠罩下的康橋原野，一是春陽下大地繽紛的美景。晨霧瀰漫下有淒迷朦朧的美，春陽照耀有著富麗溫柔的美——康橋的美就在她的多變。
-                                    </li>
-                                    <li class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
-                                        <span class="font-bold text-orange-800 text-xl border-b-2 border-orange-200 pb-1 mb-2 inline-block">(2)第二段：描寫康河岸上風光，與百花盛開的爛漫春景。</span><br>
-                                        連用六個「關心」句，足見作者細心地尋訪和熱切地盼望。
-                                    </li>
-                                    <li class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
-                                        <span class="font-bold text-orange-800 text-xl border-b-2 border-orange-200 pb-1 mb-2 inline-block">(3)第三段：寫春假騎自行車出遊的閒適愉悅。</span><br>
-                                        ①連用了四個「你如愛」點出了這有情有愛的大自然令人深深喜好。作者在此段用「你」來拉近與讀者的距離，彷彿與讀者面對面把臂歡談，顯得格外親切，熱情洋溢。<br>
-                                        ②結尾以激問作結，剛好回應了本段開頭的讚嘆。
-                                    </li>
-                                    <li class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
-                                        <span class="font-bold text-orange-800 text-xl border-b-2 border-orange-200 pb-1 mb-2 inline-block">(4)第四段：寫康橋如畫般的黃昏美景。</span><br>
-                                        此段描寫康橋黃昏的美景和自己的特殊經驗。文中作者先以陸游的詩句襯托自己生活的雅趣，再述說自己三次可遇不可求的特殊經驗。文末「這草田變成了......」，以刪節號留給讀者諸多的想像空間，並體會「數大之美」、「神異性」的感受，藉由此種方式再度拉近讀者與康橋的距離，實為高明。
-                                    </li>
-                                </ul>
-                            </li>
-                        </ol>
+                        <div class="ml-2 md:ml-6 space-y-4 text-orange-950 leading-relaxed">
+                            <p>1.文體:記敘兼抒情文。</p>
+                            <p>2.文章出處:《徐志摩全集》。</p>
+                            <p>3. 內容大要:作者以細膩生動的筆觸,描述康橋初春的風光,及漫遊其間的樂趣。</p>
+                            <p>4. 作法分析:</p>
+                            <p class="ml-4">本文以「時間」為主軸(早晨→白天→黃昏),配合「空間」的轉移,對康橋景物深入描繪。全文共分四段:</p>
+                            <ul class="list-none space-y-5 mt-4 ml-4">
+                                <li class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
+                                    <span class="font-bold text-orange-800 text-xl border-b-2 border-orange-200 pb-1 mb-2 inline-block">○ (1)第一段:寫康橋初春早晨的自然風光。</span><br>
+                                    . ①以視覺和聽覺摹寫康橋春晨的風光。<br>
+                                    • ②本段清晨尋春,作者選了兩種截然不同又具有代表性的景色:一是晨霧籠罩下的康橋原野,一是春陽下大地繽紛的美景。晨霧瀰漫下有淒迷朦朧的美,春陽照耀有著富麗溫柔的美——康橋的美就在她的多變。
+                                </li>
+                                <li class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
+                                    <span class="font-bold text-orange-800 text-xl border-b-2 border-orange-200 pb-1 mb-2 inline-block">○ (2)第二段:描寫康河岸上風光,與百花盛開的爛漫春景。</span><br>
+                                    連用六個「關心」句,足見作者細心地尋訪和熱切地盼望。
+                                </li>
+                                <li class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
+                                    <span class="font-bold text-orange-800 text-xl border-b-2 border-orange-200 pb-1 mb-2 inline-block">○ (3)第三段:寫春假騎自行車出遊的閒適愉悅。</span><br>
+                                    • ①連用了四個「你如愛」點出了這有情有愛的大自然令人深深喜好。作者在此段用「你」來拉近與讀者的距離,彷彿與讀者面對面把臂歡談,顯得格外親切,熱情洋溢。<br>
+                                    • ②結尾以激問作結,剛好回應了本段開頭的讚嘆。
+                                </li>
+                                <li class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
+                                    <span class="font-bold text-orange-800 text-xl border-b-2 border-orange-200 pb-1 mb-2 inline-block">○ (4)第四段:寫康橋如畫般的黃昏美景。</span><br>
+                                    • 此段描寫康橋黃昏的美景和自己的特殊經驗。文中作者先以陸游的詩句襯托自己生活的雅趣,再述說自己三次可遇不可求的特殊經驗。文末「這草田變成了......」,以刪節號留給讀者諸多的想像空間,並體會「數大之美」、「神異性」的感受,藉由此種方式再度拉近讀者與康橋的距離,實為高明。
+                                </li>
+                            </ul>
+                        </div>
                     </div>
 
                     <div class="bg-white p-6 md:p-8 rounded-2xl border border-orange-100 shadow-lg mt-8 relative overflow-hidden">
@@ -179,35 +180,35 @@
                         <h3 class="font-extrabold text-orange-950 text-2xl md:text-3xl mb-6 border-b-4 border-orange-300 pb-3 inline-flex items-center"><i class="fas fa-sitemap mr-3 text-orange-500"></i>二、課文結構表</h3>
                         <ul class="space-y-5">
                             <li class="border-l-4 border-amber-400 pl-5 bg-orange-50/50 p-4 rounded-r-xl">
-                                <span class="font-bold text-2xl text-amber-800">擁抱初春的早晨(我所知道的康橋)</span>
+                                <span class="font-bold text-2xl text-amber-800">• 擁抱初春的早晨(我所知道的康橋)</span>
                                 <ul class="list-disc ml-6 mt-3 text-slate-700 space-y-2">
-                                    <li>平視(由近而遠)：水溶溶的大道→林子平原、村舍小山→近村的教寺。</li>
-                                    <li>俯瞰：村舍、樹林。</li>
-                                    <li>仰望：漸漸散去的朝霧、冉冉升起的炊煙、難得一見的朝陽。</li>
+                                    <li class="list-none">平視(由近而遠):水溶溶的大道→林子平原、村舍小山→近村的教寺。</li>
+                                    <li class="list-none">○俯瞰:村舍、樹林。</li>
+                                    <li class="list-none">仰望:漸漸散去的朝霧、冉冉升起的炊煙、難得一見的朝陽。</li>
                                 </ul>
                             </li>
                             <li class="border-l-4 border-orange-400 pl-5 bg-orange-50/50 p-4 rounded-r-xl">
-                                <span class="font-bold text-2xl text-orange-800">探詢河上的春信</span>
+                                <span class="font-bold text-2xl text-orange-800">• 探詢河上的春信</span>
                                 <ul class="list-disc ml-6 mt-3 text-slate-700 space-y-2">
-                                    <li>觀察：小雪球、鈴蘭、香草、蓮馨、石水仙、克羅克斯、蒲公英、雛菊相繼綻放。</li>
-                                    <li>推論：春光已爛縵在人間。</li>
+                                    <li class="list-none">。觀察:小雪球、鈴蘭、香草、蓮馨、石水仙、克羅克斯、蒲公英、雛菊相繼綻放。</li>
+                                    <li class="list-none">。推論:春光已爛縵在人間。</li>
                                 </ul>
                             </li>
                             <li class="border-l-4 border-rose-400 pl-5 bg-orange-50/50 p-4 rounded-r-xl">
-                                <span class="font-bold text-2xl text-rose-800">歌詠野遊的閒適</span>
+                                <span class="font-bold text-2xl text-rose-800">• 歌詠野遊的閒適</span>
                                 <ul class="list-disc ml-6 mt-3 text-slate-700 space-y-2">
-                                    <li>時間：瑰麗的春假。</li>
-                                    <li>條件：可愛的路政。</li>
-                                    <li>工具：騎自行車。</li>
-                                    <li>歸納：最適情、適性的消遣————看天，聽鳥，讀書。在草地上尋夢。</li>
+                                    <li class="list-none">時間:瑰麗的春假。</li>
+                                    <li class="list-none">條件:可愛的路政。</li>
+                                    <li class="list-none">工具:騎自行車。</li>
+                                    <li class="list-none">歸納:最適情、適性的消遣————看天,聽鳥,讀書。在草地上尋夢。</li>
                                 </ul>
                             </li>
                             <li class="border-l-4 border-red-400 pl-5 bg-orange-50/50 p-4 rounded-r-xl">
-                                <span class="font-bold text-2xl text-red-800">描繪瑰麗的暮色</span>
+                                <span class="font-bold text-2xl text-red-800">• 描繪瑰麗的暮色</span>
                                 <ul class="list-disc ml-6 mt-3 text-slate-700 space-y-2">
-                                    <li>由騎車逐日的過程，陳述自己的視覺美感經驗。</li>
-                                    <li>藉在漸隱的金光中，感應到宇宙偉大、神祕的力量，抒寫一己靈魂的悸動。</li>
-                                    <li>由草田中豔紅罌粟的搖曳，帶給他迷眩的心理作用，描摹充滿神異且無以名之的感受。</li>
+                                    <li class="list-none">。由騎車逐日的過程,陳述自己的視覺美感經驗。</li>
+                                    <li class="list-none">藉在漸隱的金光中,感應到宇宙偉大、神祕的力量,抒寫一己靈魂的悸動。</li>
+                                    <li class="list-none">由草田中豔紅罌粟的搖曳,帶給他迷眩的心理作用,描摹充滿神異且無以名之的感受。</li>
                                 </ul>
                             </li>
                         </ul>
@@ -216,10 +217,10 @@
                     <div class="bg-gradient-to-r from-orange-900 to-red-900 text-white p-6 md:p-8 rounded-2xl shadow-lg mt-8">
                         <h3 class="font-extrabold text-2xl md:text-3xl mb-5 border-b-2 border-orange-500/50 pb-3"><i class="fas fa-align-left mr-3 text-amber-400"></i>三、段落大意</h3>
                         <ul class="list-none space-y-3 text-orange-50">
-                            <li class="flex items-start"><span class="bg-amber-500 text-white font-bold px-3 py-1 rounded-lg mr-4 shrink-0 shadow-sm">第一段</span> 寫康橋初春早晨的自然風光。</li>
-                            <li class="flex items-start"><span class="bg-orange-500 text-white font-bold px-3 py-1 rounded-lg mr-4 shrink-0 shadow-sm">第二段</span> 描寫康河岸上風光，與百花盛開的爛漫春景。</li>
-                            <li class="flex items-start"><span class="bg-rose-500 text-white font-bold px-3 py-1 rounded-lg mr-4 shrink-0 shadow-sm">第三段</span> 寫春假騎自行車出遊的閒適愉悅。</li>
-                            <li class="flex items-start"><span class="bg-red-500 text-white font-bold px-3 py-1 rounded-lg mr-4 shrink-0 shadow-sm">第四段</span> 寫康橋如畫般的黃昏美景。</li>
+                            <li class="flex items-start"><span class="bg-amber-500 text-white font-bold px-3 py-1 rounded-lg mr-4 shrink-0 shadow-sm">• 第一段:</span> 寫康橋初春早晨的自然風光。</li>
+                            <li class="flex items-start"><span class="bg-orange-500 text-white font-bold px-3 py-1 rounded-lg mr-4 shrink-0 shadow-sm">• 第二段:</span> 描寫康河岸上風光,與百花盛開的爛漫春景。</li>
+                            <li class="flex items-start"><span class="bg-rose-500 text-white font-bold px-3 py-1 rounded-lg mr-4 shrink-0 shadow-sm">• 第三段:</span> 寫春假騎自行車出遊的閒適愉悅。</li>
+                            <li class="flex items-start"><span class="bg-red-500 text-white font-bold px-3 py-1 rounded-lg mr-4 shrink-0 shadow-sm">• 第四段:</span> 寫康橋如畫般的黃昏美景。</li>
                         </ul>
                     </div>
                 </div>`
@@ -232,32 +233,31 @@
                         <h3 class="font-extrabold text-rose-900 text-2xl md:text-3xl mb-8 flex items-center"><i class="fas fa-quote-left mr-3 text-rose-500"></i>四、句意解說</h3>
                         <div class="grid grid-cols-1 gap-6">
                             ${[
-                                "只遠處牛奶車的鈴聲，點綴這周遭的沉默。|以牛奶車的鈴聲，反襯出四周的寧靜。",
-                                "康橋只是一帶茂林，擁戴幾處娉婷的尖閣。嫵媚的康河也望不見蹤跡，你只能循著那錦帶似的林木想像那一流清淺。村舍與樹林是這地盤上的棋子，有村舍處有佳蔭，有佳蔭處有村舍。|以下皆為登上土阜後所見之景。",
-                                "遠近的炊煙，成絲的、成縷的、成捲的、輕快的、遲重的、濃灰的、淡青的、慘白的。|從形狀、速度、顏色三種面向描述早晨炊煙的樣貌。",
-                                "在靜定的朝氣裡漸漸地上騰，漸漸地不見，彷彿是朝來人們的祈禱，參差地翳入了天聽。|用聽覺印象來表現視覺感受。作者把「眼所見」與「耳所聞」巧妙地結合，感官交錯應用，使炊煙上騰的描寫更鮮活。",
-                                "朝陽是難得見的，這初春的天氣，但它來時是起早人莫大的愉快。|因英國冬季和初春多霧，故覺得「物以稀為貴」。",
-                                "頃刻間這田野添深了顏色，一層輕紗似的金粉糁上了這草、這樹、這通道、這莊舍。頃刻間這周遭瀰漫了清晨富麗的溫柔，頃刻間你的心懷也分潤了白天誕生的光榮。|連用三個「頃刻間」，把時間說得極為急促，表示初曉景色的瞬息變化，讓人有目不暇接之感。",
-                                "「春!」這勝利的晴空彷彿在你的耳邊私語。「春!」你那快活的靈魂也彷彿在那裡回響。|連用兩個「春!」表達了歡喜雀躍的心情，將尋春人心中喜悅的感覺大聲說出來，使讀者也不禁為春的到來而歡呼，寫來極具感染力。又用「私語」、「回響」給予「春」活潑的生命力，似乎「春」正向早起尋春的人們打招呼。",
-                                "伺候著河上的風光，這春來一天有一天的消息。|表示對春信殷切的盼望。「伺候」二字顯現出較主動積極、專注投入的，不放過任何細節的意思。",
-                                "怯怜怜的小雪球是探春信的小使，鈴蘭與香草是歡喜的初聲，窈窕的蓮馨、玲瓏的石水仙、愛熱鬧的克羅克斯、耐辛苦的蒲公英與雛菊————這時候春光已是爛縵在人間，更不須殷勤問訊。|百花盛開，隨處可嗅到春的氣息—————春，無所不在，自不須「殷勤問訊」，即可感受得到。",
-                                "帶一卷書，走十里路，選一塊清靜地，看天，聽鳥，讀書。倦了時，和身在草綿綿處尋夢去。|描寫置身於大自然中，過著適情適性、逍遙自得的生活。",
-                                "你能想像更適情、更適性的消遣嗎?|表達自己的讚嘆，呼應第三段首四句。",
-                                "陸放翁有一聯詩句：「傳呼快馬迎新月，卻上輕輿趁晚涼。」這是做地方官的風流。我在康橋時雖沒馬騎，沒轎子坐，卻也有我的風流：我常常在夕陽西曬時，騎了車迎著天邊扁大的日頭直追。日頭是追不到的，我沒有夸父的荒誕，但晚景的溫存卻被我這樣偷嘗了不少。|作者引陸游的詩句，用來烘托騎自行車的風流，以及享受月夜晚涼的雅趣。",
-                                "有一次，我趕到一個地方，手把著一家村莊的籬笆，隔著一大田的麥浪，看西天的變幻。|隔著一大田的麥浪，看西天的變化——壯闊之美—————數大便是美的經驗。",
-                                "有一次，是正衝著一條寬廣的大道，過來了一大群羊—————放草歸來的，偌大的太陽在牠們後背放射著萬縷的金輝。|面對太陽的萬縷金輝，產生對「宇宙偉大與莊嚴」的虔敬情緒。",
-                                "我心頭頓時感著神異性的壓迫，我真的跪下了，對著這冉冉漸隱的金光。|這是作者對宇宙萬物的偉大與莊嚴，產生了一種虔誠的情緒及感受到數大之美所導致的結果。",
-                                "再有一次，是更不可忘的奇景，那是臨著一大片望不到頭的草原，滿開著豔紅的罌粟，在青草裡亭亭地像是萬盞的金燈，陽光從褐色雲裡斜著過來，幻成一種異樣的紫色，透明似的，不可逼視。|萬盞金燈般的罌粟，在陽光照射下所造成的幻象 數大之美。",
-                                "這草田變成了......，不說也罷，說來你們也是不信的!!|欲語還休、戛然而止，因心靈的感受，只可意會不可言傳，留予讀者無限的想像空間及餘味。",
-                                "說來你們也是不信的!|可見是「神異性」的感受。"
+                                "1. 只遠處牛奶車的鈴聲,點綴這周遭的沉默。|→以牛奶車的鈴聲,反襯出四周的寧靜。",
+                                "2. 康橋只是一帶茂林,擁戴幾處娉婷的尖閣。嫵媚的康河也望不見蹤跡,你只能循著那錦帶似的林木想像那一流清淺。村舍與樹林是這地盤上的棋子,有村舍處有佳蔭,有佳蔭處有村舍。|→以下皆為登上土阜後所見之景。",
+                                "3. 遠近的炊煙,成絲的、成縷的、成捲的、輕快的、遲重的、濃灰的、淡青的、慘白的。|→從形狀、速度、顏色三種面向描述早晨炊煙的樣貌。",
+                                "4. 在靜定的朝氣裡漸漸地上騰,漸漸地不見,彷彿是朝來人們的祈禱,參差地翳入了天聽。|→用聽覺印象來表現視覺感受。作者把「眼所見」與「耳所聞」巧妙地結合,感官交錯應用,使炊煙上騰的描寫更鮮活。",
+                                "5. 朝陽是難得見的,這初春的天氣,但它來時是起早人莫大的愉快。|→因英國冬季和初春多霧,故覺得「物以稀為貴」。",
+                                "6. 頃刻間這田野添深了顏色,一層輕紗似的金粉糁上了這草、這樹、這通道、這莊舍。頃刻間這周遭瀰漫了清晨富麗的溫柔,頃刻間你的心懷也分潤了白天誕生的光榮。|→連用三個「頃刻間」,把時間說得極為急促,表示初曉景色的瞬息變化,讓人有目不暇接之感。",
+                                "7.「春!」這勝利的晴空彷彿在你的耳邊私語。「春!」你那快活的靈魂也彷彿在那裡回響。|→連用兩個「春!」表達了歡喜雀躍的心情,將尋春人心中喜悅的感覺大聲說出來,使讀者也不禁為春的到來而歡呼,寫來極具感染力。又用「私語」、「回響」給予「春」活潑的生命力,似乎「春」正向早起尋春的人們打招呼。",
+                                "8.伺候著河上的風光,這春來一天有一天的消息。|→表示對春信殷切的盼望。「伺候」二字顯現出較主動積極、專注投入的,不放過任何細節的意思。",
+                                "9. 怯怜怜的小雪球是探春信的小使,鈴蘭與香草是歡喜的初聲,窈窕的蓮馨、玲瓏的石水仙、愛熱鬧的克羅克斯、耐辛苦的蒲公英與雛菊————這時候春光已是爛縵在人間,更不須殷勤問訊。|→百花盛開,隨處可嗅到春的氣息—————春,無所不在,自不須「殷勤問訊」,即可感受得到。",
+                                "10. 帶一卷書,走十里路,選一塊清靜地,看天,聽鳥,讀書。倦了時,和身在草綿綿處尋夢去。|→描寫置身於大自然中,過著適情適性、逍遙自得的生活。",
+                                "11. 你能想像更適情、更適性的消遣嗎?|→表達自己的讚嘆,呼應第三段首四句。",
+                                "12. 陸放翁有一聯詩句:「傳呼快馬迎新月,卻上輕輿趁晚涼。」這是做地方官的風流。我在康橋時雖沒馬騎,沒轎子坐,卻也有我的風流:我常常在夕陽西曬時,騎了車迎著天邊扁大的日頭直追。日頭是追不到的,我沒有夸父的荒誕,但晚景的溫存卻被我這樣偷嘗了不少。|→作者引陸游的詩句,用來烘烘托騎自行車的風流,以及享受月夜晚涼的雅趣。",
+                                "13.有一次,我趕到一個地方,手把著一家村莊的籬笆,隔著一大田的麥浪,看西天的變幻。|→隔著一大田的麥浪,看西天的變化——壯闊之美—————數大便是美的經驗。",
+                                "14.有一次,是正衝著一條寬廣的大道,過來了一大群羊—————放草歸來的,偌大的太陽在牠們後背放射著萬縷的金輝。|→面對太陽的萬縷金輝,產生對「宇宙偉大與莊嚴」的虔敬情緒。",
+                                "15. 我心頭頓時感著神異性的壓迫,我真的跪下了,對著這冉冉漸隱的金光。|→這是作者對宇宙萬物的偉大與莊嚴,產生了一種虔誠的情緒及感受到數大之美所導致的結果。",
+                                "16.再有一次,是更不可忘的奇景,那是臨著一大片望不到頭的草原,滿開著豔紅的罌粟,在青草裡亭亭地像是萬盞的金燈,陽光從褐色雲裡斜著過來,幻成一種異樣的紫色,透明似的,不可逼視。|→萬盞金燈般的罌粟,在陽光照射下所造成的幻象 數大之美。",
+                                "17. 這草田變成了......,不說也罷,說來你們也是不信的!!|→欲語還休、戛然而止,因心靈的感受,只可意會不可言傳,留予讀者無限的想像空間及餘味。",
+                                "18.說來你們也是不信的!|→可見是「神異性」的感受。"
                             ].map((item, i) => `
                                 <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-rose-100 flex flex-col group relative overflow-hidden">
                                     <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-rose-400 to-red-500 rounded-l-2xl"></div>
                                     <div class="font-bold text-rose-800 text-xl mb-3 flex items-start">
-                                        <span class="bg-rose-100 text-rose-700 rounded-full w-8 h-8 flex items-center justify-center mr-3 shrink-0 text-base shadow-inner">${i+1}</span>
                                         <span class="leading-relaxed">${item.split('|')[0]}</span>
                                     </div>
-                                    <div class="text-slate-600 pl-11 leading-relaxed bg-rose-50/50 p-4 rounded-lg mt-auto border-l-2 border-rose-200">
+                                    <div class="text-slate-600 pl-4 leading-relaxed bg-rose-50/50 p-4 rounded-lg mt-auto border-l-2 border-rose-200">
                                         <i class="fas fa-lightbulb text-amber-500 mr-2"></i>${item.split('|')[1]}
                                     </div>
                                 </div>
@@ -282,75 +282,75 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                             
                             <div class="bg-gradient-to-br from-orange-50 to-amber-50 p-6 rounded-2xl shadow-sm border border-orange-100 hover:shadow-md transition">
-                                <h4 class="font-bold text-orange-800 text-xl mb-3 flex items-center"><span class="bg-orange-500 w-2 h-6 rounded-full mr-3"></span>(一) 摹寫 (聽覺摹寫)</h4>
+                                <h4 class="font-bold text-orange-800 text-xl mb-3 flex items-center"><span class="bg-orange-500 w-2 h-6 rounded-full mr-3"></span>(一)摹寫(聽覺摹寫)</h4>
                                 <ul class="list-disc ml-6 text-slate-700 space-y-2">
-                                    <li>只遠處牛奶車的鈴聲，點綴這周遭的沉默。</li>
+                                    <li class="list-none">• 只遠處牛奶車的鈴聲,點綴這周遭的沉默。</li>
                                 </ul>
                             </div>
 
                             <div class="bg-gradient-to-br from-amber-50 to-yellow-50 p-6 rounded-2xl shadow-sm border border-amber-100 hover:shadow-md transition">
-                                <h4 class="font-bold text-amber-800 text-xl mb-3 flex items-center"><span class="bg-amber-500 w-2 h-6 rounded-full mr-3"></span>(二) 譬喻</h4>
-                                <ul class="list-decimal ml-6 text-slate-700 space-y-2">
-                                    <li>地形像是海裡的輕波，默沉沉地起伏。</li>
-                                    <li>錦帶似的林木。</li>
-                                    <li>村舍與樹林是這地盤上的棋子。</li>
-                                    <li>有三兩幅畫圖似的經驗至今還是栩栩地留著。</li>
-                                    <li>滿開著豔紅的罌粟，在青草裡亭亭地像是萬盞的金燈。</li>
+                                <h4 class="font-bold text-amber-800 text-xl mb-3 flex items-center"><span class="bg-amber-500 w-2 h-6 rounded-full mr-3"></span>(二)譬喻</h4>
+                                <ul class="list-none ml-2 text-slate-700 space-y-2">
+                                    <li>1.地形像是海裡的輕波,默沉沉地起伏。</li>
+                                    <li>2. 錦帶似的林木。</li>
+                                    <li>3. 村舍與樹林是這地盤上的棋子。</li>
+                                    <li>4.有三兩幅畫圖似的經驗至今還是栩栩地留著。</li>
+                                    <li>5. 滿開著豔紅的罌粟,在青草裡亭亭地像是萬盞的金燈。</li>
                                 </ul>
                             </div>
 
                             <div class="bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-2xl shadow-sm border border-red-100 hover:shadow-md transition md:col-span-2">
-                                <h4 class="font-bold text-red-800 text-xl mb-3 flex items-center"><span class="bg-red-500 w-2 h-6 rounded-full mr-3"></span>(三) 轉化</h4>
-                                <ul class="list-decimal ml-6 text-slate-700 space-y-2">
-                                    <li>康橋只是一帶茂林，擁戴幾處娉婷的尖閣。嫵媚的康河也望不見蹤跡。(擬人)</li>
-                                    <li>「春!」這勝利的晴空彷彿在你的耳邊私語。「春!」你那快活的靈魂也彷彿在那裡回響。</li>
-                                    <li>怯怜怜的小雪球是探春信的小使，鈴蘭與香草是歡喜的初聲，窈窕的蓮馨、玲瓏的石水仙、愛熱鬧的克羅克斯、耐辛苦的蒲公英與雛菊。(擬人)</li>
-                                    <li>我沒有夸父的荒誕，但晚景的溫存卻被我這樣偷嘗了不少。</li>
+                                <h4 class="font-bold text-red-800 text-xl mb-3 flex items-center"><span class="bg-red-500 w-2 h-6 rounded-full mr-3"></span>(三)轉化</h4>
+                                <ul class="list-none ml-2 text-slate-700 space-y-2">
+                                    <li>1. 康橋只是一帶茂林,擁戴幾處娉婷的尖閣。嫵媚的康河也望不見蹤跡。(擬人)</li>
+                                    <li>2.「春!」這勝利的晴空彷彿在你的耳邊私語。「春!」你那快活的靈魂也彷彿在那裡回響。</li>
+                                    <li>3.怯怜怜的小雪球是探春信的小使,鈴蘭與香草是歡喜的初聲,窈窕的蓮馨、玲瓏的石水仙、愛熱鬧的克羅克斯、耐辛苦的蒲公英與雛菊。(擬人)</li>
+                                    <li>4.我沒有夸父的荒誕,但晚景的溫存卻被我這樣偷嘗了不少。</li>
                                 </ul>
                             </div>
 
                             <div class="bg-gradient-to-br from-rose-50 to-red-50 p-6 rounded-2xl shadow-sm border border-rose-100 hover:shadow-md transition">
-                                <h4 class="font-bold text-rose-800 text-xl mb-3 flex items-center"><span class="bg-rose-500 w-2 h-6 rounded-full mr-3"></span>(四) 回文</h4>
-                                <ul class="list-disc ml-6 text-slate-700 space-y-2">
-                                    <li>有村舍處有佳蔭，有佳蔭處有村舍。(兼類疊)</li>
+                                <h4 class="font-bold text-rose-800 text-xl mb-3 flex items-center"><span class="bg-rose-500 w-2 h-6 rounded-full mr-3"></span>(四)回文</h4>
+                                <ul class="list-none ml-2 text-slate-700 space-y-2">
+                                    <li>有村舍處有佳蔭,有佳蔭處有村舍。(兼類疊)</li>
                                 </ul>
                             </div>
 
                             <div class="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-2xl shadow-sm border border-yellow-100 hover:shadow-md transition">
-                                <h4 class="font-bold text-amber-800 text-xl mb-3 flex items-center"><span class="bg-amber-500 w-2 h-6 rounded-full mr-3"></span>(五) 類疊</h4>
-                                <ul class="list-disc ml-6 text-slate-700 space-y-2">
-                                    <li>成絲的、成縷的、成捲的、輕快的、遲重的、濃灰的、淡青的、慘白的。</li>
+                                <h4 class="font-bold text-amber-800 text-xl mb-3 flex items-center"><span class="bg-amber-500 w-2 h-6 rounded-full mr-3"></span>(五)類疊</h4>
+                                <ul class="list-none ml-2 text-slate-700 space-y-2">
+                                    <li>• 成絲的、成縷的、成捲的、輕快的、遲重的、濃灰的、淡青的、慘白的。</li>
                                 </ul>
                             </div>
 
                             <div class="bg-gradient-to-br from-orange-50 to-rose-50 p-6 rounded-2xl shadow-sm border border-orange-100 hover:shadow-md transition md:col-span-2">
-                                <h4 class="font-bold text-orange-800 text-xl mb-3 flex items-center"><span class="bg-orange-500 w-2 h-6 rounded-full mr-3"></span>(六) 排比</h4>
-                                <ul class="list-decimal ml-6 text-slate-700 space-y-3">
-                                    <li>頃刻間這田野添深了顏色，一層輕紗似的金粉糁上了這草、這樹、這通道、這莊舍。頃刻間這周遭瀰漫了清晨富麗的溫柔，頃刻間你的心懷也分潤了白天誕生的光榮。</li>
-                                    <li>關心石上的苔痕，關心敗草裡的鮮花，關心這水流的緩急，關心水草的滋長，關心天上的雲霞，關心新來的鳥語。</li>
-                                    <li>你如愛花，這裡多的是錦繡似的草原。你如愛鳥，這裡多的是巧囀的鳴禽。你如愛兒童，這鄉間到處是可親的稚子。你如愛人情，這裡多的是不嫌遠客的鄉人。</li>
+                                <h4 class="font-bold text-orange-800 text-xl mb-3 flex items-center"><span class="bg-orange-500 w-2 h-6 rounded-full mr-3"></span>(六)排比</h4>
+                                <ul class="list-none ml-2 text-slate-700 space-y-3">
+                                    <li>1. 頃刻間這田野添深了顏色,一層輕紗似的金粉糁上了這草、這樹、這通道、這莊舍。頃刻間這周遭瀰漫了清晨富麗的溫柔,頃刻間你的心懷也分潤了白天誕生的光榮。</li>
+                                    <li>2.關心石上的苔痕,關心敗草裡的鮮花,關心這水流的緩急,關心水草的滋長,關心天上的雲霞,關心新來的鳥語。</li>
+                                    <li>3.你如愛花,這裡多的是錦繡似的草原。你如愛鳥,這裡多的是巧囀的鳴禽。你如愛兒童,這鄉間到處是可親的稚子。你如愛人情,這裡多的是不嫌遠客的鄉人。</li>
                                 </ul>
                             </div>
 
                             <div class="bg-gradient-to-br from-rose-50 to-red-50 p-6 rounded-2xl shadow-sm border border-rose-100 hover:shadow-md transition">
-                                <h4 class="font-bold text-rose-800 text-xl mb-3 flex items-center"><span class="bg-rose-500 w-2 h-6 rounded-full mr-3"></span>(七) 映襯</h4>
-                                <ul class="list-disc ml-6 text-slate-700 space-y-2">
-                                    <li>敗草裡的鮮花。</li>
+                                <h4 class="font-bold text-rose-800 text-xl mb-3 flex items-center"><span class="bg-rose-500 w-2 h-6 rounded-full mr-3"></span>(七)映襯</h4>
+                                <ul class="list-none ml-2 text-slate-700 space-y-2">
+                                    <li>• 敗草裡的鮮花。</li>
                                 </ul>
                             </div>
 
                             <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-2xl shadow-sm border border-amber-100 hover:shadow-md transition">
-                                <h4 class="font-bold text-amber-800 text-xl mb-3 flex items-center"><span class="bg-amber-500 w-2 h-6 rounded-full mr-3"></span>(八) 設問 (激問)</h4>
-                                <ul class="list-decimal ml-6 text-slate-700 space-y-2">
-                                    <li>這裡哪一處不是坦蕩蕩的大道?</li>
-                                    <li>你能想像更適情、更適性的消遣嗎?</li>
+                                <h4 class="font-bold text-amber-800 text-xl mb-3 flex items-center"><span class="bg-amber-500 w-2 h-6 rounded-full mr-3"></span>(八)設問(激問)</h4>
+                                <ul class="list-none ml-2 text-slate-700 space-y-2">
+                                    <li>1.這裡哪一處不是坦蕩蕩的大道?</li>
+                                    <li>2. 你能想像更適情、更適性的消遣嗎?</li>
                                 </ul>
                             </div>
 
                             <div class="bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-2xl shadow-sm border border-red-100 hover:shadow-md transition md:col-span-2">
-                                <h4 class="font-bold text-red-800 text-xl mb-3 flex items-center"><span class="bg-red-500 w-2 h-6 rounded-full mr-3"></span>(九) 引用</h4>
-                                <ul class="list-disc ml-6 text-slate-700 space-y-2">
-                                    <li>陸放翁有一聯詩句：「傳呼快馬迎新月，卻上輕輿趁晚涼。」</li>
+                                <h4 class="font-bold text-red-800 text-xl mb-3 flex items-center"><span class="bg-red-500 w-2 h-6 rounded-full mr-3"></span>(九)引用</h4>
+                                <ul class="list-none ml-2 text-slate-700 space-y-2">
+                                    <li>• 陸放翁有一聯詩句:「傳呼快馬迎新月,卻上輕輿趁晚涼。」</li>
                                 </ul>
                             </div>
                         </div>
@@ -366,71 +366,71 @@
                         <p class="text-slate-500 mb-6 font-medium"><i class="fas fa-info-circle mr-2 text-amber-500"></i>在手機上可左右滑動表格查看完整內容</p>
                         ${[
                             [
-                                { w: "曙", p: "ㄕㄨˋ", d: "<span class='text-amber-800 font-semibold'>[形]</span> 天剛亮的時候。如：曙光。" },
-                                { w: "糬", p: "ㄕㄨˇ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 一麻糬：一種糯米製成的食品。如：麻糬。" },
-                                { w: "署", p: "ㄕㄨˋ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 布置。如：部署完畢。<br><span class='text-amber-800 font-semibold'>[動]</span> 簽名。如：連署。" },
-                                { w: "署", p: "ㄕㄨˇ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 政府機關的組織單位。如：食藥署。" }
+                                { w: "曙", p: "ㄕㄨˋ", d: "【形】天剛亮的時候。如:曙光。" },
+                                { w: "糬", p: "ㄕㄨˇ", d: "一麻糬:一種糯米製成的食品。如:麻糬。" },
+                                { w: "署", p: "ㄕㄨˋ", d: "1.【動】布置。如:部署完畢。2.【動】簽名。如:連署。" },
+                                { w: "署", p: "ㄕㄨˇ", d: "【名】政府機關的組織單位。如:食藥署。" }
                             ],
                             [
-                                { w: "娉", p: "ㄆㄧㄥ", d: "<span class='text-amber-800 font-semibold'>[形]</span> 娉婷：輕巧美好的樣子。如：姿態娉婷。" },
-                                { w: "聘", p: "ㄆㄧㄥˋ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 延請。如：重金禮聘。<br><span class='text-amber-800 font-semibold'>[名]</span> 訂婚，或訂婚時男方贈與女方之物。如：下聘。" },
-                                { w: "騁", p: "ㄔㄥˇ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 直馳、奔跑。如：馳騁。" }
+                                { w: "娉", p: "ㄆㄧㄥ", d: "一娉婷:輕巧美好的樣子。如:姿態娉婷。" },
+                                { w: "聘", p: "ㄆㄧㄥˋ", d: "1.【動】延請。如:重金禮聘。2.【名】訂婚,或訂婚時男方贈與女方之物。如:下聘。" },
+                                { w: "騁", p: "ㄔㄥˇ", d: "【動】直馳、奔跑。如:馳騁。" }
                             ],
                             [
-                                { w: "翳", p: "ㄧˋ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 隱沒。如：翳入天際。<br><span class='text-amber-800 font-semibold'>[名]</span> 眼珠上所生遮蔽視線的薄膜。如：眼翳病。" },
-                                { w: "翡", p: "ㄈㄟˇ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 翡翠：翠玉。如：綴滿翡翠。" },
-                                { w: "翌", p: "ㄧˋ", d: "<span class='text-amber-800 font-semibold'>[形]</span> 次的、第二的。如：翌日。" }
+                                { w: "翳", p: "ㄧˋ", d: "1.【動】隱沒。如:翳入天際。2.【名】眼珠上所生遮蔽視線的薄膜。如:眼翳病。" },
+                                { w: "翡", p: "ㄈㄟˇ", d: "一翡翠:翠玉。如:綴滿翡翠。" },
+                                { w: "翌", p: "ㄧˋ", d: "【形】次的、第二的。如:翌日。" }
                             ],
                             [
-                                { w: "糁", p: "ㄙㄢˇ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 撒落。如：糁上金粉。" },
-                                { w: "滲", p: "ㄕㄣˋ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 液體慢慢地浸透或漏出。如：滲透。" },
-                                { w: "參", p: "ㄘㄣ", d: "<span class='text-amber-800 font-semibold'>[形]</span> 參差：雜亂不齊的樣子。如：參差不齊。" },
-                                { w: "參", p: "ㄕㄣ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 星座名。如：動如參商。" },
-                                { w: "參", p: "ㄘㄢ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 加入。如：參戰、參選。" },
-                                { w: "參", p: "ㄙㄢ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 同「三」。" },
-                                { w: "摻", p: "ㄔㄢ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 混合、雜入。如：摻雜。" },
-                                { w: "慘", p: "ㄘㄢˇ", d: "<span class='text-amber-800 font-semibold'>[副]</span> 程度厲害、嚴重。如：慘白、慘敗。<br><span class='text-amber-800 font-semibold'>[形]</span> 悲哀、淒涼。如：悽慘、悲慘。" }
+                                { w: "糁", p: "ㄙㄢˇ", d: "【動】撒落。如:糁上金粉。" },
+                                { w: "滲", p: "ㄕㄣˋ", d: "【動】液體慢慢地浸透或漏出。如:滲透。" },
+                                { w: "參", p: "ㄘㄣ", d: "一參差:雜亂不齊的樣子。如:參差不齊。" },
+                                { w: "參", p: "ㄕㄣ", d: "【名】星座名。如:動如參商。" },
+                                { w: "參", p: "ㄘㄢ", d: "【動】加入。如:參戰、參選。" },
+                                { w: "參", p: "ㄙㄢ", d: "【名】同「三」。" },
+                                { w: "摻", p: "ㄔㄢ", d: "【動】混合、雜入。如:摻雜。" },
+                                { w: "慘", p: "ㄘㄢˇ", d: "1.【副】程度厲害、嚴重。如:慘白、慘敗。2.【形】悲哀、淒涼。如:悽慘、悲慘。" }
                             ],
                             [
-                                { w: "恣", p: "ㄗˋ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 隨、任憑。如：恣意而行。<br><span class='text-amber-800 font-semibold'>[動]</span> 放縱。如：恣情作樂。" },
-                                { w: "姿", p: "ㄗ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 動作、儀態。如：搖曳生姿。" },
-                                { w: "資", p: "ㄗ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 天生的才智。如：資質聰穎。<br><span class='text-amber-800 font-semibold'>[名]</span> 費用。如：郵資、車資。<br><span class='text-amber-800 font-semibold'>[名]</span> 財貨。如：資金、資本。" },
-                                { w: "諮", p: "ㄗ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 商量、詢問。如：諮詢商議。" }
+                                { w: "恣", p: "ㄗˋ", d: "1.【動】隨、任憑。如:恣意而行。2.【動】放縱。如:恣情作樂。" },
+                                { w: "姿", p: "ㄗ", d: "【名】動作、儀態。如:搖曳生姿。" },
+                                { w: "資", p: "ㄗ", d: "1.【名】天生的才智。如:資質聰穎。2.【名】費用。如:郵資、車資。3.【名】財貨。如:資金、資本。" },
+                                { w: "諮", p: "ㄗ", d: "【動】商量、詢問。如:諮詢商議。" }
                             ],
                             [
-                                { w: "衝", p: "ㄔㄨㄥˋ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 向、對。如：衝著大道。<br><span class='text-amber-800 font-semibold'>[形]</span> 激烈、無禮。如：說話口氣很衝。<br><span class='text-amber-800 font-semibold'>[動]</span> 因、看。如：衝著你的面子。" },
-                                { w: "衝", p: "ㄔㄨㄥ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 交通要道。如：交通要衝。<br><span class='text-amber-800 font-semibold'>[動]</span> 碰撞。如：橫衝直撞。<br><span class='text-amber-800 font-semibold'>[動]</span> 直著向上頂。如：怒髮衝冠。" }
+                                { w: "衝", p: "ㄔㄨㄥˋ", d: "1.【動】向、對。如:衝著大道。2.【形】激烈、無禮。如:說話口氣很衝。3.【動】因、看。如:衝著你的面子。" },
+                                { w: "衝", p: "ㄔㄨㄥ", d: "1.【名】交通要道。如:交通要衝。2.【動】碰撞。如:橫衝直撞。3.【動】直著向上頂。如:怒髮衝冠。" }
                             ],
                             [
-                                { w: "粟", p: "ㄙㄨˋ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 穀物的總稱。如：滄海一粟。" },
-                                { w: "栗", p: "ㄌㄧˋ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 植物名。栗樹的果實。如：火中取栗。" },
-                                { w: "徒", p: "ㄊㄨˊ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 步行。如：徒步旅行。<br><span class='text-amber-800 font-semibold'>[副]</span> 白白地、平白。如：徒費脣舌、徒勞無功。<br><span class='text-amber-800 font-semibold'>[副]</span> 僅、只。如：徒有虛名。" }
+                                { w: "粟", p: "ㄙㄨˋ", d: "【名】穀物的總稱。如:滄海一粟。" },
+                                { w: "栗", p: "ㄌㄧˋ", d: "【名】植物名。栗樹的果實。如:火中取栗。" },
+                                { w: "徒", p: "ㄊㄨˊ", d: "1.【動】步行。如:徒步旅行。2.【副】白白地、平白。如:徒費脣舌、徒勞無功。3.【副】僅、只。如:徒有虛名。" }
                             ],
                             [
-                                { w: "綴", p: "ㄓㄨㄟˋ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 裝飾。如：點綴。" },
-                                { w: "輟", p: "ㄔㄨㄛˋ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 停止。如：輟學、創作不輟。" },
-                                { w: "啜", p: "ㄔㄨㄛˋ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 吃、喝。如：啜飲。<br><span class='text-amber-800 font-semibold'>[動]</span> 哭泣。如：啜泣。" }
+                                { w: "綴", p: "ㄓㄨㄟˋ", d: "【動】裝飾。如:點綴。" },
+                                { w: "輟", p: "ㄔㄨㄛˋ", d: "【動】停止。如:輟學、創作不輟。" },
+                                { w: "啜", p: "ㄔㄨㄛˋ", d: "1. 【動】吃、喝。如:啜飲。2.【動】哭泣。如:啜泣。" }
                             ],
                             [
-                                { w: "腴", p: "ㄩˊ", d: "<span class='text-amber-800 font-semibold'>[形]</span> 肥沃。如：膏腴之地。<br><span class='text-amber-800 font-semibold'>[形]</span> 豐滿。如：豐腴美好。" },
-                                { w: "諛", p: "ㄩˊ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 諂媚、奉承。如：阿諛。" },
-                                { w: "臾", p: "ㄩˊ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 須臾：片刻。如：須臾。" },
-                                { w: "萸", p: "ㄩˊ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 植物名。如：茱萸。" }
+                                { w: "腴", p: "ㄩˊ", d: "1.【形】肥沃。如:膏腴之地。2.【形】豐滿。如:豐腴美好。" },
+                                { w: "諛", p: "ㄩˊ", d: "【動】諂媚、奉承。如:阿諛。" },
+                                { w: "臾", p: "ㄩˊ", d: "一須臾:片刻。如:須臾。" },
+                                { w: "萸", p: "ㄩˊ", d: "【名】植物名。如:茱萸。" }
                             ],
                             [
-                                { w: "阜", p: "ㄈㄨˋ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 土山。如：土阜。<br><span class='text-amber-800 font-semibold'>[形]</span> 豐厚。如：民康物阜。" },
-                                { w: "埠", p: "ㄅㄨˋ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 碼頭，或通商的港口。如：港埠、商埠。<br><span class='text-amber-800 font-semibold'>[名]</span> 地方、城市。如：外埠。" }
+                                { w: "阜", p: "ㄈㄨˋ", d: "1.【名】土山。如:土阜。2.【形】豐厚。如:民康物阜。" },
+                                { w: "埠", p: "ㄅㄨˋ", d: "1.【名】碼頭,或通商的港口。如:港埠、商埠。2.【名】地方、城市。如:外埠。" }
                             ],
                             [
-                                { w: "伺", p: "ㄙˋ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 暗中偵察。如：窺伺、伺機而動。" },
-                                { w: "伺", p: "ㄘˋ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 伺候：侍奉、服侍。如：伺候父母。" },
-                                { w: "偌", p: "ㄖㄨㄛˋ", d: "<span class='text-amber-800 font-semibold'>[副]</span> 如此、這麼。如：偌大。" },
-                                { w: "諾", p: "ㄋㄨㄛˋ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 答應、允許。如：一呼百諾。<br><span class='text-amber-800 font-semibold'>[名]</span> 允諾的話。如：一諾千金。<br><span class='text-amber-800 font-semibold'>[名]</span> 表示同意的應答聲。如：連連稱諾。" }
+                                { w: "伺", p: "ㄙˋ", d: "【動】暗中偵察。如:窺伺、伺機而動。" },
+                                { w: "伺", p: "ㄘˋ", d: "一伺候:侍奉、服侍。如:伺候父母。" },
+                                { w: "偌", p: "ㄖㄨㄛˋ", d: "【副】如此、這麼。如:偌大。" },
+                                { w: "諾", p: "ㄋㄨㄛˋ", d: "1.【動】答應、允許。如:一呼百諾。2.【名】允諾的話。如:一諾千金。3.【名】表示同意的應答聲。如:連連稱諾。" }
                             ],
                             [
-                                { w: "冉", p: "ㄖㄢˇ", d: "<span class='text-amber-800 font-semibold'>[副]</span> 冉冉：緩慢移動的樣子。如：冉冉漸隱的金光。" },
-                                { w: "苒", p: "ㄖㄢˇ", d: "<span class='text-amber-800 font-semibold'>[副]</span> 荏苒：時間漸漸過去。如：韶光荏苒。" },
-                                { w: "髯", p: "ㄖㄢˊ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 兩頰上的鬍鬚。如：鬚髯。" }
+                                { w: "冉", p: "ㄖㄢˇ", d: "一冉冉:緩慢移動的樣子。如:冉冉漸隱的金光。" },
+                                { w: "苒", p: "ㄖㄢˇ", d: "一荏苒:時間漸漸過去。如:韶光荏苒。" },
+                                { w: "髯", p: "ㄖㄢˊ", d: "【名】兩頰上的鬍鬚。如:鬚髯。" }
                             ]
                         ].map(group => `
                             <div class="overflow-x-auto w-full bg-white border border-amber-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow mb-6">
@@ -466,73 +466,73 @@
                 content: `
                 <div class="space-y-10 text-lg md:text-xl">
                     <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100">
-                        <h3 class="font-extrabold text-2xl md:text-3xl text-amber-600 border-b-2 border-gray-100 mb-6 pb-3 flex items-center"><span class="bg-amber-100 text-amber-600 w-12 h-12 flex items-center justify-center rounded-full mr-4"><i class="fas fa-lightbulb"></i></span>(一) 與「光影變化」有關的成語</h3>
+                        <h3 class="font-extrabold text-2xl md:text-3xl text-amber-600 border-b-2 border-gray-100 mb-6 pb-3 flex items-center"><span class="bg-amber-100 text-amber-600 w-12 h-12 flex items-center justify-center rounded-full mr-4"><i class="fas fa-lightbulb"></i></span>(一)與「光影變化」有關的成語</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             ${[
-                                "交相輝映：各種光彩相互照耀。",
-                                "忽明忽滅：光線明暗不定的樣子。",
-                                "閃閃爍爍：光線明滅不定的樣子。",
-                                "若隱若現：形容隱約不明，模糊不清。",
-                                "光芒萬丈：光輝燦爛，照耀遠方。比喻氣勢雄厚。亦作「光焰萬丈」。",
-                                "浮光掠影：(1)比喻見識膚淺空泛，不著邊際。(2)比喻世事稍縱即逝，不可捉摸。",
-                                "波光瀲豔：波光閃閃爍爍。瀲豔，音 ㄌㄧㄢˋ ㄧㄢˋ，波光映照。",
-                                "掩映生姿：光影互相映照，景物因而更顯美好。",
-                                "照如白晝：光線把四周景物照耀得如同白天一樣明亮。",
-                                "暮色蒼茫：形容傍晚時天色朦朧昏暗的樣子。"
+                                "1. 交相輝映:各種光彩相互照耀。",
+                                "2. 忽明忽滅:光線明暗不定的樣子。",
+                                "3. 閃閃爍爍:光線明滅不定的樣子。",
+                                "4. 若隱若現:形容隱約不明,模糊不清。",
+                                "5. 光芒萬丈:光輝燦爛,照耀遠方。比喻氣勢雄厚。亦作「光焰萬丈」。",
+                                "6. 浮光掠影:(1)比喻見識膚淺空泛,不著邊際。(2)比喻世事稍縱即逝,不可捉摸。",
+                                "7.波光瀲 :波光閃閃爍爍。瀲豔,音ㄌ ㄢˋ ㄢˋ,波光映照。",
+                                "8. 掩映生姿:光影互相映照,景物因而更顯美好。",
+                                "9. 照如白晝:光線把四周景物照耀得如同白天一樣明亮。",
+                                "10.暮色蒼茫:形容傍晚時天色朦朧昏暗的樣子。"
                             ].map(item => `
                                 <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-2xl shadow-sm border border-amber-100 flex justify-between items-start relative hover:shadow-md hover:-translate-y-1 transition transform duration-200 break-words group">
                                     <div class="flex-1 min-w-0 pr-2">
-                                        <span class="font-extrabold text-amber-800 text-xl md:text-2xl border-b-2 border-amber-200 pb-1">${item.split('：')[0]}</span>
-                                        <br><span class="text-slate-700 mt-3 block whitespace-normal leading-relaxed">${item.split('：')[1]}</span>
+                                        <span class="font-extrabold text-amber-800 text-xl md:text-2xl border-b-2 border-amber-200 pb-1">${item.split(':')[0]}</span>
+                                        <br><span class="text-slate-700 mt-3 block whitespace-normal leading-relaxed">${item.split(':')[1]}</span>
                                     </div>
-                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-white/50 group-hover:text-red-400 fav-btn text-2xl shrink-0 transition-colors" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart drop-shadow-sm"></i></button>
+                                    <button onclick="toggleFavorite('${item.split(':')[0].trim()}')" class="text-white/50 group-hover:text-red-400 fav-btn text-2xl shrink-0 transition-colors" data-id="${item.split(':')[0].trim()}"><i class="fas fa-heart drop-shadow-sm"></i></button>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
                     
                     <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100">
-                        <h3 class="font-extrabold text-2xl md:text-3xl text-orange-600 border-b-2 border-gray-100 mb-6 pb-3 flex items-center"><span class="bg-orange-100 text-orange-600 w-12 h-12 flex items-center justify-center rounded-full mr-4"><i class="fas fa-mountain"></i></span>(二) 與「形容美好風光」有關的成語</h3>
+                        <h3 class="font-extrabold text-2xl md:text-3xl text-orange-600 border-b-2 border-gray-100 mb-6 pb-3 flex items-center"><span class="bg-orange-100 text-orange-600 w-12 h-12 flex items-center justify-center rounded-full mr-4"><i class="fas fa-mountain"></i></span>(二)與「形容美好風光」有關的成語</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             ${[
-                                "美不勝收：形容美好的事物非常多，無法——收受。",
-                                "尋幽訪勝：尋找訪求景色清雅的地方。",
-                                "風光旖旎：形容景色柔和美好。旖旎，音 ㄧˇ ㄋㄧˇ，柔媚的樣子。",
-                                "人間仙境：形容景色優美，有如仙界一般。",
-                                "世外桃源：(1)稱避世隱居的地方。(2)比喻風景優美而人跡罕至的地方。",
-                                "別有洞天：指風景極為秀麗，引人入勝。",
-                                "福地洞天：本指神仙居住的地方。比喻名山勝境。亦作「洞天福地」。",
-                                "山明水秀：形容山水秀麗，風景優美。"
+                                "1.美不勝收:形容美好的事物非常多,無法——收受。",
+                                "2. 尋幽訪勝:尋找訪求景色清雅的地方。",
+                                "3. 風光旖旎:形容景色柔和美好。旖旎,音一 ㄋㄧ,柔媚的樣子。",
+                                "4. 人間仙境:形容景色優美,有如仙界一般。",
+                                "5. 世外桃源:(1)稱避世隱居的地方。(2)比喻風景優美而人跡罕至的地方。",
+                                "6.別有洞天:指風景極為秀麗,引人入勝。",
+                                "7.福地洞天:本指神仙居住的地方。比喻名山勝境。亦作「洞天福地」。",
+                                "8. 山明水秀:形容山水秀麗,風景優美。"
                             ].map(item => `
                                 <div class="bg-gradient-to-br from-orange-50 to-rose-50 p-5 rounded-2xl shadow-sm border border-orange-100 flex justify-between items-start hover:shadow-md hover:-translate-y-1 transition transform duration-200 break-words group">
                                     <div class="flex-1 min-w-0 pr-2">
-                                        <span class="font-extrabold text-orange-800 text-xl md:text-2xl border-b-2 border-orange-200 pb-1">${item.split('：')[0]}</span>
-                                        <br><span class="text-slate-700 mt-3 block whitespace-normal leading-relaxed">${item.split('：')[1]}</span>
+                                        <span class="font-extrabold text-orange-800 text-xl md:text-2xl border-b-2 border-orange-200 pb-1">${item.split(':')[0]}</span>
+                                        <br><span class="text-slate-700 mt-3 block whitespace-normal leading-relaxed">${item.split(':')[1]}</span>
                                     </div>
-                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-white/50 group-hover:text-red-400 fav-btn text-2xl shrink-0 transition-colors" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart drop-shadow-sm"></i></button>
+                                    <button onclick="toggleFavorite('${item.split(':')[0].trim()}')" class="text-white/50 group-hover:text-red-400 fav-btn text-2xl shrink-0 transition-colors" data-id="${item.split(':')[0].trim()}"><i class="fas fa-heart drop-shadow-sm"></i></button>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
 
                     <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100">
-                        <h3 class="font-extrabold text-2xl md:text-3xl text-rose-600 border-b-2 border-gray-100 mb-6 pb-3 flex items-center"><span class="bg-rose-100 text-rose-600 w-12 h-12 flex items-center justify-center rounded-full mr-4"><i class="fas fa-hourglass-half"></i></span>(三) 與「時間短暫」有關的成語</h3>
+                        <h3 class="font-extrabold text-2xl md:text-3xl text-rose-600 border-b-2 border-gray-100 mb-6 pb-3 flex items-center"><span class="bg-rose-100 text-rose-600 w-12 h-12 flex items-center justify-center rounded-full mr-4"><i class="fas fa-hourglass-half"></i></span>(三)與「時間短暫」有關的成語</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             ${[
-                                "彈指之間：(1)形容極短暫的時間。(2)形容時間過得很快。",
-                                "一時半刻：一下子、突然。指極短的時間。",
-                                "不消一刻：連一刻鐘都不需要，即一下子。形容時間短暫。",
-                                "浮生瞬息：人生虛浮而短暫。",
-                                "瞬息萬變：形容在極短的時間內變化迅速。亦作「瞬息千變」。",
-                                "電光石火：比喻轉瞬間即逝。",
-                                "浮雲朝露：浮雲易散，朝露易乾。比喻人生的短促。"
+                                "1. 彈指之間:(1)形容極短暫的時間。(2)形容時間過得很快。",
+                                "2.一時半刻:一下子、突然。指極短的時間。",
+                                "3.不消一刻:連一刻鐘都不需要,即一下子。形容時間短暫。",
+                                "4. 浮生瞬息:人生虛浮而短暫。",
+                                "5. 瞬息萬變:形容在極短的時間內變化迅速。亦作「瞬息千變」。",
+                                "6. 電光石火:比喻轉瞬間即逝。",
+                                "7. 浮雲朝露:浮雲易散,朝露易乾。比喻人生的短促。"
                             ].map(item => `
                                 <div class="bg-gradient-to-br from-rose-50 to-red-50 p-5 rounded-2xl shadow-sm border border-rose-100 flex justify-between items-start hover:shadow-md hover:-translate-y-1 transition transform duration-200 break-words group">
                                     <div class="flex-1 min-w-0 pr-2">
-                                        <span class="font-extrabold text-rose-800 text-xl md:text-2xl border-b-2 border-rose-200 pb-1">${item.split('：')[0]}</span>
-                                        <br><span class="text-slate-700 mt-3 block whitespace-normal leading-relaxed">${item.split('：')[1]}</span>
+                                        <span class="font-extrabold text-rose-800 text-xl md:text-2xl border-b-2 border-rose-200 pb-1">${item.split(':')[0]}</span>
+                                        <br><span class="text-slate-700 mt-3 block whitespace-normal leading-relaxed">${item.split(':')[1]}</span>
                                     </div>
-                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-white/50 group-hover:text-red-400 fav-btn text-2xl shrink-0 transition-colors" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart drop-shadow-sm"></i></button>
+                                    <button onclick="toggleFavorite('${item.split(':')[0].trim()}')" class="text-white/50 group-hover:text-red-400 fav-btn text-2xl shrink-0 transition-colors" data-id="${item.split(':')[0].trim()}"><i class="fas fa-heart drop-shadow-sm"></i></button>
                                 </div>
                             `).join('')}
                         </div>
@@ -548,34 +548,34 @@
                         
                         <div class="space-y-8">
                             <div class="bg-slate-50 p-6 rounded-2xl">
-                                <h4 class="font-bold text-red-700 text-2xl mb-3">(一) 傳呼快馬迎新月，卻上輕輿趁晚涼</h4>
-                                <p class="text-slate-700 mt-2 leading-loose">徐志摩引陸游《醉中到白崖而歸》詩，文字略異。原詩作：「醉眼朦朧萬事空，今年痛飲讓西東。傳呼快馬迎新月，卻上輕輿御晚風。行路八千常是客，丈夫五十未稱翁。亂山缺處如橫線，遙指孤城翠靄中。」(按：讓，山間的溪流通到江裡去的，蜀人多稱為「讓」) 此詩作於陸游任職夔州通判時，故徐志摩說：「這是做地方官的風流。」</p>
+                                <h4 class="font-bold text-red-700 text-2xl mb-3">(一)傳呼快馬迎新月,卻上輕輿趁晚涼</h4>
+                                <p class="text-slate-700 mt-2 leading-loose">徐志摩引陸游《醉中到白崖而歸〉詩,文字略異。原詩作:「醉眼朦朧萬事空,今年痛飲讓西東。傳呼快馬迎新月,卻上輕輿御晚風。行路八千常是客,丈夫五十未稱翁。亂山缺處如橫線,遙指孤城翠靄中。」(按:讓,山間的溪流通到江裡去的,蜀人多稱為「讓」)此詩作於陸游任職夔州通判時,故徐志摩說:「這是做地方官的風流。」</p>
                             </div>
 
                             <div class="bg-slate-50 p-6 rounded-2xl">
-                                <h4 class="font-bold text-red-700 text-2xl mb-4">(二) 陸游的文學成就</h4>
-                                <p class="text-slate-700 mt-2 leading-loose">陸游，字務觀，自號放翁，南宋山陰(今浙江省紹興市)人。生於北宋欽宗元年(西元一一二五年)，卒於南宋寧宗嘉泰十年(西元一二一○年)，年八十六。<br><br>陸游是南宋最傑出的詩人，現存詩作共有九千三百多首，一生的精力幾乎貫注在詩歌方面，詞作的量雖不如詩作豐富，但內容與詩一樣可觀。<br><br>陸游的作品最大特色，就是始終如一地流露出對家國的熱愛及恢復中原之志，說他是「愛國詩人」，絕不為過。梁啟超有詩云：「詩界千年靡靡風，兵魂銷盡國魂空。集中什九從軍樂，亙古男兒一放翁。」陸游的詩作，幾百年來鼓舞了千千萬萬的中國人，著實令人敬佩。如下列兩篇詩作：</p>
+                                <h4 class="font-bold text-red-700 text-2xl mb-4">(二)陸游的文學成就</h4>
+                                <p class="text-slate-700 mt-2 leading-loose">陸游,字務觀,自號放翁,南宋山陰(今浙江省紹興市)人。生於北宋欽宗元年(西元一一二五年),卒於南宋寧宗嘉泰十年(西元一二一○年),年八十六。<br><br>陸游是南宋最傑出的詩人,現存詩作共有九千三百多首,一生的精力幾乎貫注在詩歌方面,詞作的量雖不如詩作豐富,但內容與詩一樣可觀。<br><br>陸游的作品最大特色,就是始終如一地流露出對家國的熱愛及恢復中原之志,說他是「愛國詩人」,絕不為過。梁啟超有詩云:「詩界千年靡靡風,兵魂銷盡國魂空。集中什九從軍樂,亙古男兒一放翁。」陸游的詩作,幾百年來鼓舞了千千萬萬的中國人,著實令人敬佩。如下列兩篇詩作:</p>
                                 
                                 <div class="bg-gradient-to-r from-orange-50 to-amber-50 p-6 rounded-xl mt-6 border-l-4 border-orange-400 shadow-sm hover:shadow transition">
                                     <p class="font-extrabold text-xl text-orange-900 mb-3">① 十一月四日風雨大作</p>
-                                    <p class="text-orange-800 font-medium leading-loose text-xl bg-white/60 p-4 rounded-lg">僵臥孤村不自哀，尚思為國戍輪臺。<br>夜闌臥聽風吹雨，鐵馬冰河入夢來。</p>
-                                    <p class="text-slate-600 mt-4 text-base md:text-lg leading-relaxed"><span class="font-bold bg-orange-200 text-orange-800 px-2 py-1 rounded">語譯</span> 我直挺挺躺在孤寂荒涼的鄉村裡，不為自己的處境而感到悲哀，心中還想著替國家防衛邊疆。夜將盡了，我在床上聽著風雨聲，迷迷糊糊地夢見，自己騎著披著鐵甲的戰馬，跨過冰封的河流出征北方疆場。</p>
+                                    <p class="text-orange-800 font-medium leading-loose text-xl bg-white/60 p-4 rounded-lg">僵臥孤村不自哀,尚思為國戍輪臺。<br>夜闌臥聽風吹雨,鐵馬冰河入夢來。</p>
+                                    <p class="text-slate-600 mt-4 text-base md:text-lg leading-relaxed"><span class="font-bold bg-orange-200 text-orange-800 px-2 py-1 rounded">語譯</span> 我直挺挺躺在孤寂荒涼的鄉村裡,不為自己的處境而感到悲哀,心中還想著替國家防衛邊疆。夜將盡了,我在床上聽著風雨聲,迷迷糊糊地夢見,自己騎著披著鐵甲的戰馬,跨過冰封的河流出征北方疆場。</p>
                                 </div>
 
                                 <div class="bg-gradient-to-r from-orange-50 to-amber-50 p-6 rounded-xl mt-6 border-l-4 border-orange-400 shadow-sm hover:shadow transition">
-                                    <p class="font-extrabold text-xl text-orange-900 mb-3">② 示兒</p>
-                                    <p class="text-orange-800 font-medium leading-loose text-xl bg-white/60 p-4 rounded-lg">死去原知萬事空，但悲不見九州同。<br>王師北定中原日，家祭毋忘告乃翁。</p>
-                                    <p class="text-slate-600 mt-4 text-base md:text-lg leading-relaxed"><span class="font-bold bg-orange-200 text-orange-800 px-2 py-1 rounded">語譯</span> 我原本就知道人一死去便萬事皆空，但令我放心不下、感到悲傷的，就是沒看見國家統一。等到軍隊北伐平定中原的那一天，祭祀祖先的時候，千萬不要忘記把這好消息告訴你的父親(即詩人本身)。</p>
+                                    <p class="font-extrabold text-xl text-orange-900 mb-3">②示兒</p>
+                                    <p class="text-orange-800 font-medium leading-loose text-xl bg-white/60 p-4 rounded-lg">死去原知萬事空,但悲不見九州同。<br>王師北定中原日,家祭毋忘告乃翁。</p>
+                                    <p class="text-slate-600 mt-4 text-base md:text-lg leading-relaxed"><span class="font-bold bg-orange-200 text-orange-800 px-2 py-1 rounded">語譯</span> 我原本就知道人一死去便萬事皆空,但令我放心不下、感到悲傷的,就是沒看見國家統一。等到軍隊北伐平定中原的那一天,祭祀祖先的時候,千萬不要忘記把這好消息告訴你的父親(即詩人本身)。</p>
                                 </div>
 
-                                <p class="text-slate-700 mt-8 leading-loose">除了激越的愛國情操外，因長期在農村生活，他的作品中也有許多抒寫農村生活及農村風光的篇章，同樣膾炙人口。如下列詩作：</p>
+                                <p class="text-slate-700 mt-8 leading-loose">除了激越的愛國情操外,因長期在農村生活,他的作品中也有許多抒寫農村生活及農村風光的篇章,同樣膾炙人口。如下列詩作:</p>
 
                                 <div class="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-xl mt-6 border-l-4 border-red-400 shadow-sm hover:shadow transition">
                                     <p class="font-extrabold text-xl text-red-900 mb-3">③ 遊山西村</p>
-                                    <p class="text-red-800 font-medium leading-loose text-xl bg-white/60 p-4 rounded-lg">莫笑農家臘酒渾，豐年留客足雞豚。<br>山重水複疑無路，柳暗花明又一村。<br>簫鼓追隨春社近，衣冠簡樸古風存。<br>從今若許閒乘月，拄杖無時夜扣門。</p>
-                                    <p class="text-slate-600 mt-4 text-base md:text-lg leading-relaxed"><span class="font-bold bg-red-200 text-red-800 px-2 py-1 rounded">語譯</span> 不要取笑農家為賀新春而釀造的臘酒太過渾濁，他們在豐收年歲會用豐盛佳餚來招待客人。且看此地層層疊疊的山巒密布、迂迴曲折的流水環繞，本以為無路可走，沒想到穿過茂密幽暗的柳樹叢林，卻見繁花盛放的美景，又出現一座村莊。村裡吹簫擊鼓、熱鬧歡慶，可知祭祀土神，以祈農事豐收的春社之日快到了，當地居民穿著樸實無華，保存著簡樸古風。今後若容許我趁著月色當空的夜晚到此閒遊，我將拄著拐杖再度叩門拜訪山村農家。</p>
+                                    <p class="text-red-800 font-medium leading-loose text-xl bg-white/60 p-4 rounded-lg">莫笑農家臘酒渾,豐年留客足雞豚。<br>山重水複疑無路,柳暗花明又一村。<br>簫鼓追隨春社近,衣冠簡樸古風存。<br>從今若許閒乘月,拄杖無時夜扣門。</p>
+                                    <p class="text-slate-600 mt-4 text-base md:text-lg leading-relaxed"><span class="font-bold bg-red-200 text-red-800 px-2 py-1 rounded">語譯</span> 不要取笑農家為賀新春而釀造的臘酒太過渾濁,他們在豐收年歲會用豐盛佳餚來招待客人。且看此地層層疊疊的山巒密布、迂迴曲折的流水環繞,本以為無路可走,沒想到穿過茂密幽暗的柳樹叢林,卻見繁花盛放的美景,又出現一座村莊。村裡吹簫擊鼓、熱鬧歡慶,可知祭祀土神,以祈農事豐收的春社之日快到了,當地居民穿著樸實無華,保存著簡樸古風。今後若容許我趁著月色當空的夜晚到此閒遊,我將拄著拐杖再度叩門拜訪山村農家。</p>
                                 </div>
-                                <p class="text-slate-700 mt-6 leading-loose bg-white p-5 rounded-lg border border-gray-100 shadow-sm">全詩對江南春天柳暗花明的美景，還有熱鬧的節日氣氛及村民殷勤待客的熱情，都有深入的描寫。第三、四句以景寓理，更是千古傳誦的佳句。綜合而論，愛國與愛民的思想貫穿了陸游的文學作品，由其作品也可想見他的人格。</p>
+                                <p class="text-slate-700 mt-6 leading-loose bg-white p-5 rounded-lg border border-gray-100 shadow-sm">全詩對江南春天柳暗花明的美景,還有熱鬧的節日氣氛及村民殷勤待客的熱情,都有深入的描寫。第三、四句以景寓理,更是千古傳誦的佳句。綜合而論,愛國與愛民的思想貫穿了陸游的文學作品,由其作品也可想見他的人格。</p>
                             </div>
                         </div>
                     </div>
@@ -585,24 +585,24 @@
                         
                         <div class="space-y-8">
                             <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-6 md:p-8 rounded-2xl border border-amber-100 shadow-md">
-                                <h4 class="font-bold text-amber-900 text-2xl text-center mb-6 tracking-widest">(一) 再別康橋</h4>
+                                <h4 class="font-bold text-amber-900 text-2xl text-center mb-6 tracking-widest">(一)再別康橋</h4>
                                 <div class="text-center mt-4 text-amber-950 leading-loose text-xl font-medium bg-white/50 p-6 rounded-xl">
-                                    輕輕的我走了，正如我輕輕的來；<br>我輕輕的招手，作別西天的雲彩。<br><br>那河畔的金柳，是夕陽中的新娘；<br>波光裡的豔影，在我的心頭蕩漾。<br><br>軟泥上的青荇，油油的在水底招搖；<br>在康河的柔波裡，我甘心做一條水草！<br><br>那榆蔭下的一潭，不是清泉，是天上虹，<br>揉碎在浮藻間，沉澱著彩虹似的夢。<br><br>尋夢？撐一支長篙，向青草更青處漫溯，<br>滿載一船星輝，在星輝斑斕裡放歌。<br><br>但我不能放歌，悄悄是別離的笙簫；<br>夏蟲也為我沉默，沉默是今晚的康橋！<br><br>悄悄的我走了，正如我悄悄的來；<br>我揮一揮衣袖，不帶走一片雲彩。
+                                    輕輕的我走了,<br>正如我輕輕的來;<br>我輕輕的招手,<br>作別西天的雲彩。<br><br>那河畔的金柳,<br>是夕陽中的新娘;<br>波光裡的豔影,<br>在我的心頭蕩漾。<br><br>軟泥上的青荇,<br>油油的在水底招搖;<br>在康河的柔波裡,<br>我甘心做一條水草!<br><br>那榆蔭下的一潭,<br>不是清泉,是天上虹,<br>揉碎在浮藻間,<br>沉澱著彩虹似的夢。<br><br>尋夢?撐一支長篙,<br>向青草更青處漫溯,<br>滿載一船星輝,<br>在星輝斑斕裡放歌。<br><br>但我不能放歌,<br>悄悄是別離的笙簫;<br>夏蟲也為我沉默,<br>沉默是今晚的康橋!<br><br>悄悄的我走了,<br>正如我悄悄的來;<br>我揮一揮衣袖,<br>不帶走一片雲彩。
                                 </div>
                                 <div class="mt-8 border-t-2 border-amber-200 pt-6 text-lg text-slate-700 leading-loose">
-                                    <span class="font-bold text-amber-800 text-xl bg-amber-100 px-3 py-1 rounded-lg">賞析</span><br><br>
-                                    第一節以「輕輕的」、「走」、「來」、「招手」、「作別雲彩」起筆，用虛實相間的手法，將對康橋的愛戀、對往昔生活的憧憬、對眼前無可奈何的離愁，表現得十分真摯。連用三個「輕輕的」，使我們仿佛感受到詩人踮著足尖，像一股清風來了，又悄無聲息地盪去。<br><br>第二節至第四節，描寫詩人在康河裡泛舟尋夢。披著夕照的金柳，軟泥上的青荇，樹蔭下的水潭，————映入眼底。兩個暗喻用得頗為精到：第一個將「河畔的金柳」大膽地想像為「夕陽中的新娘」，使無生命的景語，化作有生命的活物，溫潤可人；第二個是將清澈的潭水疑作「天上虹」，被浮藻揉碎之後，竟變了「彩虹似的夢」。正是在意亂情迷之間，詩人如莊周夢蝶，物我兩忘，直覺得「波光裡的豔影/在我的心頭蕩漾」，並甘心在康河的柔波裡，做一條招搖的水草。這種主客觀合一的佳構既是妙手偶得，也是千錘百鍊之功。<br><br>第五、六節，詩人翻出了一層新的意境。借用「夢/尋夢」，「滿載一船星輝，/在星輝斑斕裡放歌」，「放歌，但我不能放歌」，「夏蟲也為我沉默/沉默是今晚的康橋」四個疊句，將全詩推向高潮，正如康河之水，一波三折！而他在青草更青處，星輝斑斕裡跣足放歌的狂態終未成就，此時的沉默而無言，又勝過多少情語啊！<br><br>最後一節以三個「悄悄的」與首節迴環對應。瀟灑地來，又瀟灑地走。揮一揮衣袖，抖落的是什麼？已毋須贅言。既然在康橋涅槃過一次，又何必帶走一片雲彩呢？全詩一氣呵成，盪氣迴腸，是對徐志摩「詩化人生」最好的描述。作者將具體景物與想像巧妙地揉合在一起，達到景中有情，情中有景的境界。詩人聞一多提倡現代詩歌的「音樂美」、「繪畫美」與「建築美」，此詩可說是具備了「三美」，堪稱徐志摩詩作中之絕唱。
+                                    <span class="font-bold text-amber-800 text-xl bg-amber-100 px-3 py-1 rounded-lg">【賞析】</span><br><br>
+                                    第一節以「輕輕的」、「走」、「來」、「招手」、「作別雲彩」起筆,用虛實相間的手法,將對康橋的愛戀、對往昔生活的憧憬、對眼前無可奈何的離愁,表現得十分真摯。連用三個「輕輕的」,使我們仿佛感受到詩人踮著足尖,像一股清風來了,又悄無聲息地盪去。<br><br>第二節至第四節,描寫詩人在康河裡泛舟尋夢。披著夕照的金柳,軟泥上的青荇,樹蔭下的水潭,————映入眼底。兩個暗喻用得頗為精到:第一個將「河畔的金柳」大膽地想像為「夕陽中的新娘」,使無生命的景語,化作有生命的活物,溫潤可人;第二個是將清澈的潭水疑作「天上虹」,被浮藻揉碎之後,竟變了「彩虹似的夢」。正是在意亂情迷之間,詩人如莊周夢蝶,物我兩忘,直覺得「波光裡的豔影/在我的心頭蕩漾」,並甘心在康河的柔波裡,做一條招搖的水草。這種主客觀合一的佳構既是妙手偶得,也是千錘百鍊之功。<br><br>第五、六節,詩人翻出了一層新的意境。借用「夢/尋夢」,「滿載一船星輝,/在星輝斑斕裡放歌」,「放歌,但我不能放歌」,「夏蟲也為我沉默/沉默是今晚的康橋」四個疊句,將全詩推向高潮,正如康河之水,一波三折!而他在青草更青處,星輝斑斕裡跣足放歌的狂態終未成就,此時的沉默而無言,又勝過多少情語啊!<br><br>最後一節以三個「悄悄的」與首節迴環對應。瀟灑地來,又瀟灑地走。揮一揮衣袖,抖落的是什麼?已毋須贅言。既然在康橋涅槃過一次,又何必帶走一片雲彩呢?全詩一氣呵成,盪氣迴腸,是對徐志摩「詩化人生」最好的描述。作者將具體景物與想像巧妙地揉合在一起,達到景中有情,情中有景的境界。詩人聞一多提倡現代詩歌的「音樂美」、「繪畫美」與「建築美」,此詩可說是具備了「三美」,堪稱徐志摩詩作中之絕唱。
                                 </div>
                             </div>
 
                             <div class="bg-gradient-to-br from-rose-50 to-red-50 p-6 md:p-8 rounded-2xl border border-rose-100 shadow-md mt-8">
-                                <h4 class="font-bold text-rose-900 text-2xl text-center mb-6 tracking-widest">(二) 偶然</h4>
+                                <h4 class="font-bold text-rose-900 text-2xl text-center mb-6 tracking-widest">(二)偶然</h4>
                                 <div class="text-center mt-4 text-rose-950 leading-loose text-xl font-medium bg-white/50 p-6 rounded-xl">
-                                    我是天空裡的一片雲，偶爾投影在你的波心——<br>你不必訝異，更無須歡喜<br>轉瞬間消滅了蹤影。<br><br>你我相逢在黑夜的海上，你有你的，我有我的，方向。<br>記得也好，最好你忘掉，<br>這交會時互放的光亮！
+                                    我是天空裡的一片雲,<br>偶爾投影在你的波心——<br>你不必訝異,<br>更無須歡喜 <br>轉瞬間消滅了蹤影。<br><br>你我相逢在黑夜的海上,<br>你有你的,我有我的,方向。<br>記得也好,<br>最好你忘掉,<br>這交會時互放的光亮!
                                 </div>
                                 <div class="mt-8 border-t-2 border-rose-200 pt-6 text-lg text-slate-700 leading-loose">
-                                    <span class="font-bold text-rose-800 text-xl bg-rose-100 px-3 py-1 rounded-lg">賞析</span><br><br>
-                                    《偶然》一詩顯露了詩人心靈的寬容與氣度。聚散無常，緣起緣滅，追求瀟灑自如的人生，無須執著於短暫的情緣。追求自由，本是徐志摩特有的氣質，而這分氣質即傳承道家思想的「順任自然」。詩人把人生比作「黑夜的海」，繼續朝自己的方向前行。那沉默夜裡的閃亮，就是彼此關切與致意的眼眸。<br><br>全詩兩節，上下節格律對稱。每一節的一、二、五句都是用三個音步組成，如：「偶爾————投影在你的——波心」，每節的三、四句則都是兩個音步構成，如：「你不必 訝異/更無須————歡喜」。在音步的安排處理上顯然嚴謹中不乏灑脫，較長的音步與較短的音步相間，讀起來紓徐從容、委婉頓挫而琅琅上口。
+                                    <span class="font-bold text-rose-800 text-xl bg-rose-100 px-3 py-1 rounded-lg">【賞析】</span><br><br>
+                                    《偶然》一詩顯露了詩人心靈的寬容與氣度。聚散無常,緣起緣滅,追求瀟灑自如的人生,無須執著於短暫的情緣。追求自由,本是徐志摩特有的氣質,而這分氣質即傳承道家思想的「順任自然」。詩人把人生比作「黑夜的海」,繼續朝自己的方向前行。那沉默夜裡的閃亮,就是彼此關切與致意的眼眸。<br><br>全詩兩節,上下節格律對稱。每一節的一、二、五句都是用三個音步組成,如:「偶爾————投影在你的——波心」,每節的三、四句則都是兩個音步構成,如:「你不必 訝異/更無須————歡喜」。在音步的安排處理上顯然嚴謹中不乏灑脫,較長的音步與較短的音步相間,讀起來紓徐從容、委婉頓挫而琅琅上口。
                                 </div>
                             </div>
                         </div>
@@ -612,144 +612,142 @@
         ];
 
         // ==========================================
-        //  120題 高鑑別度精編測驗資料
+        //  120題 高鑑別度精編測驗資料 (全新覆蓋所有知識點)
         // ==========================================
         const generate120Questions = () => {
             const q = [];
             
-            // 課文提要與結構 (Q1-Q10)
-            q.push({ q:"《我所知道的康橋》的文體與出處，下列何者正確？", opts:["純記敘文 / 猛虎集", "記敘兼抒情文 / 徐志摩全集", "論說文 / 翡冷翠的一夜", "純抒情文 / 落葉"], ans:1, exp:"本篇文體為記敘兼抒情文，收錄於《徐志摩全集》。" });
-            q.push({ q:"本文以何者為主軸，並配合空間的轉移對康橋景物進行深入描繪？", opts:["事件", "情感", "時間", "人物"], ans:2, exp:"本文以「時間」為主軸（早晨→白天→黃昏），配合「空間」的轉移來描繪景物。" });
-            q.push({ q:"在「擁抱初春的早晨」這段，作者選了哪兩種截然不同又具代表性的景色來表現康橋的多變之美？", opts:["晨霧籠罩與春陽照耀", "夕陽西下與滿天星斗", "狂風暴雨與雨過天晴", "冰雪覆蓋與百花齊放"], ans:0, exp:"一是晨霧籠罩下的康橋原野（淒迷朦朧），一是春陽下大地繽紛的美景（富麗溫柔）。" });
-            q.push({ q:"在描寫康河岸上風光時，作者連用了六個什麼字來表現其細心地尋訪和熱切地盼望？", opts:["尋覓", "關心", "想像", "等待"], ans:1, exp:"作者連用六個「關心」句（關心石上的苔痕、關心敗草裡的鮮花等），展現熱切盼望的心情。" });
-            q.push({ q:"在「歌詠野遊的閒適」段落中，作者為了拉近與讀者的距離，連用了四個哪種句型？", opts:["我以為", "你如愛", "誰不愛", "何處無"], ans:1, exp:"連用四個「你如愛」，彷彿與讀者面對面把臂歡談，顯得格外親切。" });
-            q.push({ q:"本文第四段（描繪瑰麗的暮色）結尾，作者留下刪節號的用意為何？", opts:["忘記接下來要寫什麼", "表示風景不佳不想多寫", "留給讀者想像空間並體會神異性的感受", "暗示文章還有下集待續"], ans:2, exp:"文末「這草田變成了......」，以刪節號留給讀者想像空間，體會數大之美與神異性。" });
-            q.push({ q:"在平視（由近而遠）的視覺空間層次中，正確的順序為何？", opts:["水溶溶的大道→林子小徑→平原、村舍→小山→近村的教寺", "平原、村舍→水溶溶的大道→林子小徑→近村的教寺→小山", "近村的教寺→小山→平原、村舍→林子小徑→水溶溶的大道", "水溶溶的大道→平原、村舍→林子小徑→小山→近村的教寺"], ans:0, exp:"平視順序：水溶溶的大道→林子小徑→平原、村舍→小山→近村的教寺。" });
-            q.push({ q:"在初春早晨的自然風光中，下列何者屬於「仰望」的景物？", opts:["村舍、樹林", "漸漸散去的朝霧、冉冉升起的炊煙", "水溶溶的大道、林子小徑", "豔紅的罌粟、青草"], ans:1, exp:"俯瞰是村舍、樹林；仰望則是漸漸散去的朝霧、冉冉升起的炊煙、難得一見的朝陽。" });
-            q.push({ q:"作者如何推論「春光已爛縵在人間」？", opts:["看到農民開始播種", "聽到遠處傳來春雷", "觀察到朝陽與各式花卉相繼綻放", "感受到天氣突然變熱"], ans:2, exp:"作者觀察到難得一見的朝陽，以及小雪球、鈴蘭等花朵相繼綻放，進而推論。" });
-            q.push({ q:"作者認為野遊「最適情、適性的消遣」中，不包含下列哪一個動作？", opts:["看天", "聽鳥", "彈琴", "在草地上尋夢"], ans:2, exp:"最適情適性的消遣為：看天，聽鳥，讀書，在草地上尋夢。不包含彈琴。" });
+            // --- 【一】課文提要與結構大意 (15題) ---
+            q.push({ q:"《我所知道的康橋》一文的出處為何？", opts:["《猛虎集》", "《翡冷翠的一夜》", "《徐志摩全集》", "《落葉》"], ans:2, exp:"【解析】(A)(B)(D)皆為徐志摩的作品或集子，但根據講義重點整理，本課文出處為(C)《徐志摩全集》。" });
+            q.push({ q:"《我所知道的康橋》的文體屬於下列何者？", opts:["純記敘文", "記敘兼抒情文", "論說文", "應用文"], ans:1, exp:"【解析】講義「課文提要」明確指出，本文文體為(B)「記敘兼抒情文」。作者藉由描繪康橋風光(記敘)來抒發對康橋的眷戀與內心悸動(抒情)。" });
+            q.push({ q:"本文以何者為主軸，並配合空間的轉移對康橋景物進行深入描繪？", opts:["事件", "情感", "時間", "人物"], ans:2, exp:"【解析】講義「作法分析」提及：本文以「時間」為主軸（早晨→白天→黃昏），配合「空間」的轉移深入描繪景物。" });
+            q.push({ q:"在清晨尋春的段落中，作者選了哪兩種截然不同又具代表性的景色來表現康橋的多變？", opts:["晨霧籠罩與春陽照耀", "夕陽西下與滿天星斗", "狂風暴雨與雨過天晴", "冰雪覆蓋與百花齊放"], ans:0, exp:"【解析】講義提及作者寫初春早晨時，一是寫「晨霧籠罩下」淒迷朦朧的美，二是寫「春陽下」大地繽紛富麗溫柔的美，兩者呈現了康橋的多變。" });
+            q.push({ q:"「探詢河上的春信」這一段中，作者連用了六個什麼句型，足見其細心尋訪與熱切盼望？", opts:["尋找", "發現", "關心", "看見"], ans:2, exp:"【解析】講義指出第二段連用六個「關心」句（如：關心石上的苔痕、關心敗草裡的鮮花等），展現他熱切盼望春天的到來。" });
+            q.push({ q:"在「歌詠野遊的閒適」段落中，作者為了拉近與讀者的距離，彷彿面對面把臂歡談，連用了四個哪種句型？", opts:["我以為", "你如愛", "誰不愛", "何處無"], ans:1, exp:"【解析】第三段連用四個「你如愛」（你如愛花...你如愛鳥...等），用「你」字拉近與讀者的距離，顯得親切熱情。" });
+            q.push({ q:"在描寫黃昏美景的段落，作者文末以「這草田變成了......」作結，其使用刪節號的目的為何？", opts:["暗示文章還有下集待續", "表示風景不佳不想多寫", "留給讀者諸多的想像空間並體會神異性", "因為忘記接下來要寫什麼"], ans:2, exp:"【解析】講義指出，刪節號的運用是為了「留給讀者諸多的想像空間，並體會數大之美、神異性的感受」。" });
+            q.push({ q:"「擁抱初春的早晨」這一段在描寫「平視」時，其空間順序（由近而遠）下列何者正確？", opts:["水溶溶的大道→林子平原、村舍小山→近村的教寺", "近村的教寺→林子平原、村舍小山→水溶溶的大道", "林子平原、村舍小山→水溶溶的大道→近村的教寺", "水溶溶的大道→近村的教寺→林子平原、村舍小山"], ans:0, exp:"【解析】根據課文結構表，平視的順序是從近處的「水溶溶的大道」，延伸至「林子平原、村舍小山」，最後到極遠處的「近村的教寺」。" });
+            q.push({ q:"在初春早晨的描繪中，作者「俯瞰」了什麼景物？", opts:["水溶溶的大道", "村舍、樹林", "漸漸散去的朝霧", "冉冉升起的炊煙"], ans:1, exp:"【解析】根據結構表，作者「俯瞰」(從高處往下看)的是(B)村舍、樹林。朝霧與炊煙屬於「仰望」的景物。" });
+            q.push({ q:"在初春早晨的描繪中，下列何者屬於「仰望」的景物？", opts:["村舍、樹林", "漸漸散去的朝霧、冉冉升起的炊煙", "水溶溶的大道", "平原、村舍小山"], ans:1, exp:"【解析】根據結構表，「仰望」包含漸漸散去的朝霧、冉冉升起的炊煙、難得一見的朝陽。" });
+            q.push({ q:"作者在「探詢河上的春信」時，藉由觀察到朝陽與各式花朵相繼綻放，進而「推論」出什麼結論？", opts:["夏天即將到來", "天氣將變得非常炎熱", "春光已爛縵在人間", "農民準備開始播種"], ans:2, exp:"【解析】看到報春花卉(如小雪球、鈴蘭等)綻放，作者推論「春光已爛縵在人間」，不須再殷勤問訊。" });
+            q.push({ q:"作者歸納出「最適情、適性的消遣」中，包含看天、聽鳥、讀書，還有什麼？", opts:["吟詩作對", "在草地上尋夢", "在河裡游泳", "在林間野餐"], ans:1, exp:"【解析】講義中明確指出，最適情適性的消遣為：看天，聽鳥，讀書，在草地上尋夢。" });
+            q.push({ q:"作者認為要享受「騎自行車」這種最適情適性的消遣，必須具備什麼「條件」？", opts:["瑰麗的春假", "晴朗的天氣", "可愛的路政", "同伴的隨行"], ans:2, exp:"【解析】根據結構表，野遊的「時間」是瑰麗的春假，而「條件」是有平坦完善的「可愛的路政」。" });
+            q.push({ q:"根據段落大意，本文的「第三段」主要在寫什麼？", opts:["康橋初春早晨的自然風光", "康河岸上風光與百花盛開", "康橋如畫般的黃昏美景", "春假騎自行車出遊的閒適愉悅"], ans:3, exp:"【解析】第一段寫早晨；第二段寫康河岸上春信；第三段寫騎車野遊的閒適；第四段寫黃昏美景。" });
+            q.push({ q:"作者在漸隱的金光中，感應到了什麼，因而抒寫一己靈魂的悸動？", opts:["宇宙偉大、神祕的力量", "家國興亡的感嘆", "青春流逝的哀愁", "自然生態的衰亡"], ans:0, exp:"【解析】在描繪暮色時，作者在漸隱的金光中，感應到(A)宇宙偉大、神祕的力量，因而靈魂悸動並下跪。" });
 
-            // 句意解說 (Q11-Q30)
-            q.push({ q:"「只遠處牛奶車的鈴聲，點綴這周遭的沉默」這句話的作用是什麼？", opts:["形容牛奶車很吵鬧", "以鈴聲反襯出四周的寧靜", "暗示作者想喝牛奶", "表達對農村生活的不滿"], ans:1, exp:"藉由遠處細微的鈴聲，反而襯托出整個大環境的安靜無聲。" });
-            q.push({ q:"「遠近的炊煙，成絲的、成縷的、成捲的、輕快的、遲重的、濃灰的、淡青的、慘白的」這句話從哪三個面向描述炊煙？", opts:["形狀、速度、顏色", "形狀、氣味、顏色", "氣味、速度、溫度", "顏色、溫度、形狀"], ans:0, exp:"成絲成縷是形狀，輕快遲重是速度，濃灰淡青慘白是顏色。" });
-            q.push({ q:"「彷彿是朝來人們的祈禱，參差地翳入了天聽」這句話使用了什麼技巧？", opts:["單純的視覺摹寫", "用聽覺印象來表現視覺感受", "單純的嗅覺摹寫", "用觸覺印象來表現聽覺感受"], ans:1, exp:"將「眼所見」(炊煙)與「耳所聞」(祈禱、天聽)結合，感官交錯應用。" });
-            q.push({ q:"為什麼作者說「朝陽是難得見的，但它來時是起早人莫大的愉快」？", opts:["因為英國冬季和初春多霧", "因為作者經常睡過頭", "因為當地有很多高山遮蔽", "因為太陽經常被樹林擋住"], ans:0, exp:"英國冬季和初春多霧，難得見到陽光，故覺得物以稀為貴。" });
-            q.push({ q:"連用三個「頃刻間」有什麼修辭作用？", opts:["表示時間過得很漫長", "表示初曉景色的瞬息變化，讓人目不暇接", "表示作者的步調很緩慢", "表示作者寫作時詞窮"], ans:1, exp:"把時間說得極為急促，凸顯清晨陽光帶來景色的瞬間快速變化。" });
-            q.push({ q:"「『春!』這勝利的晴空彷彿在你的耳邊私語」使用了哪兩種修辭？", opts:["擬物、排比", "轉化(擬人)、類疊", "譬喻、頂真", "回文、設問"], ans:1, exp:"賦予晴空「私語」的動作是擬人，連用「春!」是類疊。" });
-            q.push({ q:"「伺候著河上的風光」中，「伺候」二字顯現出作者何種態度？", opts:["無可奈何的妥協", "主動積極、專注投入且不放過細節", "高高在上的傲慢", "漫不經心的隨意"], ans:1, exp:"表示對春信殷切的盼望，專注且投入地觀察。" });
-            q.push({ q:"作者描寫帶一卷書，走十里路，選一塊清靜地看天聽鳥，這是在表達什麼？", opts:["抱怨走路太累", "炫耀自己的體力", "描寫適情適性、逍遙自得的生活", "為了準備考試的艱辛"], ans:2, exp:"描寫置身於大自然中，過著逍遙自得的生活。" });
-            q.push({ q:"作者引用陸游的詩句「傳呼快馬迎新月，卻上輕輿趁晚涼」的用意為何？", opts:["批評地方官的奢侈", "烘托騎自行車的風流與享受晚涼的雅趣", "感嘆自己沒有馬和轎子", "解釋古代的交通工具"], ans:1, exp:"以古人做官的風流，來襯托自己騎自行車追夕陽的閒適雅趣。" });
-            q.push({ q:"「隔著一大田的麥浪，看西天的變幻」這屬於何種美感經驗？", opts:["數大便是美的經驗", "微小細緻之美", "抽象朦朧之美", "人工雕琢之美"], ans:0, exp:"一大田的麥浪呈現出壯闊之美，屬於數大便是美的經驗。" });
-            q.push({ q:"面對偌大的太陽放射萬縷金輝，作者產生了什麼情緒？", opts:["恐懼與逃避", "悲傷與絕望", "對宇宙偉大與莊嚴的虔敬情緒", "狂喜與驕傲"], ans:2, exp:"產生了神異性的壓迫感，是對宇宙偉大莊嚴的虔敬情緒。" });
-            q.push({ q:"「在青草裡亭亭地像是萬盞的金燈」是在描寫什麼花？", opts:["小雪球", "蓮馨", "豔紅的罌粟", "蒲公英"], ans:2, exp:"描寫滿開著豔紅的罌粟，在陽光斜射下如萬盞金燈的幻象。" });
-            q.push({ q:"「說來你們也是不信的!」這句話透露出作者感受到什麼？", opts:["別人的懷疑", "「神異性」的感受", "自己的不自信", "世俗的偏見"], ans:1, exp:"因為這種美感過於奇特震撼，只可意會不可言傳，顯現神異性的感受。" });
-            q.push({ q:"文中提到的「怯怜怜的探春信的小使」是指哪一種植物？", opts:["鈴蘭", "香草", "石水仙", "小雪球"], ans:3, exp:"「怯怜怜的小雪球是探春信的小使」。" });
-            q.push({ q:"作者形容「克羅克斯」的特質是什麼？", opts:["窈窕的", "愛熱鬧的", "耐辛苦的", "玲瓏的"], ans:1, exp:"課文原文為「愛熱鬧的克羅克斯」。" });
-            q.push({ q:"作者形容「蒲公英與雛菊」的特質是什麼？", opts:["怯怜怜的", "歡喜的", "耐辛苦的", "窈窕的"], ans:2, exp:"課文原文為「耐辛苦的蒲公英與雛菊」。" });
-            q.push({ q:"「我沒有夸父的荒誕，但晚景的溫存卻被我這樣偷嘗了不少。」作者的「晚景」是如何得來的？", opts:["騎馬追來的", "坐轎子賞來的", "騎自行車迎著日頭直追", "躺在草地上作夢夢到的"], ans:2, exp:"作者常常在夕陽西曬時，騎了自行車迎著天邊扁大的日頭直追。" });
-            q.push({ q:"「春光已是爛縵在人間，更不須殷勤問訊」為什麼不須問訊？", opts:["因為沒有人知道答案", "因為春的氣息無所不在，自然能感受得到", "因為作者已經問過了", "因為英國人很冷漠"], ans:1, exp:"百花盛開，隨處可嗅到春的氣息，因此不須殷勤問訊。" });
-            q.push({ q:"「這草田變成了......，不說也罷，說來你們也是不信的!!」這句話的修辭效果為何？", opts:["欲語還休，留給讀者想像空間", "平鋪直敘，清楚交代細節", "首尾呼應，結構完整", "誇大其辭，扭曲事實"], ans:0, exp:"以刪節號及欲語還休的方式，留給讀者無限的想像與餘味。" });
-            q.push({ q:"這篇文章從早晨寫到黃昏，展現了康橋之美。作者認為康橋的美在於？", opts:["永遠不變", "天氣炎熱", "她的多變(如晨霧與春陽)", "只有在夜間才顯現"], ans:2, exp:"晨霧有淒迷朦朧的美，春陽有富麗溫柔的美，康橋的美就在她的多變。" });
+            // --- 【二】句意解說 (20題) ---
+            q.push({ q:"「只遠處牛奶車的鈴聲，點綴這周遭的沉默。」這句話的作用是什麼？", opts:["形容牛奶車非常吵鬧", "以鈴聲反襯出四周的寧靜", "暗示作者肚子餓了想喝牛奶", "表達對英國農村生活的不滿"], ans:1, exp:"【解析】講義指出，這句話是利用遠處細微的「動」(鈴聲)，來「反襯」出整個大環境的安靜無聲(靜)。" });
+            q.push({ q:"「遠近的炊煙，成絲的、成縷的、成捲的、輕快的、遲重的、濃灰的、淡青的、慘白的。」這句話從哪三個面向描述早晨的炊煙？", opts:["形狀、氣味、顏色", "顏色、溫度、形狀", "形狀、速度、顏色", "氣味、速度、溫度"], ans:2, exp:"【解析】成絲成縷成捲是「形狀」；輕快遲重是「速度」；濃灰淡青慘白是「顏色」。" });
+            q.push({ q:"「彷彿是朝來人們的祈禱，參差地翳入了天聽」作者在此把「眼所見」(炊煙)與「耳所聞」(祈禱、天聽)巧妙結合。這種技巧是？", opts:["用觸覺印象來表現視覺感受", "用聽覺印象來表現視覺感受", "單純的嗅覺摹寫", "單純的視覺摹寫"], ans:1, exp:"【解析】講義明確指出：這是「用聽覺印象來表現視覺感受」，感官交錯應用使描寫更鮮活。" });
+            q.push({ q:"為什麼作者說「朝陽是難得見的，但它來時是起早人莫大的愉快」？", opts:["因為英國冬季和初春多霧", "因為作者經常睡過頭", "因為當地有很多高山遮蔽", "因為太陽經常被樹林擋住"], ans:0, exp:"【解析】講義解說：因為英國冬季和初春多霧，難得見到陽光，故覺得「物以稀為貴」，見到便十分愉快。" });
+            q.push({ q:"「頃刻間這田野添深了顏色...頃刻間這周遭瀰漫了...頃刻間你的心懷也分潤了...」連用三個「頃刻間」的作用為何？", opts:["表示時間過得很漫長難熬", "把時間說得極為急促，表示初曉景色的瞬息變化", "表示作者的步調很緩慢", "表示作者寫作時想不到其他詞彙"], ans:1, exp:"【解析】連用三個「頃刻間」把時間說得極為急促，表現出太陽升起時，初曉景色瞬息萬變，令人目不暇接。" });
+            q.push({ q:"「『春!』這勝利的晴空彷彿在你的耳邊私語」這句話給予了「春」什麼樣的特質？", opts:["悲傷的氣息", "活潑的生命力", "狂暴的力量", "沉靜的死亡"], ans:1, exp:"【解析】用「私語」、「回響」給予「春」活潑的生命力，似乎「春」正向早起尋春的人們打招呼。" });
+            q.push({ q:"「伺候著河上的風光」中，「伺候」二字顯現出作者何種態度？", opts:["無可奈何的妥協", "主動積極、專注投入且不放過任何細節", "高高在上的傲慢", "漫不經心的隨意"], ans:1, exp:"【解析】「伺候」一詞表示對春信殷切的盼望，展現出較主動積極、專注投入且不放過任何細節的意思。" });
+            q.push({ q:"「這時候春光已是爛縵在人間，更不須殷勤問訊。」為什麼作者覺得「不須殷勤問訊」？", opts:["因為沒有人知道答案", "因為春的氣息無所不在，自然能感受得到", "因為作者已經問過太多次了", "因為英國人個性冷漠不愛回答"], ans:1, exp:"【解析】因為百花盛開，隨處可嗅到春的氣息，春已無所不在，所以不需要刻意去詢問，自然就能感受到。" });
+            q.push({ q:"「帶一卷書，走十里路，選一塊清靜地，看天，聽鳥，讀書。」這是在描寫什麼樣的生活境界？", opts:["為了準備考試的艱辛", "抱怨走路太累的無奈", "適情適性、逍遙自得的生活", "炫耀自己體力很好的自豪"], ans:2, exp:"【解析】這段話描寫置身於大自然中，沒有世俗的煩擾，過著適情適性、逍遙自得的生活。" });
+            q.push({ q:"作者引用陸游的詩句「傳呼快馬迎新月，卻上輕輿趁晚涼」的用意為何？", opts:["批評古代地方官的生活太過奢侈", "烘托自己騎自行車的風流，以及享受晚涼的雅趣", "感嘆自己窮困，沒有馬和轎子可以坐", "解釋宋代交通工具的演進"], ans:1, exp:"【解析】引陸游詩句，是用來烘托自己雖無馬無轎，但「騎自行車追夕陽」同樣擁有那份風流與享受晚涼的雅趣。" });
+            q.push({ q:"「隔著一大田的麥浪，看西天的變幻」這種「壯闊之美」屬於作者提到的哪一種美感經驗？", opts:["抽象朦朧之美", "微小細緻之美", "數大便是美的經驗", "人工雕琢之美"], ans:2, exp:"【解析】一大片隨風起伏的麥浪，展現出壯闊的氣勢，這是徐志摩常提到的「數大便是美」的經驗。" });
+            q.push({ q:"面對偌大的太陽放射萬縷金輝，作者覺得「我真的跪下了」，這產生了什麼情緒？", opts:["對宇宙偉大與莊嚴的虔敬情緒", "狂喜與驕傲的情緒", "悲傷與絕望的情緒", "恐懼與逃避的情緒"], ans:0, exp:"【解析】感受到神異性的壓迫並跪下，是作者對宇宙萬物的偉大與莊嚴，產生了一種虔誠的、敬畏的情緒。" });
+            q.push({ q:"「滿開著豔紅的罌粟，在青草裡亭亭地像是萬盞的金燈」這也是何種美感經驗的展現？", opts:["殘缺之美", "數大之美", "虛無之美", "幾何之美"], ans:1, exp:"【解析】「萬盞」金燈般的罌粟在陽光照射下的幻象，同樣是「數大之美」的展現。" });
+            q.push({ q:"「說來你們也是不信的!」這句話透露出作者感受到什麼？", opts:["別人的懷疑與排斥", "「神異性」的感受", "自己的不自信與自卑", "世俗的偏見與無知"], ans:1, exp:"【解析】因為這種感受過於震撼且不可思議(神異性)，難以用言語使未親歷者相信，故有此感嘆。" });
+            q.push({ q:"「怯怜怜的小雪球是探春信的小使」中的「小雪球」指的是？", opts:["天空中下起的冰雹", "冬天殘留的雪塊", "一種初春綻放的花朵", "孩子們玩的玩具"], ans:2, exp:"【解析】小雪球與鈴蘭、香草等並列，是初春綻放的報春花卉之一。" });
+            q.push({ q:"「愛熱鬧的克羅克斯」中，作者用什麼詞語來形容克羅克斯的特質？", opts:["怯怜怜的", "窈窕的", "愛熱鬧的", "耐辛苦的"], ans:2, exp:"【解析】課文原文為「愛熱鬧的克羅克斯」。" });
+            q.push({ q:"作者形容「蒲公英與雛菊」的特質是什麼？", opts:["怯怜怜的", "耐辛苦的", "窈窕的", "玲瓏的"], ans:1, exp:"【解析】課文原文為「耐辛苦的蒲公英與雛菊」，可能因為它們常生長在環境較為艱困的野地。" });
+            q.push({ q:"「我沒有夸父的荒誕，但晚景的溫存卻被我這樣偷嘗了不少。」作者的「晚景」是如何得來的？", opts:["騎馬追來的", "騎自行車迎著日頭直追來的", "坐轎子賞來的", "躺在草地上作夢夢到的"], ans:1, exp:"【解析】作者常常在夕陽西曬時，騎著自行車迎著天邊扁大的日頭直追，藉此享受晚景的溫存。" });
+            q.push({ q:"「這草田變成了......，不說也罷」這句話的修辭效果為何？", opts:["平鋪直敘，清楚交代細節", "欲語還休，因心靈感受只可意會，留予讀者無限想像空間", "首尾呼應，使文章結構更為完整", "誇大其辭，故意扭曲事實以吸引人"], ans:1, exp:"【解析】以刪節號及欲語還休的方式(戛然而止)，表示這種神異的感受難以言傳，留給讀者想像與餘味。" });
+            q.push({ q:"「村舍與樹林是這地盤上的棋子」這句話是作者在何種視角下所見之景？", opts:["仰望星空時", "平視大道時", "登上土阜後(俯瞰)時", "騎車狂奔時"], ans:2, exp:"【解析】講義指出，這段文字(包含想像清淺、看見村舍如棋子)皆為作者登上「土阜」(小土山)後由高處俯瞰所見之景。" });
 
-            // 修辭說明 (Q31-Q45)
-            q.push({ q:"「村舍與樹林是這地盤上的棋子」使用了何種修辭？", opts:["轉化", "譬喻", "借代", "映襯"], ans:1, exp:"將村舍與樹林比喻成棋子，屬於譬喻(隱喻)。" });
-            q.push({ q:"「康橋只是一帶茂林，擁戴幾處娉婷的尖閣」使用了何種修辭？", opts:["譬喻", "回文", "轉化(擬人)", "誇飾"], ans:2, exp:"「擁戴」與「娉婷(形容女子姿態美好)」將茂林與尖閣賦予人的特質。" });
-            q.push({ q:"「有村舍處有佳蔭，有佳蔭處有村舍」使用了何種修辭？", opts:["排比兼設問", "回文兼類疊", "譬喻兼轉化", "映襯兼引用"], ans:1, exp:"詞序迴環往復為回文，相同詞語重複出現為類疊。" });
-            q.push({ q:"「成絲的、成縷的、成捲的、輕快的、遲重的...」使用了何種修辭？", opts:["排比", "回文", "類疊", "映襯"], ans:2, exp:"重複使用「...的」，為句法結構上的類疊(類字)。" });
-            q.push({ q:"「敗草裡的鮮花」使用了何種修辭？", opts:["譬喻", "設問", "映襯", "轉化"], ans:2, exp:"「敗」草與「鮮」花形成強烈的對比映襯。" });
-            q.push({ q:"「這裡哪一處不是坦蕩蕩的大道?」屬於何種設問？", opts:["懸問", "提問", "激問", "疑問"], ans:2, exp:"答案在問題的反面(這裡每一處都是坦蕩蕩的大道)，屬於激問。" });
-            q.push({ q:"下列何者「沒有」使用轉化(擬人)修辭？", opts:["嫵媚的康河也望不見蹤跡", "地形像是海裡的輕波，默沉沉地起伏", "快活的靈魂也彷彿在那裡回響", "愛熱鬧的克羅克斯"], ans:1, exp:"「像是海裡的輕波」有「像」字，為譬喻中的明喻。" });
-            q.push({ q:"「滿開著豔紅的罌粟，在青草裡亭亭地像是萬盞的金燈」使用了何種修辭？", opts:["譬喻", "引用", "映襯", "回文"], ans:0, exp:"將罌粟花比喻成萬盞的金燈，為譬喻。" });
-            q.push({ q:"下列何者屬於「排比」修辭？", opts:["有村舍處有佳蔭，有佳蔭處有村舍", "敗草裡的鮮花", "關心石上的苔痕，關心敗草裡的鮮花，關心這水流的緩急", "只遠處牛奶車的鈴聲，點綴這周遭的沉默"], ans:2, exp:"連續三個以上結構相似的句型(關心...)，為排比修辭。" });
-            q.push({ q:"「陸放翁有一聯詩句...」這在修辭學上稱為？", opts:["譬喻", "引用", "轉化", "設問"], ans:1, exp:"在文章中直接引用他人的話語或詩句，為引用修辭。" });
-            q.push({ q:"「你如愛花...你如愛鳥...你如愛兒童...你如愛人情...」使用了何種修辭？", opts:["排比", "回文", "引用", "映襯"], ans:0, exp:"連用四個「你如愛...」，結構相似，屬於排比修辭。" });
-            q.push({ q:"「頃刻間這田野添深了顏色...頃刻間這周遭瀰漫了...頃刻間你的心懷也分潤了...」主要使用了何種修辭？", opts:["回文", "排比", "映襯", "設問"], ans:1, exp:"連續使用三個「頃刻間...」，結構相似，氣勢磅礡，為排比。" });
-            q.push({ q:"「只遠處牛奶車的鈴聲，點綴這周遭的沉默」除了映襯外，還使用了哪種感官摹寫？", opts:["視覺摹寫", "嗅覺摹寫", "聽覺摹寫", "觸覺摹寫"], ans:2, exp:"描寫「鈴聲」，屬於聽覺摹寫。" });
-            q.push({ q:"「錦帶似的林木」屬於何種修辭？", opts:["譬喻", "轉化", "借代", "誇飾"], ans:0, exp:"有「似的」二字，將林木比喻為錦帶，為譬喻(明喻)。" });
-            q.push({ q:"「我沒有夸父的荒誕」這句引用了神話故事，在修辭上這也屬於一種？", opts:["排比", "引用", "回文", "頂真"], ans:1, exp:"借用夸父追日的神話典故，廣義上屬於引用(用典)。" });
+            // --- 【三】修辭說明 (20題) ---
+            q.push({ q:"「只遠處牛奶車的鈴聲，點綴這周遭的沉默」使用了何種摹寫修辭？", opts:["視覺摹寫", "聽覺摹寫", "嗅覺摹寫", "觸覺摹寫"], ans:1, exp:"【解析】描寫「鈴聲」，屬於聲音的感官，為聽覺摹寫。" });
+            q.push({ q:"「地形像是海裡的輕波，默沉沉地起伏。」使用了何種修辭？", opts:["譬喻", "轉化", "回文", "引用"], ans:0, exp:"【解析】有「像是」二字，將地形比喻成海裡的輕波，為譬喻(明喻)。" });
+            q.push({ q:"「錦帶似的林木」屬於何種修辭？", opts:["轉化", "借代", "譬喻", "誇飾"], ans:2, exp:"【解析】有「似的」二字，將林木比喻為錦帶，為譬喻。" });
+            q.push({ q:"「村舍與樹林是這地盤上的棋子」使用了何種修辭？", opts:["譬喻", "轉化", "回文", "映襯"], ans:0, exp:"【解析】使用「是」(繫詞)，將村舍與樹林比喻成棋子，屬於譬喻(隱喻)。" });
+            q.push({ q:"「康橋只是一帶茂林，擁戴幾處娉婷的尖閣。」這句話使用了何種修辭？", opts:["譬喻", "回文", "轉化(擬人)", "誇飾"], ans:2, exp:"【解析】「擁戴」與形容女子姿態美好的「娉婷」，將無生命的茂林與尖閣賦予了人的特質，為轉化(擬人)。" });
+            q.push({ q:"「『春!』這勝利的晴空彷彿在你的耳邊私語。」這句話的修辭為何？", opts:["譬喻", "轉化(擬人)", "排比", "映襯"], ans:1, exp:"【解析】晴空是不會說話的，賦予它在耳邊「私語」的人類動作，是轉化(擬人)。" });
+            q.push({ q:"「怯怜怜的小雪球是探春信的小使」將小雪球比擬為小使(使者)，屬於何種修辭？", opts:["譬喻兼轉化(擬人)", "回文兼類疊", "排比兼映襯", "設問兼引用"], ans:0, exp:"【解析】「是」探春信的小使(隱喻)；「怯怜怜」及「小使」(使者)賦予了人的情態，為擬人。" });
+            q.push({ q:"「我沒有夸父的荒誕，但晚景的溫存卻被我這樣偷嘗了不少。」這句話的修辭為何？", opts:["譬喻", "轉化(擬人)", "排比", "回文"], ans:1, exp:"【解析】講義將此句列為「轉化」。將無形的「晚景的溫存」具象化為可以「偷嘗」(吃)的食物，屬於轉化(形象化)。" });
+            q.push({ q:"「有村舍處有佳蔭，有佳蔭處有村舍。」使用了哪兩種修辭？", opts:["排比、設問", "回文、類疊", "譬喻、轉化", "映襯、引用"], ans:1, exp:"【解析】上下兩句詞彙大致相同，詞序迴環往復為「回文」；相同詞語重複出現為「類疊」。" });
+            q.push({ q:"「成絲的、成縷的、成捲的、輕快的、遲重的...」使用了何種修辭？", opts:["排比", "回文", "類疊", "映襯"], ans:2, exp:"【解析】重複使用「...的」，為句法結構上的類疊(類字)。" });
+            q.push({ q:"「頃刻間這田野添深了顏色...頃刻間這周遭瀰漫了...頃刻間你的心懷也分潤了...」主要使用了何種修辭？", opts:["回文", "排比", "映襯", "設問"], ans:1, exp:"【解析】連續使用三個「頃刻間...」且結構相似的句型，氣勢磅礡，為排比。" });
+            q.push({ q:"「關心石上的苔痕，關心敗草裡的鮮花，關心這水流的緩急...」使用了何種修辭？", opts:["譬喻", "轉化", "排比", "回文"], ans:2, exp:"【解析】連續多個「關心...」結構相似的句型，屬於排比修辭。" });
+            q.push({ q:"「敗草裡的鮮花」這句話將「敗草」與「鮮花」放在一起，使用了何種修辭？", opts:["譬喻", "設問", "映襯", "轉化"], ans:2, exp:"【解析】枯槁的「敗」草與美麗的「鮮」花形成強烈的對比，為映襯修辭。" });
+            q.push({ q:"「這裡哪一處不是坦蕩蕩的大道?」屬於何種設問？", opts:["懸問(心中真有疑惑)", "提問(自問自答)", "激問(答案在問題反面)", "疑問"], ans:2, exp:"【解析】答案很明確在問題的反面(這裡每一處都是坦蕩蕩的大道)，不須回答即知，屬於激問。" });
+            q.push({ q:"「你能想像更適情、更適性的消遣嗎?」這句設問的答案為「不能」，這屬於？", opts:["懸問", "提問", "激問", "反詰問"], ans:2, exp:"【解析】答案在反面(不能想像有更好的了)，屬於激問(也稱反問、反詰問)。" });
+            q.push({ q:"「陸放翁有一聯詩句：『傳呼快馬迎新月，卻上輕輿趁晚涼。』」這在修辭學上稱為？", opts:["譬喻", "引用", "轉化", "設問"], ans:1, exp:"【解析】在文章中直接寫出並引用他人的話語或詩句，為引用修辭(明引)。" });
+            q.push({ q:"「你如愛花，這裡多的是錦繡似的草原。你如愛鳥，這裡多的是巧囀的鳴禽...」使用了何種修辭？", opts:["排比", "回文", "引用", "映襯"], ans:0, exp:"【解析】連用四個「你如愛...，這裡多的是...」，結構相似，屬於排比修辭。" });
+            q.push({ q:"「滿開著豔紅的罌粟，在青草裡亭亭地像是萬盞的金燈」使用了何種修辭？", opts:["譬喻", "引用", "映襯", "回文"], ans:0, exp:"【解析】有「像是」二字，將罌粟花比喻成萬盞的金燈，為譬喻。" });
+            q.push({ q:"「有三兩幅畫圖似的經驗至今還是栩栩地留著」這句話的修辭為何？", opts:["轉化", "譬喻", "借代", "引用"], ans:1, exp:"【解析】將經驗比喻成「畫圖似的」，屬於譬喻修辭。" });
+            q.push({ q:"下列何者「沒有」使用轉化(擬人)修辭？", opts:["嫵媚的康河也望不見蹤跡", "地形像是海裡的輕波", "快活的靈魂也彷彿在那裡回響", "愛熱鬧的克羅克斯"], ans:1, exp:"【解析】(A)嫵媚、(C)快活回響、(D)愛熱鬧皆賦予人的特質(擬人)。(B)「像是海裡的輕波」是譬喻。" });
 
-            // 形音義辨析 (Q46-Q75)
-            q.push({ q:"「曙光」的「曙」讀音為何？", opts:["ㄕㄨˇ", "ㄕㄨˋ", "ㄕㄨ", "ㄕㄨˊ"], ans:1, exp:"曙(ㄕㄨˋ)，天剛亮的時候。" });
-            q.push({ q:"「麻糬」的「糬」讀音為何？", opts:["ㄕㄨˇ", "ㄕㄨˋ", "ㄕㄨ", "ㄕㄨˊ"], ans:0, exp:"糬(ㄕㄨˇ)，糯米製成的食品。" });
-            q.push({ q:"「部署」與「食藥署」的「署」字讀音是否相同？", opts:["皆讀ㄕㄨˋ", "皆讀ㄕㄨˇ", "前者ㄕㄨˋ，後者ㄕㄨˇ", "前者ㄕㄨˇ，後者ㄕㄨˋ"], ans:2, exp:"部署、連署讀ㄕㄨˋ；政府機關(食藥署)讀ㄕㄨˇ。" });
-            q.push({ q:"「娉婷」的「娉」讀音為何？", opts:["ㄆㄧㄥˋ", "ㄆㄧㄥ", "ㄔㄥˇ", "ㄆㄧㄣ"], ans:1, exp:"娉(ㄆㄧㄥ)婷，輕巧美好的樣子。" });
-            q.push({ q:"「重金禮聘」的「聘」讀音為何？", opts:["ㄆㄧㄥˋ", "ㄆㄧㄥ", "ㄔㄥˇ", "ㄆㄧㄣ"], ans:0, exp:"聘(ㄆㄧㄥˋ)，延請或訂婚之意。" });
-            q.push({ q:"「馳騁」的「騁」讀音為何？", opts:["ㄆㄧㄥˋ", "ㄆㄧㄥ", "ㄔㄥˇ", "ㄆㄧㄣ"], ans:2, exp:"騁(ㄔㄥˇ)，直馳、奔跑。" });
-            q.push({ q:"「翳入天際」的「翳」讀音與字義為何？", opts:["ㄧˋ，隱沒", "ㄧˋ，飛翔", "ㄧˊ，隱沒", "ㄧˊ，眼疾"], ans:0, exp:"翳(ㄧˋ)作動詞時，是隱沒、遮蔽的意思。" });
-            q.push({ q:"「翌日」的意思是？", opts:["前一日", "次日、第二日", "晴天", "雨天"], ans:1, exp:"翌(ㄧˋ)形指次的、第二的，翌日即明日。" });
-            q.push({ q:"「糁上金粉」的「糁」讀音為何？", opts:["ㄕㄣˋ", "ㄘㄣ", "ㄙㄢˇ", "ㄘㄢˇ"], ans:2, exp:"糁(ㄙㄢˇ)作動詞，撒落之意。" });
-            q.push({ q:"「參差不齊」的「參」讀音為何？", opts:["ㄕㄣ", "ㄘㄢ", "ㄙㄢ", "ㄘㄣ"], ans:3, exp:"參(ㄘㄣ)差，雜亂不齊的樣子。" });
-            q.push({ q:"「動如參商」的「參」讀音為何？", opts:["ㄕㄣ", "ㄘㄢ", "ㄙㄢ", "ㄘㄣ"], ans:0, exp:"參(ㄕㄣ)，星座名。" });
-            q.push({ q:"「摻雜」的「摻」讀音為何？", opts:["ㄘㄢ", "ㄔㄢ", "ㄙㄢ", "ㄕㄣ"], ans:1, exp:"摻(ㄔㄢ)雜，混合、雜入。" });
-            q.push({ q:"「慘白」的「慘」在此處的字義為何？", opts:["悲哀", "淒涼", "程度厲害、嚴重", "殘忍"], ans:2, exp:"慘白指非常白，慘作副詞，表示程度厲害、嚴重。" });
-            q.push({ q:"「恣意而行」與「搖曳生姿」的讀音分別為何？", opts:["ㄗˋ / ㄗ", "ㄗ / ㄗˋ", "ㄗˋ / ㄗˋ", "ㄗ / ㄗ"], ans:0, exp:"恣(ㄗˋ)意，放縱任憑；生姿(ㄗ)，儀態。" });
-            q.push({ q:"「諮詢商議」的「諮」讀音為何？", opts:["ㄗˋ", "ㄗ", "ㄓ", "ㄘ"], ans:1, exp:"諮(ㄗ)，商量、詢問。" });
-            q.push({ q:"「說話口氣很衝」的「衝」讀音與字義為何？", opts:["ㄔㄨㄥ，激烈", "ㄔㄨㄥˋ，激烈無禮", "ㄔㄨㄥ，碰撞", "ㄔㄨㄥˋ，碰撞"], ans:1, exp:"衝(ㄔㄨㄥˋ)作形容詞，表示激烈、無禮。" });
-            q.push({ q:"「橫衝直撞」的「衝」讀音為何？", opts:["ㄔㄨㄥˋ", "ㄔㄨㄥ", "ㄓㄨㄥ", "ㄘㄨㄥ"], ans:1, exp:"衝(ㄔㄨㄥ)，碰撞。" });
-            q.push({ q:"「滄海一粟」的「粟」讀音為何？", opts:["ㄌㄧˋ", "ㄙㄨˋ", "ㄕㄨˋ", "ㄙㄨˇ"], ans:1, exp:"粟(ㄙㄨˋ)，穀物的總稱。" });
-            q.push({ q:"「火中取栗」的「栗」讀音為何？", opts:["ㄌㄧˋ", "ㄙㄨˋ", "ㄕㄨˋ", "ㄙㄨˇ"], ans:0, exp:"栗(ㄌㄧˋ)，栗樹的果實。" });
-            q.push({ q:"「徒費脣舌」的「徒」字義為何？", opts:["步行", "門徒", "白白地、平白", "僅、只"], ans:2, exp:"徒作副詞，白白地耗費口舌。" });
-            q.push({ q:"「徒有虛名」的「徒」字義為何？", opts:["步行", "門徒", "白白地、平白", "僅、只"], ans:3, exp:"徒作副詞，僅有虛名。" });
-            q.push({ q:"「點綴」與「輟學」的讀音分別為何？", opts:["ㄓㄨㄟˋ / ㄔㄨㄛˋ", "ㄔㄨㄛˋ / ㄓㄨㄟˋ", "ㄗㄨㄟˋ / ㄔㄨㄛˋ", "ㄓㄨㄟˋ / ㄘㄨㄛˋ"], ans:0, exp:"綴(ㄓㄨㄟˋ)裝飾；輟(ㄔㄨㄛˋ)停止。" });
-            q.push({ q:"「啜飲」的「啜」字義為何？", opts:["哭泣", "停止", "裝飾", "吃、喝"], ans:3, exp:"啜(ㄔㄨㄛˋ)飲，小口吃喝。" });
-            q.push({ q:"「膏腴之地」的「腴」讀音與字義為何？", opts:["ㄩˊ，肥沃", "ㄩˇ，豐滿", "ㄩˊ，諂媚", "ㄩˇ，片刻"], ans:0, exp:"腴(ㄩˊ)，肥沃之意。" });
-            q.push({ q:"「阿諛」的「諛」讀音與字義為何？", opts:["ㄩˊ，肥沃", "ㄩˇ，片刻", "ㄩˊ，諂媚、奉承", "ㄩˇ，植物"], ans:2, exp:"諛(ㄩˊ)，言字旁，諂媚、奉承。" });
-            q.push({ q:"「須臾」的「臾」字義為何？", opts:["肥沃", "片刻", "諂媚", "植物名"], ans:1, exp:"臾(ㄩˊ)，須臾即片刻短暫的時間。" });
-            q.push({ q:"「港埠」的「埠」讀音為何？", opts:["ㄈㄨˋ", "ㄅㄨˋ", "ㄆㄨˋ", "ㄈㄡˋ"], ans:1, exp:"埠(ㄅㄨˋ)，碼頭或通商港口。" });
-            q.push({ q:"「窺伺」與「伺候」的讀音分別為何？", opts:["ㄙˋ / ㄘˋ", "ㄘˋ / ㄙˋ", "ㄙˋ / ㄙˋ", "ㄘˋ / ㄘˋ"], ans:0, exp:"暗中偵察為伺(ㄙˋ)；服侍為伺(ㄘˋ)。" });
-            q.push({ q:"「偌大」與「一諾千金」的讀音分別為何？", opts:["ㄖㄨㄛˋ / ㄋㄨㄛˋ", "ㄋㄨㄛˋ / ㄖㄨㄛˋ", "ㄖㄨㄛˋ / ㄖㄨㄛˋ", "ㄋㄨㄛˋ / ㄋㄨㄛˋ"], ans:0, exp:"偌(ㄖㄨㄛˋ)大；諾(ㄋㄨㄛˋ)言。" });
-            q.push({ q:"「苒」與「髯」的讀音分別為何？", opts:["皆讀ㄖㄢˇ", "皆讀ㄖㄢˊ", "ㄖㄢˇ / ㄖㄢˊ", "ㄖㄢˊ / ㄖㄢˇ"], ans:2, exp:"荏苒(ㄖㄢˇ)；鬚髯(ㄖㄢˊ)。" });
+            // --- 【四】形音義辨析 (25題) ---
+            q.push({ q:"「曙光」的「曙」讀音為何？", opts:["ㄕㄨˇ", "ㄕㄨˋ", "ㄕㄨ", "ㄕㄨˊ"], ans:1, exp:"【解析】曙(ㄕㄨˋ)，天剛亮的時候。" });
+            q.push({ q:"「麻糬」的「糬」讀音為何？", opts:["ㄕㄨˇ", "ㄕㄨˋ", "ㄕㄨ", "ㄕㄨˊ"], ans:0, exp:"【解析】糬(ㄕㄨˇ)，糯米製成的食品。" });
+            q.push({ q:"「部署完畢」與「食藥署」的「署」字，兩者讀音是否相同？", opts:["皆讀ㄕㄨˋ", "皆讀ㄕㄨˇ", "前者ㄕㄨˋ，後者ㄕㄨˇ", "前者ㄕㄨˇ，後者ㄕㄨˋ"], ans:2, exp:"【解析】部署、連署作動詞時讀ㄕㄨˋ；政府機關(如食藥署)作名詞時讀ㄕㄨˇ。" });
+            q.push({ q:"「姿態娉婷」的「娉」讀音為何？", opts:["ㄆㄧㄥˋ", "ㄆㄧㄥ", "ㄔㄥˇ", "ㄆㄧㄣ"], ans:1, exp:"【解析】娉(ㄆㄧㄥ)婷，輕巧美好的樣子。" });
+            q.push({ q:"「重金禮聘」的「聘」讀音為何？", opts:["ㄆㄧㄥˋ", "ㄆㄧㄥ", "ㄔㄥˇ", "ㄆㄧㄣ"], ans:0, exp:"【解析】聘(ㄆㄧㄥˋ)，延請或訂婚之意。" });
+            q.push({ q:"「馳騁」的「騁」讀音為何？", opts:["ㄆㄧㄥˋ", "ㄆㄧㄥ", "ㄔㄥˇ", "ㄆㄧㄣ"], ans:2, exp:"【解析】騁(ㄔㄥˇ)，直馳、奔跑。" });
+            q.push({ q:"「翳入天際」的「翳」讀音與字義為何？", opts:["ㄧˋ，隱沒", "ㄧˋ，飛翔", "ㄧˊ，隱沒", "ㄧˊ，眼疾"], ans:0, exp:"【解析】翳(ㄧˋ)作動詞時，是隱沒、遮蔽的意思。" });
+            q.push({ q:"「翌日」的意思是？", opts:["前一日", "次日、第二日", "晴天", "雨天"], ans:1, exp:"【解析】翌(ㄧˋ)形指次的、第二的，翌日即明日。" });
+            q.push({ q:"「糁上金粉」的「糁」讀音為何？", opts:["ㄕㄣˋ", "ㄘㄣ", "ㄙㄢˇ", "ㄘㄢˇ"], ans:2, exp:"【解析】糁(ㄙㄢˇ)作動詞，撒落之意。" });
+            q.push({ q:"「參差不齊」的「參」讀音為何？", opts:["ㄕㄣ", "ㄘㄢ", "ㄙㄢ", "ㄘㄣ"], ans:3, exp:"【解析】參(ㄘㄣ)差，雜亂不齊的樣子。" });
+            q.push({ q:"「動如參商」的「參」讀音為何？", opts:["ㄕㄣ", "ㄘㄢ", "ㄙㄢ", "ㄘㄣ"], ans:0, exp:"【解析】參(ㄕㄣ)，星座名。參星與商星在天空中此升彼落，永不相見。" });
+            q.push({ q:"「慘白」的「慘」在此處的詞性與字義為何？", opts:["形容詞，悲哀", "副詞，程度厲害、嚴重", "名詞，災禍", "動詞，傷害"], ans:1, exp:"【解析】慘白指非常白，慘作副詞，用來修飾「白」，表示程度厲害、嚴重。" });
+            q.push({ q:"「恣意而行」與「搖曳生姿」的讀音分別為何？", opts:["ㄗˋ / ㄗ", "ㄗ / ㄗˋ", "ㄗˋ / ㄗˋ", "ㄗ / ㄗ"], ans:0, exp:"【解析】恣(ㄗˋ)意，放縱任憑；生姿(ㄗ)，儀態。" });
+            q.push({ q:"「說話口氣很衝」的「衝」讀音與字義為何？", opts:["ㄔㄨㄥ，激烈", "ㄔㄨㄥˋ，激烈無禮", "ㄔㄨㄥ，碰撞", "ㄔㄨㄥˋ，碰撞"], ans:1, exp:"【解析】衝(ㄔㄨㄥˋ)作形容詞，表示激烈、無禮。" });
+            q.push({ q:"「交通要衝」與「橫衝直撞」的「衝」字讀音為何？", opts:["皆讀ㄔㄨㄥˋ", "皆讀ㄔㄨㄥ", "前者ㄔㄨㄥˋ，後者ㄔㄨㄥ", "前者ㄔㄨㄥ，後者ㄔㄨㄥˋ"], ans:1, exp:"【解析】交通要衝(重要通道)與橫衝直撞(碰撞)皆讀作ㄔㄨㄥ(第一聲)。" });
+            q.push({ q:"「滄海一粟」的「粟」讀音為何？", opts:["ㄌㄧˋ", "ㄙㄨˋ", "ㄕㄨˋ", "ㄙㄨˇ"], ans:1, exp:"【解析】粟(ㄙㄨˋ)，米字底，穀物的總稱。" });
+            q.push({ q:"「火中取栗」的「栗」讀音為何？", opts:["ㄌㄧˋ", "ㄙㄨˋ", "ㄕㄨˋ", "ㄙㄨˇ"], ans:0, exp:"【解析】栗(ㄌㄧˋ)，木字底，栗樹的果實。" });
+            q.push({ q:"「徒費脣舌」與「徒有虛名」中「徒」的字義分別為何？", opts:["皆為「步行」", "皆為「門徒」", "前者為「白白地」，後者為「僅、只」", "前者為「僅、只」，後者為「白白地」"], ans:2, exp:"【解析】徒費是「白白地」浪費；徒有是「僅、只」擁有。" });
+            q.push({ q:"「點綴」與「輟學」的讀音分別為何？", opts:["ㄓㄨㄟˋ / ㄔㄨㄛˋ", "ㄔㄨㄛˋ / ㄓㄨㄟˋ", "ㄗㄨㄟˋ / ㄔㄨㄛˋ", "ㄓㄨㄟˋ / ㄘㄨㄛˋ"], ans:0, exp:"【解析】綴(ㄓㄨㄟˋ，系部)裝飾；輟(ㄔㄨㄛˋ，車部)停止。" });
+            q.push({ q:"「啜飲」與「啜泣」的「啜」字義是否相同？", opts:["相同，皆為吃喝", "相同，皆為哭泣", "不同，前者為吃喝，後者為哭泣", "不同，前者為停止，後者為裝飾"], ans:2, exp:"【解析】啜(ㄔㄨㄛˋ)作多義字：啜飲是吃、喝；啜泣是哭泣。字義不同。" });
+            q.push({ q:"「膏腴之地」與「阿諛」的讀音皆為ㄩˊ，請問兩者的字義分別為何？", opts:["前者肥沃，後者諂媚", "前者豐滿，後者片刻", "前者植物，後者諂媚", "前者肥沃，後者植物"], ans:0, exp:"【解析】腴(肉部)指肥沃或豐滿；諛(言部)指諂媚、奉承。" });
+            q.push({ q:"「須臾」的「臾」字義為何？", opts:["肥沃", "片刻", "諂媚", "植物名"], ans:1, exp:"【解析】臾(ㄩˊ)，須臾即片刻短暫的時間。" });
+            q.push({ q:"「港埠」的「埠」讀音為何？", opts:["ㄈㄨˋ", "ㄅㄨˋ", "ㄆㄨˋ", "ㄈㄡˋ"], ans:1, exp:"【解析】埠(ㄅㄨˋ)，碼頭或通商的港口、城市。" });
+            q.push({ q:"「暗中窺伺」與「伺候父母」的「伺」讀音分別為何？", opts:["ㄙˋ / ㄘˋ", "ㄘˋ / ㄙˋ", "ㄙˋ / ㄙˋ", "ㄘˋ / ㄘˋ"], ans:0, exp:"【解析】暗中偵察為伺(ㄙˋ)；服侍長輩為伺(ㄘˋ)。" });
+            q.push({ q:"「偌大」與「一諾千金」的讀音分別為何？", opts:["ㄖㄨㄛˋ / ㄋㄨㄛˋ", "ㄋㄨㄛˋ / ㄖㄨㄛˋ", "ㄖㄨㄛˋ / ㄖㄨㄛˋ", "ㄋㄨㄛˋ / ㄋㄨㄛˋ"], ans:0, exp:"【解析】偌(ㄖㄨㄛˋ)大(如此之大)；諾(ㄋㄨㄛˋ)言(允諾的話)。" });
 
-            // 成語加油站 (Q76-Q95)
-            q.push({ q:"「各種光彩相互照耀」是指哪一個成語？", opts:["光芒萬丈", "交相輝映", "波光瀲豔", "掩映生姿"], ans:1, exp:"交相即互相，輝映即照耀。" });
-            q.push({ q:"「比喻見識膚淺空泛，不著邊際」是指哪一個成語？", opts:["若隱若現", "暮色蒼茫", "浮光掠影", "忽明忽滅"], ans:2, exp:"浮光掠影比喻觀察不細緻，見識膚淺。" });
-            q.push({ q:"「波光瀲豔」的「瀲豔」注音為何？", opts:["ㄌㄧㄢˇ ㄧㄢˋ", "ㄌㄧㄢˋ ㄧㄢˋ", "ㄌㄧㄢˊ ㄧㄢˋ", "ㄌㄧㄢˋ ㄧㄢˇ"], ans:1, exp:"瀲豔皆為第四聲(ㄌㄧㄢˋ ㄧㄢˋ)。" });
-            q.push({ q:"「光線把四周景物照耀得如同白天一樣明亮」是指哪一個成語？", opts:["掩映生姿", "交相輝映", "光芒萬丈", "照如白晝"], ans:3, exp:"照如白晝形容極度明亮。" });
-            q.push({ q:"「形容美好的事物非常多，無法一一收受」是指哪一個成語？", opts:["美不勝收", "尋幽訪勝", "風光旖旎", "別有洞天"], ans:0, exp:"勝有盡的意思，美景太多看不完。" });
-            q.push({ q:"「風光旖旎」的「旖旎」注音為何？", opts:["ㄑㄧˊ ㄋㄧˇ", "ㄧˇ ㄋㄧˇ", "ㄧˊ ㄋㄧˇ", "ㄑㄧˊ ㄋㄧˊ"], ans:1, exp:"旖旎(ㄧˇ ㄋㄧˇ)形容柔媚美好的樣子。" });
-            q.push({ q:"「世外桃源」除了稱避世隱居的地方外，還常比喻什麼？", opts:["神仙居住的地方", "風景優美而人跡罕至的地方", "繁華喧鬧的都市", "荒涼貧瘠的沙漠"], ans:1, exp:"比喻風景優美而人跡罕至的地方。" });
-            q.push({ q:"「別有洞天」的意思是？", opts:["指風景極為秀麗，引人入勝", "形容山洞深邃", "比喻避難的場所", "形容天氣變化多端"], ans:0, exp:"指另有一番極為秀麗的境界。" });
-            q.push({ q:"「福地洞天」本指什麼地方？", opts:["皇宮後花園", "神仙居住的地方", "古代的學校", "戰場"], ans:1, exp:"道教指神仙居所，後比喻名山勝境。" });
-            q.push({ q:"「彈指之間」的意思是？", opts:["手指受傷", "形容極短暫的時間", "形容音樂優美", "形容武功高強"], ans:1, exp:"彈指即一瞬間，形容時間極短。" });
-            q.push({ q:"「浮雲易散，朝露易乾。比喻人生的短促。」是指哪一個成語？", opts:["浮生瞬息", "電光石火", "浮雲朝露", "瞬息萬變"], ans:2, exp:"浮雲和朝露皆為易逝之物，比喻人生短暫。" });
-            q.push({ q:"「不消一刻」的「消」意思最接近？", opts:["消除", "需要、耗費", "消息", "消化"], ans:1, exp:"不消即不需要，連一刻鐘都不需要。" });
-            q.push({ q:"「浮生瞬息」中「浮生」的意思是？", opts:["游泳的技巧", "漂浮的生物", "人生虛浮無定", "水面上的泡沫"], ans:2, exp:"莊子云「其生若浮」，指人生虛浮而短暫。" });
-            q.push({ q:"「瞬息萬變」的同義詞是？", opts:["千變萬化", "瞬息千變", "電光石火", "浮雲朝露"], ans:1, exp:"瞬息千變與瞬息萬變完全同義。" });
-            q.push({ q:"「比喻轉瞬間即逝」是指哪一個成語？", opts:["電光石火", "暮色蒼茫", "交相輝映", "波光瀲豔"], ans:0, exp:"閃電與石頭撞擊的火花，極度短暫。" });
-            q.push({ q:"「夸父逐日」現今多比喻什麼？", opts:["堅持不懈必能成功", "不自量力，或有雄心壯志但未竟大業", "追求真理與光明", "跑步速度極快"], ans:1, exp:"可作貶義(不自量力)或褒義(壯志未酬)。" });
-            q.push({ q:"「荒誕不經」的「不經」意思是？", opts:["沒有經過", "不讀經典", "不合常理", "沒有經驗"], ans:2, exp:"不經即不合常道、不近情理。" });
-            q.push({ q:"「以管窺天」比喻什麼？", opts:["視力不好", "見識片面而狹窄", "做事專心致志", "發明望遠鏡"], ans:1, exp:"透過細管看天，可見範圍極小，諷刺見識狹隘。" });
-            q.push({ q:"「形容講述或描摹事物，十分深刻入微、生動逼真」是指？", opts:["繪聲繪影", "美不勝收", "尋幽訪勝", "掩映生姿"], ans:0, exp:"將聲音與形影都描繪出來，極其逼真。" });
-            q.push({ q:"「一償宿願」的「宿」字義為何？", opts:["住夜", "星宿", "前世的", "平常，向來的"], ans:3, exp:"宿(ㄙㄨˋ)願指平常、舊有的願望。" });
+            // --- 【五】成語加油站 (20題) ---
+            q.push({ q:"下列哪一個成語用來比喻「見識膚淺空泛，不著邊際」或「世事稍縱即逝」？", opts:["交相輝映", "暮色蒼茫", "浮光掠影", "波光瀲豔"], ans:2, exp:"【解析】浮光掠影：水面上的反光和一閃而過的影子。比喻觀察不細緻，見識膚淺；也比喻世事稍縱即逝。" });
+            q.push({ q:"「波光瀲豔」的「瀲豔」注音為何？", opts:["ㄌㄧㄢˇ ㄧㄢˋ", "ㄌㄧㄢˋ ㄧㄢˋ", "ㄌㄧㄢˊ ㄧㄢˋ", "ㄌㄧㄢˋ ㄧㄢˇ"], ans:1, exp:"【解析】瀲豔皆為第四聲(ㄌㄧㄢˋ ㄧㄢˋ)，形容波光閃閃爍爍映照的樣子。" });
+            q.push({ q:"「光線把四周景物照耀得如同白天一樣明亮」是指哪一個成語？", opts:["掩映生姿", "交相輝映", "光芒萬丈", "照如白晝"], ans:3, exp:"【解析】照如白晝：形容光線極度明亮，夜晚宛如白天。" });
+            q.push({ q:"下列哪一個成語除了形容光輝燦爛照耀遠方，還可比喻「氣勢雄厚」？", opts:["忽明忽滅", "交相輝映", "光芒萬丈", "若隱若現"], ans:2, exp:"【解析】光芒萬丈(或光焰萬丈)：比喻文章成就極高或氣勢雄厚。" });
+            q.push({ q:"「形容美好的事物非常多，無法一一收受」是指哪一個成語？", opts:["美不勝收", "尋幽訪勝", "風光旖旎", "別有洞天"], ans:0, exp:"【解析】勝，有「盡」的意思。美不勝收即美景太多，看都看不完。" });
+            q.push({ q:"「風光旖旎」的「旖旎」注音為何？", opts:["ㄑㄧˊ ㄋㄧˇ", "ㄧˇ ㄋㄧˇ", "ㄧˊ ㄋㄧˇ", "ㄑㄧˊ ㄋㄧˊ"], ans:1, exp:"【解析】旖旎(ㄧˇ ㄋㄧˇ)，形容景色柔和美好的樣子。" });
+            q.push({ q:"「世外桃源」除了稱避世隱居的地方外，還常比喻什麼？", opts:["神仙居住的地方", "風景優美而人跡罕至的地方", "繁華喧鬧的都市", "荒涼貧瘠的沙漠"], ans:1, exp:"【解析】源自陶淵明桃花源記，現今多比喻風景優美而人跡罕至的地方。" });
+            q.push({ q:"「別有洞天」的意思是？", opts:["指風景極為秀麗，引人入勝", "形容山洞深邃", "比喻避難的場所", "形容天氣變化多端"], ans:0, exp:"【解析】洞天原為道教仙境，後指另有一番極為秀麗的境界，引人入勝。" });
+            q.push({ q:"「福地洞天」本指神仙居住的地方，現在常被用來比喻什麼？", opts:["皇宮後花園", "名山勝境", "古代的學校", "古戰場遺址"], ans:1, exp:"【解析】道教稱神仙居所為洞天福地，現多比喻名山勝境。" });
+            q.push({ q:"「連一刻鐘都不需要，即一下子」是指哪一個成語？", opts:["彈指之間", "一時半刻", "不消一刻", "電光石火"], ans:2, exp:"【解析】消有「需要、耗費」之意。不消一刻即連一刻都不需要，形容時間極短。" });
+            q.push({ q:"「浮雲易散，朝露易乾。比喻人生的短促。」是指哪一個成語？", opts:["浮生瞬息", "電光石火", "浮雲朝露", "瞬息萬變"], ans:2, exp:"【解析】浮雲和朝露皆為自然界中極易消散之物，常被古人借來比喻人生短暫。" });
+            q.push({ q:"「浮生瞬息」中「浮生」的意思是？", opts:["游泳的技巧", "漂浮的生物", "人生虛浮無定", "水面上的泡沫"], ans:2, exp:"【解析】莊子云「其生若浮」，浮生指人生虛浮無定；瞬息指時間極短暫。" });
+            q.push({ q:"下列哪一個成語與「瞬息萬變」意義最相近？", opts:["千變萬化", "瞬息千變", "電光石火", "浮雲朝露"], ans:1, exp:"【解析】瞬息千變與瞬息萬變完全同義，皆強調極短時間內變化迅速。" });
+            q.push({ q:"「比喻轉瞬間即逝」是指哪一個成語？", opts:["電光石火", "暮色蒼茫", "交相輝映", "波光瀲豔"], ans:0, exp:"【解析】閃電與石頭撞擊產生的火花，皆是極度短暫的現象，比喻轉瞬間即逝。" });
+            q.push({ q:"「夸父逐日」現今多用來比喻什麼？", opts:["堅持不懈必能成功", "不自量力，或有雄心壯志但未竟大業", "追求真理與光明", "跑步速度極快"], ans:1, exp:"【解析】夸父逐日可作貶義(嘲諷人不自量力)或褒義(有雄心壯志但壯志未酬)。" });
+            q.push({ q:"「荒誕不經」的「不經」意思是？", opts:["沒有經過", "不讀經典", "不合常理", "沒有經驗"], ans:2, exp:"【解析】荒唐虛妄，不合常道、不近情理，稱為荒誕不經。" });
+            q.push({ q:"「以管窺天」比喻什麼？", opts:["視力不好", "見識片面而狹窄", "做事專心致志", "發明望遠鏡"], ans:1, exp:"【解析】透過細小的竹管看天，可見範圍極小，以此諷刺人見識狹隘。" });
+            q.push({ q:"「形容講述或描摹事物，十分深刻入微、生動逼真」是指哪一個成語？", opts:["繪聲繪影", "美不勝收", "尋幽訪勝", "掩映生姿"], ans:0, exp:"【解析】把聲音與形影都描繪出來，形容極其逼真，讓人彷彿身歷其境。" });
+            q.push({ q:"「一償宿願」的「宿」字義為何？", opts:["住夜", "星宿", "前世的", "平常，向來的"], ans:3, exp:"【解析】宿(ㄙㄨˋ)作形容詞，有舊有、由來已久的意思。宿願指平常、向來抱持的願望。" });
+            q.push({ q:"下列成語何者「不是」用來形容時間短暫？", opts:["彈指之間", "一時半刻", "掩映生姿", "電光石火"], ans:2, exp:"【解析】掩映生姿是用來形容光影互相映照，景物因而更顯美好的空間視覺成語。" });
 
-            // 陸游 (Q96-Q110)
-            q.push({ q:"徐志摩引用的「傳呼快馬迎新月，卻上輕輿趁晚涼」是誰的詩句？", opts:["蘇軾", "陸游", "李白", "辛棄疾"], ans:1, exp:"此為南宋詩人陸游的詩句。" });
-            q.push({ q:"徐志摩說「這是做地方官的風流」，當時陸游任職什麼官位？", opts:["杭州知州", "夔州通判", "開封府尹", "宰相"], ans:1, exp:"此詩作於陸游任職夔州通判時。" });
-            q.push({ q:"陸游是南宋最傑出的詩人，他一生的作品最大特色為何？", opts:["始終流露對家國的熱愛及恢復中原之志", "專寫男女情愛與婉約詞", "專注於山水田園的隱逸之情", "批判佛教與道教"], ans:0, exp:"陸游被譽為愛國詩人，一生致力於恢復中原之志。" });
-            q.push({ q:"梁啟超有詩云：「集中什九從軍樂，亙古男兒一放翁。」此處的「放翁」是指誰？", opts:["蘇軾", "王安石", "陸游", "岳飛"], ans:2, exp:"陸游字務觀，號放翁。" });
-            q.push({ q:"在《十一月四日風雨大作》中，「僵臥孤村不自哀」的下一句為何？", opts:["鐵馬冰河入夢來", "尚思為國戍輪臺", "夜闌臥聽風吹雨", "但悲不見九州同"], ans:1, exp:"原詩：僵臥孤村不自哀，尚思為國戍輪臺。" });
-            q.push({ q:"「夜闌臥聽風吹雨，鐵馬冰河入夢來」中的「鐵馬冰河」象徵什麼？", opts:["寒冷的冬天", "夢中的奇幻生物", "跨過冰封的河流出征北方疆場", "過去的痛苦回憶"], ans:2, exp:"象徵詩人心中渴望披甲上陣、收復失土的戰場情境。" });
-            q.push({ q:"《示兒》詩中「王師北定中原日」的下一句是？", opts:["死去原知萬事空", "家祭毋忘告乃翁", "但悲不見九州同", "鐵馬冰河入夢來"], ans:1, exp:"原詩：王師北定中原日，家祭毋忘告乃翁。" });
-            q.push({ q:"《示兒》一詩表達了詩人死前最大的遺憾是什麼？", opts:["沒有留下財產給子孫", "沒看見國家統一(不見九州同)", "沒寫出滿意的詩作", "沒有做到高官"], ans:1, exp:"「但悲不見九州同」，遺憾國家尚未統一。" });
-            q.push({ q:"《遊山西村》中，「山重水複疑無路，柳暗花明又一村」常被用來比喻什麼哲理？", opts:["迷路時不要慌張", "遇到絕境時，若能堅持往往會出現新的轉機", "春天開花的美景", "農村的道路很複雜"], ans:1, exp:"此句以景寓理，比喻在困境中常會出現希望與轉機。" });
-            q.push({ q:"《遊山西村》中，農家用什麼來招待客人？", opts:["清茶與白飯", "臘酒與雞豚", "山珍與海味", "野菜與豆腐"], ans:1, exp:"「莫笑農家臘酒渾，豐年留客足雞豚」。" });
-            q.push({ q:"「簫鼓追隨春社近」中的「春社」是指什麼節日？", opts:["春節新年", "清明節", "祭祀土神以祈農事豐收之日", "端午節"], ans:2, exp:"春社是古代祭祀土地神以祈求豐收的日子。" });
-            q.push({ q:"《遊山西村》最後兩句「從今若許閒乘月，拄杖無時夜扣門」表達了詩人何種心境？", opts:["害怕夜晚出門", "對農村熱情與淳樸古風的喜愛與嚮往", "抱怨農家太晚睡", "想要去當和尚"], ans:1, exp:"表達若有空閒，很樂意隨時去拜訪淳樸的農村人家。" });
-            q.push({ q:"綜合而論，貫穿陸游文學作品的兩大思想是什麼？", opts:["愛國與愛民", "隱逸與修仙", "浪漫與虛無", "悲觀與厭世"], ans:0, exp:"愛國思想(如示兒)與愛民思想(如遊山西村)貫穿其作品。" });
-            q.push({ q:"陸游現存詩作大約有多少首？", opts:["三百多首", "九千三百多首", "一萬五千多首", "五十多首"], ans:1, exp:"陸游是南宋最多產的詩人，現存九千三百多首。" });
-            q.push({ q:"陸游是哪個朝代的詩人？", opts:["唐朝", "北宋", "南宋", "明朝"], ans:2, exp:"生於北宋末，主要活躍並影響深遠於南宋。" });
-
-            // 類文選讀：《再別康橋》與《偶然》 (Q111-Q120)
-            q.push({ q:"《再別康橋》第一節連用了三個什麼詞，營造出如清風般悄無聲息的意境？", opts:["悄悄的", "默默的", "輕輕的", "淡淡的"], ans:2, exp:"「輕輕的我走了...正如我輕輕的來...我輕輕的招手」。" });
-            q.push({ q:"在《再別康橋》中，詩人將「河畔的金柳」大膽比喻為什麼？", opts:["天上的彩虹", "夕陽中的新娘", "水底的青荇", "天上星輝"], ans:1, exp:"「那河畔的金柳，是夕陽中的新娘」。" });
-            q.push({ q:"「在康河的柔波裡，我甘心做一條水草！」展現了詩人何種境界？", opts:["對植物學的熱愛", "想在河裡游泳的衝動", "意亂情迷、物我兩忘的主客觀合一", "感嘆人生不如水草自由"], ans:2, exp:"強烈的愛戀使他如莊周夢蝶般，甘心化作物體(水草)，物我合一。" });
-            q.push({ q:"《再別康橋》第五、六節將全詩推向高潮，詩人想要「放歌」，但最後為何「不能放歌」？", opts:["因為嗓子痛", "因為康橋禁止大聲喧嘩", "因為離別的哀愁(悄悄是別離的笙簫)", "因為夏蟲太吵了"], ans:2, exp:"「但我不能放歌，悄悄是別離的笙簫」，離愁使他選擇沉默。" });
-            q.push({ q:"《再別康橋》最後一節以什麼動作作結，展現瀟灑的「詩化人生」？", opts:["痛哭流涕", "揮一揮衣袖，不帶走一片雲彩", "撐一支長篙", "揉碎在浮藻間"], ans:1, exp:"瀟灑地來，瀟灑地走，不帶走一片雲彩。" });
-            q.push({ q:"聞一多提倡現代詩歌的「三美」，《再別康橋》具備了這三美，是哪三美？", opts:["音樂美、繪畫美、建築美", "節奏美、色彩美、結構美", "自然美、人文美、藝術美", "抒情美、記敘美、議論美"], ans:0, exp:"音樂美(音韻)、繪畫美(辭藻色彩)、建築美(節次排列)。" });
-            q.push({ q:"《偶然》一詩中，「我是天空裡的一片雲，偶爾投影在你的波心」這兩句表達了什麼人生觀？", opts:["命中注定，不可強求", "聚散無常，緣起緣滅的灑脫", "人定勝天，努力追求", "對愛情的執著與痛苦"], ans:1, exp:"追求瀟灑自如的人生，無須執著於短暫的情緣。" });
-            q.push({ q:"《偶然》中，詩人把人生比作什麼？", opts:["天空裡的雲", "黑夜的海", "交會的光亮", "清澈的波心"], ans:1, exp:"「你我相逢在黑夜的海上」，將人生比作黑夜的海。" });
-            q.push({ q:"《偶然》這首詩傳承了道家思想的什麼氣質？", opts:["兼愛非攻", "克己復禮", "順任自然", "民貴君輕"], ans:2, exp:"追求自由，傳承了道家「順任自然」的氣質。" });
-            q.push({ q:"《偶然》的格律安排有何特色？", opts:["字數完全一致的豆腐乾體", "全詩沒有押韻", "上下節格律對稱，長短音步相間，委婉頓挫", "使用大量的文言文與典故"], ans:2, exp:"上下節對稱，三音步與兩音步相間，讀來紓徐從容。" });
+            // --- 【六】陸游與類文選讀 (20題) ---
+            q.push({ q:"徐志摩引用的「傳呼快馬迎新月，卻上輕輿趁晚涼」是誰的詩句？", opts:["蘇軾", "陸游", "李白", "辛棄疾"], ans:1, exp:"【解析】講義指出，此為南宋詩人陸游《醉中到白崖而歸》的詩句。" });
+            q.push({ q:"徐志摩說「這是做地方官的風流」，請問當時陸游任職什麼官位？", opts:["杭州知州", "夔州通判", "開封府尹", "當朝宰相"], ans:1, exp:"【解析】講義提及，此詩作於陸游任職夔州通判時。" });
+            q.push({ q:"陸游是南宋最傑出的詩人，他一生的作品最大特色為何？", opts:["始終流露對家國的熱愛及恢復中原之志", "專寫男女情愛與婉約詞", "專注於山水田園的隱逸之情", "致力於批判佛教與道教"], ans:0, exp:"【解析】陸游被譽為「愛國詩人」，始終如一地流露出對家國的熱愛及恢復中原之志。" });
+            q.push({ q:"梁啟超有詩云：「集中什九從軍樂，亙古男兒一放翁。」此處的「放翁」是指誰？", opts:["蘇軾", "王安石", "陸游", "岳飛"], ans:2, exp:"【解析】陸游，字務觀，自號「放翁」。" });
+            q.push({ q:"在《十一月四日風雨大作》中，「僵臥孤村不自哀」的下一句為何？", opts:["鐵馬冰河入夢來", "尚思為國戍輪臺", "夜闌臥聽風吹雨", "但悲不見九州同"], ans:1, exp:"【解析】原詩：僵臥孤村不自哀，尚思為國戍輪臺。夜闌臥聽風吹雨，鐵馬冰河入夢來。" });
+            q.push({ q:"「夜闌臥聽風吹雨，鐵馬冰河入夢來」中的「鐵馬冰河」象徵什麼？", opts:["寒冷的冬天", "夢中的奇幻生物", "跨過冰封的河流出征北方疆場", "過去的痛苦回憶"], ans:2, exp:"【解析】象徵詩人心中渴望披甲上陣、騎著戰馬跨過冰河，收復北方失土的戰場情境。" });
+            q.push({ q:"《示兒》詩中「王師北定中原日」的下一句是？", opts:["死去原知萬事空", "家祭毋忘告乃翁", "但悲不見九州同", "鐵馬冰河入夢來"], ans:1, exp:"【解析】原詩：死去原知萬事空，但悲不見九州同。王師北定中原日，家祭毋忘告乃翁。" });
+            q.push({ q:"《示兒》一詩表達了詩人死前最大的遺憾是什麼？", opts:["沒有留下財產給子孫", "沒看見國家統一(不見九州同)", "沒寫出滿意的詩作", "沒有做到朝廷高官"], ans:1, exp:"【解析】「但悲不見九州同」，遺憾國家尚未統一，叮囑兒子收復失土時要在祭祀時告訴他。" });
+            q.push({ q:"《遊山西村》中，「山重水複疑無路，柳暗花明又一村」常被用來比喻什麼哲理？", opts:["迷路時不要慌張", "遇到絕境時，若能堅持往往會出現新的轉機", "春天開花的美景", "農村的道路很複雜"], ans:1, exp:"【解析】此兩句以景寓理，千古傳誦，比喻在看似無望的困境中，常會出現希望與轉機。" });
+            q.push({ q:"《遊山西村》中，農家用什麼來招待客人？", opts:["清茶與白飯", "臘酒與雞豚", "山珍與海味", "野菜與豆腐"], ans:1, exp:"【解析】「莫笑農家臘酒渾，豐年留客足雞豚」，用臘酒(春酒)與雞豚(豐盛佳餚)待客。" });
+            q.push({ q:"「簫鼓追隨春社近」中的「春社」是指什麼？", opts:["春節新年", "清明節", "祭祀土神以祈農事豐收之日", "端午節"], ans:2, exp:"【解析】春社是古代農村祭祀土地神以祈求豐收的日子，充滿熱鬧的節日氣氛。" });
+            q.push({ q:"《遊山西村》最後兩句「從今若許閒乘月，拄杖無時夜扣門」表達了詩人何種心境？", opts:["害怕夜晚出門", "對農村熱情與淳樸古風的喜愛與嚮往", "抱怨農家太晚睡", "想要去當和尚隱居"], ans:1, exp:"【解析】表達若有空閒，很樂意隨時趁月色去拜訪淳樸的農村人家，顯現對農民的熱愛。" });
+            q.push({ q:"綜合而論，貫穿陸游文學作品的兩大核心思想是什麼？", opts:["愛國與愛民", "隱逸與修仙", "浪漫與虛無", "悲觀與厭世"], ans:0, exp:"【解析】講義總結：愛國(如示兒)與愛民(如遊山西村)的思想貫穿了陸游的文學作品。" });
+            q.push({ q:"陸游是哪個朝代的詩人，且現存詩作大約有多少首？", opts:["北宋 / 三百多首", "南宋 / 九千三百多首", "明朝 / 一萬五千多首", "清朝 / 五十多首"], ans:1, exp:"【解析】陸游生於北宋末，主要活躍於南宋，是南宋最傑出的詩人，現存詩作九千三百多首。" });
+            q.push({ q:"徐志摩在《再別康橋》第一節連用了三個什麼詞，營造出如清風般悄無聲息的意境？", opts:["悄悄的", "默默的", "輕輕的", "淡淡的"], ans:2, exp:"【解析】「輕輕的我走了...正如我輕輕的來...我輕輕的招手」。表現得十分真摯且不帶走一絲聲響。" });
+            q.push({ q:"在《再別康橋》中，詩人將「河畔的金柳」大膽比喻為什麼？", opts:["天上的彩虹", "夕陽中的新娘", "水底的青荇", "天上星輝"], ans:1, exp:"【解析】「那河畔的金柳，是夕陽中的新娘」，使無生命的景語化作有生命的活物，溫潤可人。" });
+            q.push({ q:"「在康河的柔波裡，我甘心做一條水草！」這展現了詩人何種境界？", opts:["對植物學的熱愛", "想在河裡游泳的衝動", "意亂情迷、物我兩忘的主客觀合一", "感嘆人生不如水草自由"], ans:2, exp:"【解析】強烈的愛戀使他如莊周夢蝶般，甘心化作物體(水草)，達到主客觀合一、物我兩忘的境界。" });
+            q.push({ q:"《再別康橋》第五、六節詩人想要「放歌」，但最後為何「不能放歌」？", opts:["因為嗓子痛", "因為康橋禁止大聲喧嘩", "因為離別的哀愁(悄悄是別離的笙簫)", "因為夏蟲太吵了"], ans:2, exp:"【解析】「但我不能放歌，悄悄是別離的笙簫」，深沉的離愁使他選擇沉默，此時無聲勝有聲。" });
+            q.push({ q:"聞一多提倡現代詩歌的「三美」，《再別康橋》具備了這三美，是哪三美？", opts:["音樂美、繪畫美、建築美", "節奏美、色彩美、結構美", "自然美、人文美、藝術美", "抒情美、記敘美、議論美"], ans:0, exp:"【解析】音樂美(音韻疊句)、繪畫美(辭藻色彩如金柳青荇)、建築美(節次排列對稱)。" });
+            q.push({ q:"《偶然》一詩中「我是天空裡的一片雲...」傳承了道家思想的什麼氣質？", opts:["兼愛非攻", "克己復禮", "順任自然", "民貴君輕"], ans:2, exp:"【解析】講義賞析指出：追求自由，本是徐志摩特有的氣質，這分氣質即傳承道家思想的「順任自然」，聚散無常，緣起緣滅不須強求。" });
 
             return q;
         };
@@ -868,7 +866,7 @@
                 } catch(e) { console.error("Load Data Error", e); }
             } else {
                 try {
-                    const localData = localStorage.getItem(`cambridge_${username}_data_exam_L4`);
+                    const localData = localStorage.getItem(`cambridge_${username}_data_exam_L4_v2`);
                     if (localData) {
                         const d = JSON.parse(localData);
                         if(d.favorites) userData.favorites = d.favorites;
@@ -878,7 +876,7 @@
             }
             
             try {
-                const localQuiz = localStorage.getItem(`cambridge_${username}_quiz_exam_L4`);
+                const localQuiz = localStorage.getItem(`cambridge_${username}_quiz_exam_L4_v2`);
                 if (localQuiz) {
                     const q = JSON.parse(localQuiz);
                     if (q && q.active) {
@@ -891,7 +889,7 @@
         const saveUserData = async () => {
             try {
                 if (username) {
-                    localStorage.setItem(`cambridge_${username}_data_exam_L4`, JSON.stringify(userData));
+                    localStorage.setItem(`cambridge_${username}_data_exam_L4_v2`, JSON.stringify(userData));
                 }
             } catch(e) {}
 
@@ -904,7 +902,7 @@
 
         const saveQuizState = () => {
             try {
-                if(username) localStorage.setItem(`cambridge_${username}_quiz_exam_L4`, JSON.stringify(quizState));
+                if(username) localStorage.setItem(`cambridge_${username}_quiz_exam_L4_v2`, JSON.stringify(quizState));
             } catch(e) {}
         };
 
@@ -1133,7 +1131,7 @@
 
         window.selectLearnTab = (id) => {
             learnSubTab = id;
-            renderLearnView(el('main-content')); // 重新渲染以套用對應的頂部主題色
+            renderLearnView(el('main-content')); 
             toggleLearnMenu(false);
         };
 
