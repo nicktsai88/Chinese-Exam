@@ -984,7 +984,11 @@
             const total = quizState.questions.length;
             
             let html = `<div class="w-full flex-1 p-4 md:p-10 overflow-y-auto pb-24 relative">
-                <div class="max-w-5xl mx-auto space-y-8 mt-4">
+                <div class="max-w-5xl mx-auto mt-4 mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center border-b-4 border-orange-200 pb-4 gap-4">
+                    <h2 class="text-3xl font-bold text-orange-800"><i class="fas fa-pen-fancy mr-3"></i>測驗進行中</h2>
+                    <button onclick="clearQuizHistory()" class="text-lg text-red-500 hover:text-red-700 font-bold underline transition shrink-0"><i class="fas fa-trash-alt mr-1"></i>清除作答紀錄</button>
+                </div>
+                <div class="max-w-5xl mx-auto space-y-8">
             `;
 
             // 渲染所有題目的卡片容器
@@ -1111,6 +1115,25 @@
             
             updateQuizProgress();
             saveQuizState(); // 每答一題就自動備份至 LocalStorage
+        };
+
+        window.clearQuizHistory = () => {
+            if (confirm("警告：確定要清除目前的測驗作答紀錄嗎？\n此動作將無法復原！")) {
+                if (confirm("【雙重確認】\n真的要清除所有作答進度並重新開始嗎？")) {
+                    quizState.active = false;
+                    saveQuizState(); // active 設為 false 時會自動觸發清除 LocalStorage
+                    
+                    // 隱藏導覽列測驗統計
+                    const statsEl = el('nav-quiz-stats');
+                    if (statsEl) {
+                        statsEl.classList.add('hidden');
+                        statsEl.classList.remove('flex');
+                    }
+                    
+                    // 返回測驗首頁狀態
+                    renderQuizView(el('main-content'));
+                }
+            }
         };
 
         window.updateQuizProgress = () => {
@@ -1245,10 +1268,12 @@
         };
 
         window.clearMistakes = () => {
-            if(confirm('確定要清空所有錯題紀錄嗎？')) {
-                userData.mistakes = [];
-                saveUserData();
-                renderMistakes();
+            if(confirm('警告：確定要清空所有錯題紀錄嗎？\n此動作將無法復原！')) {
+                if(confirm('【雙重確認】\n真的要刪除好不容易累積的錯題本嗎？')) {
+                    userData.mistakes = [];
+                    saveUserData();
+                    renderMistakes();
+                }
             }
         };
 
