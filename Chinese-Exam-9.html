@@ -8,7 +8,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        /* 加大預設字體大小 */
         body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; background-color: #fcf9f2; color: #333; font-size: 1.125rem; line-height: 1.75; }
         .tab-btn.active { border-bottom: 2px solid #b45309; color: #b45309; font-weight: bold; }
         .bg-wood { background-color: #e5d3b3; }
@@ -16,7 +15,6 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* 雲端狀態燈號 CSS */
         .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; }
         .status-loading { background-color: #fbbf24; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         .status-success { background-color: #34d399; }
@@ -26,9 +24,9 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden">
+<body class="h-screen w-full flex flex-col overflow-hidden">
 
-    <div id="app" class="w-full h-full flex flex-col">
+    <div id="app" class="w-full h-full flex flex-col overflow-hidden">
         <!-- 內容將由 JS 動態渲染 -->
     </div>
 
@@ -36,13 +34,13 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, arrayUnion, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
         //  Firebase 設定與全域變數
         // ==========================================
         const firebaseConfig = {
-            apiKey: "AIzaSyAxQFt76ZPXE7d0i1XeNZ1yiiD2WYNIfHs", // 替換為真實 API Key
+            apiKey: "AIzaSyAxQFt76ZPXE7d0i1XeNZ1yiiD2WYNIfHs", 
             authDomain: "chinese-learning-47f4d.firebaseapp.com",
             projectId: "chinese-learning-47f4d",
             storageBucket: "chinese-learning-47f4d.firebasestorage.app",
@@ -85,8 +83,8 @@
         };
 
         const playCorrectSound = () => {
-            playTone(523.25, 'sine', 0.1); // C5 音
-            setTimeout(() => playTone(659.25, 'sine', 0.2), 100); // E5 音
+            playTone(523.25, 'sine', 0.1); 
+            setTimeout(() => playTone(659.25, 'sine', 0.2), 100); 
         };
 
         const playWrongSound = () => {
@@ -94,7 +92,6 @@
             setTimeout(() => playTone(200, 'sawtooth', 0.3), 150);
         };
 
-        // 嘗試初始化 Firebase
         try {
             const actualConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : firebaseConfig;
             
@@ -104,14 +101,11 @@
                 db = getFirestore(app);
                 isFirebaseInitialized = true;
                 connectionStatus = 'success';
-                console.log("Firebase 成功初始化");
             } else {
                 connectionStatus = 'error';
-                console.warn("Firebase 未設定正確 Key，目前為單機暫存模式 (重整後資料會消失)。");
             }
         } catch (error) {
             connectionStatus = 'error';
-            console.error("Firebase Init Error:", error);
         }
 
         const initAuth = async () => {
@@ -123,41 +117,40 @@
                     await signInAnonymously(auth);
                 }
             } catch (error) {
-                console.error("Auth Initialization Error:", error);
                 connectionStatus = 'error';
             }
         };
 
         // ==========================================
-        //  學習資料庫 (依照提供資料一字不漏建立)
+        //  學習資料庫
         // ==========================================
         const learnData = [
             {
                 id: 'sec1', title: '一、課文結構表',
                 content: `
                 <div class="space-y-6">
-                    <p class="font-bold text-xl md:text-2xl border-l-4 border-amber-600 pl-3">文體：記敘兼抒情文。文章出處：徐志摩全集。</p>
+                    <p class="font-bold text-xl md:text-2xl border-l-4 border-amber-600 pl-3 break-words">文體：記敘兼抒情文。文章出處：徐志摩全集。</p>
                     
-                    <div class="bg-white p-6 rounded shadow-sm text-lg md:text-xl border-l-8 border-amber-600">
-                        <h3 class="font-bold text-amber-800 text-2xl mb-3"><i class="fas fa-sun mr-2 text-amber-600"></i>擁抱初春的早晨</h3>
-                        <ul class="list-disc ml-8 space-y-2 text-gray-700">
+                    <div class="bg-white p-4 md:p-6 rounded shadow-sm text-lg md:text-xl border-l-8 border-amber-600 break-words">
+                        <h3 class="font-bold text-amber-800 text-xl md:text-2xl mb-3"><i class="fas fa-sun mr-2 text-amber-600"></i>擁抱初春的早晨</h3>
+                        <ul class="list-disc ml-6 md:ml-8 space-y-2 text-gray-700">
                             <li><span class="font-bold">平視(由近而遠)：</span>水溶溶的大道 → 林子小徑 → 平原、村舍 → 小山 → 近村的教寺。</li>
                             <li><span class="font-bold">俯瞰：</span>村舍、樹林。</li>
                             <li><span class="font-bold">仰望：</span>漸漸散去的朝霧、冉冉升起的炊煙。</li>
                         </ul>
                     </div>
                     
-                    <div class="bg-white p-6 rounded shadow-sm text-lg md:text-xl border-l-8 border-amber-600">
-                        <h3 class="font-bold text-amber-800 text-2xl mb-3"><i class="fas fa-seedling mr-2 text-amber-600"></i>探詢河上的春信</h3>
-                        <ul class="list-disc ml-8 space-y-2 text-gray-700">
+                    <div class="bg-white p-4 md:p-6 rounded shadow-sm text-lg md:text-xl border-l-8 border-amber-600 break-words">
+                        <h3 class="font-bold text-amber-800 text-xl md:text-2xl mb-3"><i class="fas fa-seedling mr-2 text-amber-600"></i>探詢河上的春信</h3>
+                        <ul class="list-disc ml-6 md:ml-8 space-y-2 text-gray-700">
                             <li><span class="font-bold">觀察：</span>難得一見的朝陽，小雪球、鈴蘭、香草、蓮馨、石水仙、克羅克斯、蒲公英、雛菊相繼綻放。</li>
                             <li><span class="font-bold">推論：</span>春光已爛漫在人間。</li>
                         </ul>
                     </div>
 
-                    <div class="bg-white p-6 rounded shadow-sm text-lg md:text-xl border-l-8 border-amber-600">
-                        <h3 class="font-bold text-amber-800 text-2xl mb-3"><i class="fas fa-bicycle mr-2 text-amber-600"></i>歌詠野遊的閒適</h3>
-                        <ul class="list-disc ml-8 space-y-2 text-gray-700">
+                    <div class="bg-white p-4 md:p-6 rounded shadow-sm text-lg md:text-xl border-l-8 border-amber-600 break-words">
+                        <h3 class="font-bold text-amber-800 text-xl md:text-2xl mb-3"><i class="fas fa-bicycle mr-2 text-amber-600"></i>歌詠野遊的閒適</h3>
+                        <ul class="list-disc ml-6 md:ml-8 space-y-2 text-gray-700">
                             <li><span class="font-bold">時間：</span>瑰麗的春假。</li>
                             <li><span class="font-bold">條件：</span>可愛的路政。</li>
                             <li><span class="font-bold">工具：</span>騎自行車。</li>
@@ -165,9 +158,9 @@
                         </ul>
                     </div>
                     
-                    <div class="bg-white p-6 rounded shadow-sm text-lg md:text-xl border-l-8 border-amber-600">
-                        <h3 class="font-bold text-amber-800 text-2xl mb-3"><i class="fas fa-cloud-sun mr-2 text-amber-600"></i>描繪瑰麗的暮色</h3>
-                        <ul class="list-disc ml-8 space-y-2 text-gray-700">
+                    <div class="bg-white p-4 md:p-6 rounded shadow-sm text-lg md:text-xl border-l-8 border-amber-600 break-words">
+                        <h3 class="font-bold text-amber-800 text-xl md:text-2xl mb-3"><i class="fas fa-cloud-sun mr-2 text-amber-600"></i>描繪瑰麗的暮色</h3>
+                        <ul class="list-disc ml-6 md:ml-8 space-y-2 text-gray-700">
                             <li>由騎車逐日的過程，陳述自己的視覺美感經驗。</li>
                             <li>藉在漸隱的金光中，感應到宇宙偉大、神祕的力量，抒寫一己靈魂的悸動。</li>
                             <li>由草田中豔紅罌粟的搖曳，帶給他迷眩的心理作用，描摹充滿神異且無以名之的感受。</li>
@@ -179,7 +172,7 @@
                 id: 'sec2', title: '二、形音義辨析',
                 content: `
                 <div class="space-y-6 text-lg md:text-xl">
-                    <p class="text-gray-600 mb-4"><i class="fas fa-info-circle mr-2 text-amber-700"></i>針對本課重要形似字、多音字進行辨析：</p>
+                    <p class="text-gray-600 mb-4 break-words"><i class="fas fa-info-circle mr-2 text-amber-700"></i>針對本課重要形似字、多音字進行辨析：</p>
                     
                     ${[
                         [
@@ -190,7 +183,7 @@
                         ],
                         [
                             { w: "粟", p: "ㄙㄨˋ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 穀物的總稱。如：滄海一粟。" },
-                            { w: "栗", p: "ㄌㄧˋ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 植物名。栗樹的果實。如：火中取栗。<br><br><span class='text-gray-500 text-base'>(※火中取栗：法國詩人拉·封登所著猴子與貓的寓言故事。敘述一隻狡猾的猴子騙貓從火中取栗子，結果貓爪上的毛被火燒掉，而栗子卻全被猴子吃了。後比喻為他人冒險出力，自己卻一無所獲。)</span>" }
+                            { w: "栗", p: "ㄌㄧˋ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 植物名。栗樹的果實。如：火中取栗。<br><br><span class='text-gray-500 text-base whitespace-normal'>(※火中取栗：法國詩人拉·封登所著猴子與貓的寓言故事。敘述一隻狡猾的猴子騙貓從火中取栗子，結果貓爪上的毛被火燒掉，而栗子卻全被猴子吃了。後比喻為他人冒險出力，自己卻一無所獲。)</span>" }
                         ],
                         [
                             { w: "徒", p: "ㄊㄨˊ", d: "<span class='text-amber-800 font-semibold'>[動]</span> 步行。如：徒步旅行。<br><span class='text-amber-800 font-semibold'>[副]</span> 白白地、平白。如：徒費脣舌、徒勞無功。<br><span class='text-amber-800 font-semibold'>[副]</span> 僅、只。如：徒有虛名。" }
@@ -210,10 +203,10 @@
                             { w: "髯", p: "ㄖㄢˊ", d: "<span class='text-amber-800 font-semibold'>[名]</span> 兩頰上的鬍鬚。如：鬚髯。" }
                         ]
                     ].map(group => `
-                        <div class="overflow-hidden bg-white border-2 border-amber-200 rounded-xl shadow-sm mb-6">
-                            <table class="min-w-full">
+                        <div class="overflow-x-auto w-full bg-white border-2 border-amber-200 rounded-xl shadow-sm mb-6">
+                            <table class="min-w-[600px] md:min-w-full w-full">
                                 <thead>
-                                    <tr class="bg-amber-100 text-amber-900 border-b-2 border-amber-200 text-xl">
+                                    <tr class="bg-amber-100 text-amber-900 border-b-2 border-amber-200 text-xl whitespace-nowrap">
                                         <th class="py-3 px-4 w-1/6 text-center font-bold">字</th>
                                         <th class="py-3 px-4 w-1/6 text-center font-bold">注音</th>
                                         <th class="py-3 px-6 w-1/2 text-left font-bold">釋義與例詞</th>
@@ -223,10 +216,10 @@
                                 <tbody>
                                     ${group.map((item, idx) => `
                                         <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-amber-50 transition-colors border-b border-gray-100 last:border-0">
-                                            <td class="py-4 px-4 text-center font-bold text-3xl text-gray-800">${item.w}</td>
-                                            <td class="py-4 px-4 text-center font-bold text-amber-700 text-2xl">${item.p}</td>
-                                            <td class="py-4 px-6 text-left leading-relaxed text-gray-700">${item.d}</td>
-                                            <td class="py-4 px-4 text-center">
+                                            <td class="py-4 px-4 text-center font-bold text-3xl text-gray-800 whitespace-nowrap">${item.w}</td>
+                                            <td class="py-4 px-4 text-center font-bold text-amber-700 text-2xl whitespace-nowrap">${item.p}</td>
+                                            <td class="py-4 px-6 text-left leading-relaxed text-gray-700 md:whitespace-normal break-words">${item.d}</td>
+                                            <td class="py-4 px-4 text-center whitespace-nowrap">
                                                 <button onclick="toggleFavorite('${item.w}')" class="text-gray-300 hover:text-red-500 fav-btn text-3xl transition-transform hover:scale-110" data-id="${item.w}"><i class="fas fa-heart"></i></button>
                                             </td>
                                         </tr>
@@ -236,26 +229,26 @@
                         </div>
                     `).join('')}
 
-                    <div class="bg-amber-50 p-6 rounded-xl border-2 border-amber-200 mt-8 shadow-sm">
-                        <h4 class="font-bold text-amber-900 text-2xl mb-4 flex items-center"><i class="fas fa-exclamation-circle mr-3 text-amber-700"></i>多音字 / 形近字比較：</h4>
-                        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-800">
-                            <li class="bg-white p-4 rounded shadow-sm border border-amber-100">
+                    <div class="bg-amber-50 p-4 md:p-6 rounded-xl border-2 border-amber-200 mt-8 shadow-sm">
+                        <h4 class="font-bold text-amber-900 text-xl md:text-2xl mb-4 flex items-center break-words"><i class="fas fa-exclamation-circle mr-3 text-amber-700"></i>多音字 / 形近字比較：</h4>
+                        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 text-gray-800">
+                            <li class="bg-white p-4 rounded shadow-sm border border-amber-100 break-words">
                                 <span class="font-bold text-xl text-amber-800">【卷】</span><br>
                                 一「卷」書：<span class="text-amber-600 font-bold">ㄐㄩㄢˋ</span><br>
                                 一頭「卷」髮：<span class="text-amber-600 font-bold">ㄑㄩㄢˊ</span><br>
                                 一「卷」海報紙：<span class="text-amber-600 font-bold">ㄐㄩㄢˇ</span>
                             </li>
-                            <li class="bg-white p-4 rounded shadow-sm border border-amber-100">
+                            <li class="bg-white p-4 rounded shadow-sm border border-amber-100 break-words">
                                 <span class="font-bold text-xl text-amber-800">【供】</span><br>
                                 供 <span class="text-amber-600 font-bold">ㄍㄨㄥˋ</span>：供桌、供養、供品、供職。<br>
                                 供 <span class="text-amber-600 font-bold">ㄍㄨㄥ</span>：供應、供給、供認、口供。
                             </li>
-                            <li class="bg-white p-4 rounded shadow-sm border border-amber-100">
+                            <li class="bg-white p-4 rounded shadow-sm border border-amber-100 break-words">
                                 <span class="font-bold text-xl text-amber-800">【伺】</span><br>
                                 伺 <span class="text-amber-600 font-bold">ㄙˋ</span>：[動] 暗中偵察。如：暗中窺伺、伺機而動(等候適當的時機再行動)。<br>
                                 伺 <span class="text-amber-600 font-bold">ㄘˋ</span>：[動] 侍奉、服侍。如：伺候父母。
                             </li>
-                            <li class="bg-white p-4 rounded shadow-sm border border-amber-100">
+                            <li class="bg-white p-4 rounded shadow-sm border border-amber-100 break-words">
                                 <span class="font-bold text-xl text-amber-800">【形近字比較】</span><br>
                                 布「幕」 ／ 羨「慕」 ／ 「募」款<br>
                                 不幸「罹」難 ／ 「罹」患疾病<br>
@@ -269,7 +262,6 @@
                 id: 'sec3', title: '三、成語加油站',
                 content: `
                 <div class="space-y-8 text-lg md:text-xl">
-                    <!-- 類別一 -->
                     <div>
                         <h3 class="font-bold text-xl md:text-2xl text-amber-800 border-b-2 border-amber-200 mb-4 pb-2"><i class="fas fa-lightbulb mr-2"></i>(一) 與「光影變化」有關的成語</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -283,15 +275,14 @@
                                 "波光瀲豔：波光閃閃爍爍。瀲豔，音 ㄌㄧㄢˋ ㄧㄢˋ，波光映照。",
                                 "掩映生姿：光影互相映照，景物因而更顯美好。"
                             ].map(item => `
-                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-amber-500 flex justify-between items-start relative hover:shadow-md transition">
-                                    <div><span class="font-bold text-amber-700 text-2xl">${item.split('：')[0]}</span><br><span class="text-gray-700 mt-2 block">${item.split('：')[1]}</span></div>
-                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl ml-2 shrink-0" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-amber-500 flex justify-between items-start relative hover:shadow-md transition break-words">
+                                    <div class="flex-1 min-w-0 pr-2"><span class="font-bold text-amber-700 text-xl md:text-2xl">${item.split('：')[0]}</span><br><span class="text-gray-700 mt-2 block whitespace-normal">${item.split('：')[1]}</span></div>
+                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl shrink-0" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
                     
-                    <!-- 類別二 -->
                     <div>
                         <h3 class="font-bold text-xl md:text-2xl text-amber-800 border-b-2 border-amber-200 mb-4 pb-2"><i class="fas fa-mountain mr-2"></i>(二) 與「形容美好風光」有關的成語</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -304,15 +295,14 @@
                                 "別有洞天：指風景極為秀麗，引人入勝。",
                                 "福地洞天：本指神仙居住的地方。比喻名山勝境。亦作「洞天福地」。"
                             ].map(item => `
-                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-orange-400 flex justify-between items-start hover:shadow-md transition">
-                                    <div><span class="font-bold text-orange-700 text-2xl">${item.split('：')[0]}</span><br><span class="text-gray-700 mt-2 block">${item.split('：')[1]}</span></div>
-                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl ml-2 shrink-0" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-orange-400 flex justify-between items-start hover:shadow-md transition break-words">
+                                    <div class="flex-1 min-w-0 pr-2"><span class="font-bold text-orange-700 text-xl md:text-2xl">${item.split('：')[0]}</span><br><span class="text-gray-700 mt-2 block whitespace-normal">${item.split('：')[1]}</span></div>
+                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl shrink-0" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
 
-                    <!-- 類別三 -->
                     <div>
                         <h3 class="font-bold text-xl md:text-2xl text-amber-800 border-b-2 border-amber-200 mb-4 pb-2"><i class="fas fa-hourglass-half mr-2"></i>(三) 與「時間短暫」有關的成語</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -324,15 +314,14 @@
                                 "瞬息萬變：形容在極短的時間內變化迅速。亦作「瞬息千變」。",
                                 "電光石火：比喻轉瞬間即逝。"
                             ].map(item => `
-                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-rose-400 flex justify-between items-start hover:shadow-md transition">
-                                    <div><span class="font-bold text-rose-700 text-2xl">${item.split('：')[0]}</span><br><span class="text-gray-700 mt-2 block">${item.split('：')[1]}</span></div>
-                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl ml-2 shrink-0" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-rose-400 flex justify-between items-start hover:shadow-md transition break-words">
+                                    <div class="flex-1 min-w-0 pr-2"><span class="font-bold text-rose-700 text-xl md:text-2xl">${item.split('：')[0]}</span><br><span class="text-gray-700 mt-2 block whitespace-normal">${item.split('：')[1]}</span></div>
+                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl shrink-0" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
 
-                    <!-- 類別四 -->
                     <div>
                         <h3 class="font-bold text-xl md:text-2xl text-amber-800 border-b-2 border-amber-200 mb-4 pb-2"><i class="fas fa-book-open mr-2"></i>(四) 其他成語</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -343,9 +332,9 @@
                                 "繪聲繪影：形容講述或描摹事物，十分深刻入微、生動逼真。",
                                 "一償宿願：實現舊日的願望。「宿」願：平常，向來的。(≠掛單借「宿」：住夜。)"
                             ].map(item => `
-                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-yellow-500 flex justify-between items-start hover:shadow-md transition">
-                                    <div><span class="font-bold text-yellow-700 text-2xl">${item.split('：')[0]}</span><br><span class="text-gray-700 mt-2 block">${item.split('：')[1]}</span></div>
-                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl ml-2 shrink-0" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-yellow-500 flex justify-between items-start hover:shadow-md transition break-words">
+                                    <div class="flex-1 min-w-0 pr-2"><span class="font-bold text-yellow-700 text-xl md:text-2xl">${item.split('：')[0]}</span><br><span class="text-gray-700 mt-2 block whitespace-normal">${item.split('：')[1]}</span></div>
+                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl shrink-0" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
                                 </div>
                             `).join('')}
                         </div>
@@ -356,7 +345,7 @@
         ];
 
         // ==========================================
-        //  100題 精編測驗資料 (高難度、高鑑別度)
+        //  100題 精編測驗資料
         // ==========================================
         const generate100Questions = () => {
             const q = [];
@@ -492,7 +481,6 @@
 
         const el = id => document.getElementById(id);
 
-        // 彈出式側邊選單控制
         window.toggleLearnMenu = (show) => {
             isLearnMenuOpen = typeof show === 'boolean' ? show : !isLearnMenuOpen;
             const drawer = el('learn-drawer');
@@ -508,11 +496,9 @@
             }
         };
 
-        // 載入全域最近登入名單
         const loadRecentUsers = async () => {
             if (!isFirebaseInitialized || !currentUser) return;
             try {
-                // 修正路徑層級 (需為偶數：collection -> doc -> collection -> doc ...)
                 const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', COLLECTION_NAME);
                 const snap = await getDoc(ref);
                 if(snap.exists() && snap.data().users) {
@@ -522,7 +508,6 @@
             if (currentTab === 'login') renderLogin();
         };
 
-        // 儲存全域最近登入名單
         const saveRecentUser = async (name) => {
             if (!isFirebaseInitialized || !currentUser) return;
             try {
@@ -531,7 +516,6 @@
                     users: arrayUnion(name)
                 }, { merge: true });
                 
-                // 同步更新本地端狀態，確保登出後畫面能立刻顯示
                 if (!recentUsers.includes(name)) {
                     recentUsers.push(name);
                 }
@@ -541,12 +525,10 @@
         const initApp = async () => {
             renderApp();
             if (isFirebaseInitialized) {
-                await initAuth(); // 確保先初始化驗證
-                // Firebase Auth 監聽
+                await initAuth(); 
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         currentUser = user;
-                        // 嘗試讀取本地名稱暫存或 Firebase
                         await loadUserData();
                         await loadRecentUsers();
                         if (username) {
@@ -555,12 +537,10 @@
                             renderLogin();
                         }
                     } else {
-                        // 處理登出的狀態，若是剛進入則已在 initAuth 中處理匿名登入
                         renderLogin();
                     }
                 });
             } else {
-                // 單機模式
                 if (username) renderMain(); else renderLogin();
             }
         };
@@ -578,41 +558,76 @@
             }
             username = name;
             
+            // 解決退出後重登資料消失的問題：重登時務必重新載入資料
+            await loadUserData();
+            
             if (isFirebaseInitialized && currentUser) {
                 const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid);
                 await setDoc(userRef, { username, lastLogin: new Date() }, { merge: true });
                 
-                // 記錄登入 (符合規則1,2)
                 const loginRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_logs'));
                 await setDoc(loginRef, { type: 'login', time: new Date() });
 
-                // 儲存至全域最近登入
                 await saveRecentUser(name);
             }
             renderMain();
         };
 
         const loadUserData = async () => {
-            if (!isFirebaseInitialized || !currentUser) return;
-            const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
+            // 1. 嘗試從 Firebase 讀取雲端資料
+            if (isFirebaseInitialized && currentUser) {
+                const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
+                try {
+                    const snap = await getDoc(ref);
+                    if (snap.exists()) {
+                        const d = snap.data();
+                        if(d.favorites) userData.favorites = d.favorites;
+                        if(d.mistakes) userData.mistakes = d.mistakes;
+                    }
+                } catch(e) { console.error("Load Data Error", e); }
+            } else {
+                // 2. 單機離線模式：從 LocalStorage 讀取
+                try {
+                    const localData = localStorage.getItem(`cambridge_${username}_data`);
+                    if (localData) {
+                        const d = JSON.parse(localData);
+                        if(d.favorites) userData.favorites = d.favorites;
+                        if(d.mistakes) userData.mistakes = d.mistakes;
+                    }
+                } catch(e) {}
+            }
+            
+            // 3. 讀取正在進行中的測驗進度 (存在 LocalStorage 以免頻繁寫入雲端造成延遲)
             try {
-                const snap = await getDoc(ref);
-                if (snap.exists()) {
-                    userData = snap.data();
-                    if(!userData.favorites) userData.favorites = [];
-                    if(!userData.mistakes) userData.mistakes = [];
-                } else {
-                    await setDoc(ref, userData);
+                const localQuiz = localStorage.getItem(`cambridge_${username}_quiz`);
+                if (localQuiz) {
+                    const q = JSON.parse(localQuiz);
+                    if (q && q.active) {
+                        quizState = q;
+                    }
                 }
-            } catch(e) { console.error("Load Data Error", e); }
+            } catch(e) {}
         };
 
         const saveUserData = async () => {
+            // 備份至 LocalStorage (確保離線或退出時資料絕不遺失)
+            try {
+                if (username) {
+                    localStorage.setItem(`cambridge_${username}_data`, JSON.stringify(userData));
+                }
+            } catch(e) {}
+
             if (!isFirebaseInitialized || !currentUser) return;
             const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
             try {
-                await updateDoc(ref, userData);
+                await setDoc(ref, userData, { merge: true }); // 使用 setDoc 搭配 merge 避免 updateDoc 找不到文件的錯誤
             } catch(e) { console.error("Save Data Error", e); }
+        };
+
+        const saveQuizState = () => {
+            try {
+                if(username) localStorage.setItem(`cambridge_${username}_quiz`, JSON.stringify(quizState));
+            } catch(e) {}
         };
 
         window.toggleFavorite = async (itemId) => {
@@ -623,7 +638,6 @@
                 userData.favorites.push(itemId);
             }
             saveUserData();
-            // 重新渲染以更新愛心狀態
             if(currentTab === 'learn') renderLearnContent();
             if(currentTab === 'favorites') renderFavorites();
         };
@@ -654,7 +668,7 @@
                     <div class="absolute -top-20 -left-20 w-80 h-80 bg-amber-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
                     <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
                     
-                    <div class="bg-white p-10 rounded-xl shadow-2xl z-10 w-[28rem] max-w-full text-center border-t-8 border-amber-600">
+                    <div class="bg-white p-6 md:p-10 rounded-xl shadow-2xl z-10 w-[28rem] max-w-[90vw] text-center border-t-8 border-amber-600 mx-4">
                         <h1 class="text-4xl md:text-5xl font-bold text-wood-dark mb-4 tracking-widest leading-tight">我所知道的<br>康橋</h1>
                         <p class="text-gray-500 mb-10 text-xl">互動學習系統</p>
                         
@@ -669,7 +683,7 @@
                             <p class="text-base text-gray-400 mb-3 font-medium">雲端最近登入</p>
                             <div class="flex flex-wrap justify-center gap-3">
                                 ${recentUsers.length > 0 
-                                    ? recentUsers.slice(-5).map(u => `<button onclick="handleLogin('${u}')" class="text-base font-bold bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 px-4 py-2 rounded shadow-sm transition">${u}</button>`).join('')
+                                    ? recentUsers.slice(-5).map(u => `<button onclick="handleLogin('${u}')" class="text-base font-bold bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 px-4 py-2 rounded shadow-sm transition break-all">${u}</button>`).join('')
                                     : `<span class="text-sm text-gray-400">尚無紀錄或尚未連線</span>`
                                 }
                             </div>
@@ -682,8 +696,8 @@
         window.renderMain = () => {
             el('view-container').innerHTML = `
                 <!-- 導覽列 -->
-                <nav class="bg-wood text-wood-dark shadow-md z-20">
-                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <nav class="bg-wood text-wood-dark shadow-md z-20 shrink-0">
+                    <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
                         <div class="flex justify-between h-20">
                             <div class="flex items-center gap-2 sm:gap-4 flex-1 overflow-hidden min-w-0">
                                 <span class="font-bold text-xl md:text-2xl tracking-widest hidden lg:block shrink-0"><i class="fas fa-book-open mr-3 text-amber-700"></i>我所知道的康橋</span>
@@ -692,14 +706,12 @@
                                     <span class="hidden sm:inline">${connectionStatus === 'loading' ? '讀取中' : connectionStatus === 'success' ? '雲端同步' : '連線失敗'}</span>
                                 </div>
                                 
-                                <!-- 新增：導覽列測驗即時統計 (預設隱藏) -->
                                 <div id="nav-quiz-stats" class="hidden items-center ml-1 sm:ml-4 animate-fade-in shrink-0 min-w-0">
                                     <div class="flex items-center bg-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-gray-200 shadow-sm text-sm sm:text-base font-bold shrink-0">
                                         <span class="text-emerald-600 flex items-center"><i class="fas fa-check-circle mr-1"></i><span id="nav-stat-correct">0</span></span>
                                         <div class="w-px bg-gray-300 h-4 mx-2 sm:mx-3"></div>
                                         <span class="text-red-500 flex items-center"><i class="fas fa-times-circle mr-1"></i><span id="nav-stat-incorrect">0</span></span>
                                     </div>
-                                    <!-- 進度條 (手機版自動隱藏，保留空間) -->
                                     <div class="hidden md:flex flex-col w-24 lg:w-32 ml-3 shrink-0">
                                         <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden shadow-inner">
                                             <div id="nav-stat-progress-bar" class="bg-gradient-to-r from-orange-400 to-orange-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
@@ -707,12 +719,14 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-1 sm:space-x-4 shrink-0">
-                                <button onclick="switchTab('learn')" id="nav-learn" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">學習區</button>
-                                <button onclick="switchTab('quiz')" id="nav-quiz" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">測驗(100題)</button>
-                                <button onclick="switchTab('mistakes')" id="nav-mistakes" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">錯題本</button>
-                                <button onclick="switchTab('favorites')" id="nav-favorites" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">最愛</button>
-                                <div class="ml-2 sm:ml-4 flex items-center pl-2 sm:pl-4 border-l-2 border-amber-400">
+                            
+                            <!-- 防跑版：導覽列右側加入 overflow-x-auto -->
+                            <div class="flex items-center space-x-1 sm:space-x-4 shrink-0 overflow-x-auto scrollbar-hide max-w-full pl-2">
+                                <button onclick="switchTab('learn')" id="nav-learn" class="whitespace-nowrap px-2 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">學習</button>
+                                <button onclick="switchTab('quiz')" id="nav-quiz" class="whitespace-nowrap px-2 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">測驗</button>
+                                <button onclick="switchTab('mistakes')" id="nav-mistakes" class="whitespace-nowrap px-2 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">錯題</button>
+                                <button onclick="switchTab('favorites')" id="nav-favorites" class="whitespace-nowrap px-2 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">最愛</button>
+                                <div class="ml-1 sm:ml-4 flex items-center pl-2 sm:pl-4 border-l-2 border-amber-400 shrink-0 whitespace-nowrap">
                                     <span class="text-sm sm:text-lg font-bold mr-2 sm:mr-3"><i class="fas fa-user-circle mr-1 sm:mr-2"></i>${username}</span>
                                     <button onclick="logout()" class="text-lg text-red-600 hover:text-red-800" title="登出"><i class="fas fa-sign-out-alt"></i></button>
                                 </div>
@@ -722,7 +736,7 @@
                 </nav>
                 
                 <!-- 內容區 -->
-                <div id="main-content" class="flex-1 overflow-hidden bg-white bg-opacity-50 flex flex-col"></div>
+                <div id="main-content" class="flex-1 overflow-hidden bg-white bg-opacity-50 flex flex-col w-full"></div>
             `;
             switchTab('learn');
         };
@@ -736,7 +750,6 @@
 
         window.switchTab = (tab) => {
             currentTab = tab;
-            // 更新導覽列樣式
             ['learn', 'quiz', 'mistakes', 'favorites'].forEach(t => {
                 const btn = el(`nav-${t}`);
                 if(btn) {
@@ -750,7 +763,6 @@
                 }
             });
 
-            // 智慧顯示/隱藏導覽列的測驗統計
             const navStats = el('nav-quiz-stats');
             if (navStats) {
                 if (tab === 'quiz' && quizState.active) {
@@ -775,20 +787,17 @@
             const currentData = learnData.find(d => d.id === learnSubTab);
             
             container.innerHTML = `
-                <!-- 頂部：漢堡選單按鈕與標題 -->
-                <div class="w-full bg-amber-50 border-b border-amber-200 p-4 flex items-center shadow-sm z-10 shrink-0">
-                    <button onclick="toggleLearnMenu(true)" class="text-amber-800 hover:text-amber-600 focus:outline-none flex items-center px-4 py-2 bg-white rounded border border-amber-300 shadow-sm mr-4 transition-colors">
-                        <i class="fas fa-bars text-2xl mr-3"></i>
-                        <span class="font-bold text-xl">單元選單</span>
+                <div class="w-full bg-amber-50 border-b border-amber-200 p-4 flex items-center shadow-sm z-10 shrink-0 overflow-hidden">
+                    <button onclick="toggleLearnMenu(true)" class="text-amber-800 hover:text-amber-600 focus:outline-none flex items-center px-4 py-2 bg-white rounded border border-amber-300 shadow-sm mr-4 transition-colors shrink-0">
+                        <i class="fas fa-bars text-2xl md:mr-3"></i>
+                        <span class="font-bold text-xl hidden md:inline">單元選單</span>
                     </button>
-                    <span class="font-bold text-2xl text-wood-dark" id="current-learn-title">${currentData ? currentData.title : ''}</span>
+                    <span class="font-bold text-xl md:text-2xl text-wood-dark truncate" id="current-learn-title">${currentData ? currentData.title : ''}</span>
                 </div>
 
-                <!-- 覆蓋層 (Overlay) -->
                 <div id="learn-overlay" onclick="toggleLearnMenu(false)" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden transition-opacity"></div>
 
-                <!-- 彈出式左側選單 (Drawer) -->
-                <div id="learn-drawer" class="fixed inset-y-0 left-0 w-[22rem] bg-gray-50 border-r border-gray-200 z-40 transform -translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto shadow-2xl flex flex-col">
+                <div id="learn-drawer" class="fixed inset-y-0 left-0 w-[22rem] max-w-[85vw] bg-gray-50 border-r border-gray-200 z-40 transform -translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto shadow-2xl flex flex-col">
                     <div class="p-6 bg-amber-100 flex justify-between items-center border-b border-amber-200 shrink-0">
                         <span class="font-bold text-2xl text-amber-900"><i class="fas fa-list-ul mr-3"></i>學習目錄</span>
                         <button onclick="toggleLearnMenu(false)" class="text-amber-800 hover:text-red-600 transition-colors"><i class="fas fa-times text-3xl"></i></button>
@@ -804,8 +813,7 @@
                     </ul>
                 </div>
                 
-                <!-- 右側主要內容 (縮小 Padding) -->
-                <div class="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto w-full" id="learn-content-area"></div>
+                <div class="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto overflow-x-hidden w-full" id="learn-content-area"></div>
             `;
             renderLearnContent();
         };
@@ -814,11 +822,9 @@
             learnSubTab = id;
             const data = learnData.find(d => d.id === id);
             
-            // 更新上方標題
             const titleEl = el('current-learn-title');
             if(titleEl && data) titleEl.innerText = data.title;
             
-            // 更新選單樣式
             learnData.forEach(d => {
                 const btn = el(`ltab-${d.id}`);
                 if(btn) {
@@ -832,8 +838,6 @@
                 }
             });
             renderLearnContent();
-            
-            // 選擇單元後自動收起選單
             toggleLearnMenu(false);
         };
 
@@ -842,13 +846,11 @@
             if(!area) return;
             const data = learnData.find(d => d.id === learnSubTab);
             area.innerHTML = `
-                <!-- 放大可視範圍至 max-w-6xl -->
                 <div class="max-w-6xl mx-auto w-full">
-                    <h2 class="text-3xl md:text-4xl font-bold text-wood-dark mb-8 border-b-4 border-amber-200 pb-3">${data.title}</h2>
-                    <div class="text-gray-800 leading-relaxed text-lg md:text-xl">${data.content}</div>
+                    <h2 class="text-3xl md:text-4xl font-bold text-wood-dark mb-8 border-b-4 border-amber-200 pb-3 break-words">${data.title}</h2>
+                    <div class="text-gray-800 leading-relaxed text-lg md:text-xl break-words">${data.content}</div>
                 </div>
             `;
-            // 更新愛心狀態
             setTimeout(() => {
                 document.querySelectorAll('.fav-btn').forEach(btn => {
                     const id = btn.getAttribute('data-id');
@@ -865,11 +867,11 @@
             if(!quizState.active) {
                 container.innerHTML = `
                     <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 overflow-y-auto">
-                        <div class="bg-white p-10 rounded-xl shadow-md text-center max-w-4xl w-full border-t-8 border-orange-600 shrink-0">
+                        <div class="bg-white p-6 md:p-10 rounded-xl shadow-md text-center max-w-4xl w-full border-t-8 border-orange-600 shrink-0">
                             <i class="fas fa-stream text-6xl text-orange-600 mb-6"></i>
                             <h2 class="text-3xl md:text-4xl font-bold mb-6">瀑布流綜合測驗 (共100題)</h2>
-                            <p class="text-gray-600 mb-8 text-xl md:text-2xl leading-relaxed">挑戰100題高鑑別度測驗！題目涵蓋課文細節、字音字形辨析與成語精熟度。<br><br><span class="bg-orange-100 text-orange-800 font-bold px-2 py-1 rounded">全新瀑布流模式：</span>點擊選項後立即顯示解析，無須換頁，快速複習最有效率！</p>
-                            <button onclick="startQuiz()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-12 text-2xl rounded-full shadow-lg transition transform hover:scale-105">開始測驗</button>
+                            <p class="text-gray-600 mb-8 text-lg md:text-2xl leading-relaxed">挑戰100題高鑑別度測驗！題目涵蓋課文細節、字音字形辨析與成語精熟度。<br><br><span class="bg-orange-100 text-orange-800 font-bold px-2 py-1 rounded">全新瀑布流模式：</span>點擊選項後立即顯示解析，無須換頁，快速複習最有效率！</p>
+                            <button onclick="startQuiz()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-12 text-xl md:text-2xl rounded-full shadow-lg transition transform hover:scale-105">開始測驗</button>
                         </div>
                     </div>
                 `;
@@ -879,7 +881,6 @@
         };
 
         window.startQuiz = () => {
-            // 隨機打亂100題並為每一題建立獨立狀態
             const qList = [...generate100Questions()].sort(() => 0.5 - Math.random()).map(q => ({
                 ...q,
                 selectedAns: null,
@@ -887,9 +888,9 @@
                 isCorrect: false
             }));
             quizState = { active: true, questions: qList };
+            saveQuizState(); // 儲存測驗進度
             renderQuizView(el('main-content'));
             
-            // 開始測驗時，顯示導覽列統計
             const navStats = el('nav-quiz-stats');
             if (navStats) {
                 navStats.classList.remove('hidden');
@@ -898,7 +899,6 @@
             updateQuizStats();
         };
 
-        // 更新即時統計資料的獨立函數 (綁定導覽列元件)
         window.updateQuizStats = () => {
             if (!quizState.active) return;
             
@@ -929,17 +929,14 @@
         const renderQuizWaterfall = (container) => {
             const total = quizState.questions.length;
             let html = `
-                <!-- 完全乾淨的測驗區背景 -->
-                <div class="w-full flex-1 p-3 md:p-6 lg:p-8 overflow-y-auto pb-24 scrollbar-hide bg-gray-50/50" id="quiz-scroll-container">
+                <div class="w-full flex-1 p-3 md:p-6 lg:p-8 overflow-y-auto overflow-x-hidden pb-24 scrollbar-hide bg-gray-50/50" id="quiz-scroll-container">
                     <div class="max-w-6xl mx-auto relative w-full">
-                        
-                        <!-- 題目列表區 -->
                         <div id="questions-list" class="space-y-8 w-full mt-4">
             `;
 
             quizState.questions.forEach((_, qIdx) => {
                 html += `
-                            <div id="q-block-${qIdx}" class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 transition-all">
+                            <div id="q-block-${qIdx}" class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 transition-all w-full">
                                 ${generateSingleQuestionHtml(qIdx)}
                             </div>
                 `;
@@ -947,7 +944,7 @@
 
             html += `
                         </div>
-                        <button onclick="finishQuizWaterfall()" class="w-full mt-10 bg-orange-600 hover:bg-orange-700 text-white font-bold py-6 text-3xl rounded-xl shadow-xl transition transform hover:scale-[1.01] flex items-center justify-center">
+                        <button onclick="finishQuizWaterfall()" class="w-full mt-10 bg-orange-600 hover:bg-orange-700 text-white font-bold py-6 text-xl md:text-3xl rounded-xl shadow-xl transition transform hover:scale-[1.01] flex items-center justify-center break-words">
                             <i class="fas fa-flag-checkered mr-4"></i> 完成測驗並結算成績
                         </button>
                     </div>
@@ -961,24 +958,19 @@
             let optionsHtml = '';
             
             q.opts.forEach((opt, i) => {
-                // 放大選項按鈕與文字大小 (text-xl md:text-2xl)
-                let btnClass = "w-full text-left p-5 md:p-6 text-xl md:text-2xl rounded-lg border-2 transition-all flex items-center group ";
-                // 放大選項圓圈字母圖標
-                let iconHtml = `<span class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mr-4 md:mr-6 font-bold text-xl md:text-2xl transition-colors shrink-0">${String.fromCharCode(65+i)}</span>`;
+                let btnClass = "w-full text-left p-4 md:p-6 text-lg md:text-2xl rounded-lg border-2 transition-all flex items-center group ";
+                let iconHtml = `<span class="w-8 h-8 md:w-12 md:h-12 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mr-3 md:mr-6 font-bold text-lg md:text-2xl transition-colors shrink-0">${String.fromCharCode(65+i)}</span>`;
                 
                 if (!q.showExplanation) {
                     btnClass += "border-gray-300 hover:border-orange-500 hover:bg-orange-50 group-hover:bg-orange-500 group-hover:text-white cursor-pointer";
                 } else {
                     if (i === q.ans) {
-                        // 正確答案高亮
                         btnClass += "border-emerald-500 bg-emerald-100 text-emerald-800 font-bold scale-[1.01] shadow-md z-10 relative";
-                        iconHtml = `<span class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center mr-4 md:mr-6 font-bold text-xl md:text-2xl shrink-0"><i class="fas fa-check"></i></span>`;
+                        iconHtml = `<span class="w-8 h-8 md:w-12 md:h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center mr-3 md:mr-6 font-bold text-lg md:text-2xl shrink-0"><i class="fas fa-check"></i></span>`;
                     } else if (i === q.selectedAns) {
-                        // 點錯的選項
                         btnClass += "border-red-500 bg-red-50 text-red-800 font-bold scale-[0.99]";
-                        iconHtml = `<span class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-500 text-white flex items-center justify-center mr-4 md:mr-6 font-bold text-xl md:text-2xl shrink-0"><i class="fas fa-times"></i></span>`;
+                        iconHtml = `<span class="w-8 h-8 md:w-12 md:h-12 rounded-full bg-red-500 text-white flex items-center justify-center mr-3 md:mr-6 font-bold text-lg md:text-2xl shrink-0"><i class="fas fa-times"></i></span>`;
                     } else {
-                        // 未選到的錯誤答案
                         btnClass += "border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed";
                     }
                 }
@@ -986,7 +978,7 @@
                 optionsHtml += `
                     <button ${q.showExplanation ? 'disabled' : `onclick="answerWaterfallQuestion(${qIdx}, ${i})"`} class="${btnClass}">
                         ${iconHtml}
-                        <span class="flex-1 leading-relaxed">${opt}</span>
+                        <span class="flex-1 leading-relaxed break-words">${opt}</span>
                     </button>
                 `;
             });
@@ -995,17 +987,17 @@
             if (q.showExplanation) {
                 const isCorrect = q.selectedAns === q.ans;
                 explanationHtml = `
-                    <div class="mt-8 p-6 md:p-8 rounded-xl border-2 ${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'} animate-fade-in shadow-inner">
-                        <div class="flex items-center mb-6">
-                            <i class="fas ${isCorrect ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-red-500'} text-4xl mr-4"></i>
-                            <span class="font-bold text-3xl">${isCorrect ? '太棒了，答對了！' : '哎呀，答錯了！'}</span>
+                    <div class="mt-8 p-4 md:p-8 rounded-xl border-2 ${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'} animate-fade-in shadow-inner w-full">
+                        <div class="flex items-center mb-4 md:mb-6">
+                            <i class="fas ${isCorrect ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-red-500'} text-3xl md:text-4xl mr-3 md:mr-4 shrink-0"></i>
+                            <span class="font-bold text-xl md:text-3xl break-words">${isCorrect ? '太棒了，答對了！' : '哎呀，答錯了！'}</span>
                         </div>
-                        <div class="bg-white bg-opacity-70 p-5 md:p-8 rounded-lg border ${isCorrect ? 'border-emerald-100' : 'border-red-100'}">
-                            <p class="font-bold mb-3 text-2xl"><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>完整題目解析：</p>
-                            <p class="mt-3 text-xl">正確答案為 <strong class="${isCorrect ? 'text-emerald-700' : 'text-red-700'} text-2xl">(${String.fromCharCode(65+q.ans)}) ${q.opts[q.ans]}</strong>。</p>
-                            <div class="mt-5 p-5 md:p-6 bg-orange-50 border border-orange-200 rounded-lg text-orange-900 shadow-sm">
-                                <p class="font-bold text-xl mb-2"><i class="fas fa-book-reader mr-2 text-orange-700"></i>深度解析：</p>
-                                <p class="text-xl leading-relaxed">${q.exp}</p>
+                        <div class="bg-white bg-opacity-70 p-4 md:p-8 rounded-lg border ${isCorrect ? 'border-emerald-100' : 'border-red-100'} w-full overflow-hidden">
+                            <p class="font-bold mb-3 text-xl md:text-2xl"><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>完整題目解析：</p>
+                            <p class="mt-3 text-lg md:text-xl break-words">正確答案為 <strong class="${isCorrect ? 'text-emerald-700' : 'text-red-700'} text-xl md:text-2xl">(${String.fromCharCode(65+q.ans)}) ${q.opts[q.ans]}</strong>。</p>
+                            <div class="mt-5 p-4 md:p-6 bg-orange-50 border border-orange-200 rounded-lg text-orange-900 shadow-sm w-full">
+                                <p class="font-bold text-lg md:text-xl mb-2"><i class="fas fa-book-reader mr-2 text-orange-700"></i>深度解析：</p>
+                                <p class="text-lg md:text-xl leading-relaxed break-words whitespace-pre-wrap">${q.exp}</p>
                             </div>
                         </div>
                     </div>
@@ -1013,18 +1005,17 @@
             }
 
             return `
-                <div class="bg-gray-50 px-6 md:px-8 py-5 border-b border-gray-100 flex justify-between items-center transition-colors ${q.showExplanation ? (q.selectedAns === q.ans ? 'bg-emerald-50' : 'bg-red-50') : ''}">
-                    <span class="font-bold text-gray-700 text-xl">第 ${qIdx + 1} 題</span>
+                <div class="bg-gray-50 px-4 md:px-8 py-4 md:py-5 border-b border-gray-100 flex justify-between items-center transition-colors ${q.showExplanation ? (q.selectedAns === q.ans ? 'bg-emerald-50' : 'bg-red-50') : ''}">
+                    <span class="font-bold text-gray-700 text-lg md:text-xl">第 ${qIdx + 1} 題</span>
                     ${q.showExplanation 
                         ? (q.selectedAns === q.ans 
-                            ? '<span class="text-emerald-600 font-bold text-xl"><i class="fas fa-check mr-1"></i>答對</span>' 
-                            : '<span class="text-red-600 font-bold text-xl"><i class="fas fa-times mr-1"></i>答錯</span>') 
-                        : '<span class="text-gray-400 font-medium text-lg"><i class="fas fa-pen mr-1"></i>尚未作答</span>'}
+                            ? '<span class="text-emerald-600 font-bold text-lg md:text-xl"><i class="fas fa-check mr-1"></i>答對</span>' 
+                            : '<span class="text-red-600 font-bold text-lg md:text-xl"><i class="fas fa-times mr-1"></i>答錯</span>') 
+                        : '<span class="text-gray-400 font-medium text-base md:text-lg"><i class="fas fa-pen mr-1"></i>尚未作答</span>'}
                 </div>
-                <div class="p-6 md:p-10">
-                    <!-- 放大題目標題大小 (text-2xl md:text-3xl) -->
-                    <h3 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-relaxed">${q.q}</h3>
-                    <div class="space-y-5">
+                <div class="p-4 md:p-10 w-full overflow-hidden">
+                    <h3 class="text-xl md:text-3xl font-bold text-gray-800 mb-6 md:mb-8 leading-relaxed break-words">${q.q}</h3>
+                    <div class="space-y-4 md:space-y-5">
                         ${optionsHtml}
                     </div>
                     ${explanationHtml}
@@ -1034,23 +1025,20 @@
 
         window.answerWaterfallQuestion = (qIdx, optIdx) => {
             const q = quizState.questions[qIdx];
-            if(q.showExplanation) return; // 防呆：避免重複點擊
+            if(q.showExplanation) return; 
 
             const isCorrect = optIdx === q.ans;
             
-            // 更新這題的狀態
             q.selectedAns = optIdx;
             q.showExplanation = true;
             q.isCorrect = isCorrect;
             
-            // 音效與特效
             if (isCorrect) {
                 playCorrectSound();
                 confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 }, zIndex: 10000, colors: ['#10b981', '#34d399', '#f59e0b'] });
             } else {
                 playWrongSound();
                 
-                // 答錯立即加入錯題本
                 const mistakeId = q.q; 
                 const exists = userData.mistakes.find(m => m.id === mistakeId);
                 if(!exists) {
@@ -1061,13 +1049,13 @@
                 }
             }
 
-            // 只重新渲染該題的 DOM，避免破壞外層的捲動高度 (Scroll Position)
+            saveQuizState(); // 儲存每題的作答進度
+
             const block = document.getElementById(`q-block-${qIdx}`);
             if (block) {
                 block.innerHTML = generateSingleQuestionHtml(qIdx);
             }
 
-            // 更新導覽列的即時統計
             updateQuizStats();
         };
 
@@ -1082,7 +1070,6 @@
                 }
             });
 
-            // 若有未作答題目給予提示
             if (answeredCount < quizState.questions.length) {
                 if(!confirm(`您還有 ${quizState.questions.length - answeredCount} 題尚未作答，確定要直接交卷結算嗎？`)) {
                     return;
@@ -1090,17 +1077,17 @@
             }
 
             quizState.active = false;
+            saveQuizState(); // 清除儲存的進行中進度
+            
             const total = quizState.questions.length;
             const scorePercent = Math.round((correctCount / total) * 100);
             
-            // 隱藏導覽列測驗統計
             const navStats = el('nav-quiz-stats');
             if (navStats) {
                 navStats.classList.add('hidden');
                 navStats.classList.remove('flex');
             }
 
-            // 存入 Firebase
             if(isFirebaseInitialized && currentUser) {
                 const docRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_quizzes'));
                 try {
@@ -1111,20 +1098,19 @@
             const container = el('main-content');
             container.innerHTML = `
                 <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 overflow-y-auto pb-24">
-                    <div class="bg-white p-12 rounded-xl shadow-xl text-center max-w-4xl w-full border-t-8 border-orange-600 shrink-0">
-                        <i class="fas fa-trophy text-8xl text-yellow-500 mb-6"></i>
-                        <h2 class="text-4xl md:text-5xl font-bold mb-6">測驗完成！</h2>
-                        <p class="text-7xl md:text-8xl font-extrabold text-orange-600 mb-10">${scorePercent} <span class="text-3xl md:text-4xl text-gray-500">分</span></p>
-                        <p class="text-gray-600 mb-10 text-2xl md:text-3xl">您答對了 <span class="text-orange-600 font-bold">${correctCount}</span> 題，共作答 ${answeredCount} 題 <br><span class="text-xl md:text-2xl mt-3 inline-block">(總題數 ${total} 題)</span></p>
-                        <div class="space-y-5">
-                            <button onclick="switchTab('mistakes')" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-5 px-6 text-2xl rounded-lg shadow transition">查看錯題本</button>
-                            <button onclick="startQuiz()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-5 px-6 text-2xl rounded-lg shadow transition">重新測驗</button>
+                    <div class="bg-white p-8 md:p-12 rounded-xl shadow-xl text-center max-w-4xl w-full border-t-8 border-orange-600 shrink-0">
+                        <i class="fas fa-trophy text-6xl md:text-8xl text-yellow-500 mb-6"></i>
+                        <h2 class="text-3xl md:text-5xl font-bold mb-6">測驗完成！</h2>
+                        <p class="text-6xl md:text-8xl font-extrabold text-orange-600 mb-10">${scorePercent} <span class="text-2xl md:text-4xl text-gray-500">分</span></p>
+                        <p class="text-gray-600 mb-10 text-xl md:text-3xl break-words">您答對了 <span class="text-orange-600 font-bold">${correctCount}</span> 題，共作答 ${answeredCount} 題 <br><span class="text-lg md:text-2xl mt-3 inline-block text-gray-400">(總題數 ${total} 題)</span></p>
+                        <div class="space-y-4 md:space-y-5">
+                            <button onclick="switchTab('mistakes')" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 md:py-5 px-6 text-xl md:text-2xl rounded-lg shadow transition">查看錯題本</button>
+                            <button onclick="startQuiz()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 md:py-5 px-6 text-xl md:text-2xl rounded-lg shadow transition">重新測驗</button>
                         </div>
                     </div>
                 </div>
             `;
             
-            // 結算時撒下大量碎紙花慶祝
             confetti({ particleCount: 250, spread: 120, origin: { y: 0.4 }, zIndex: 10000 });
         };
 
@@ -1134,27 +1120,27 @@
             
             if(userData.mistakes.length === 0) {
                 container.innerHTML = `
-                    <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 text-gray-400 flex-col">
+                    <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 text-gray-400 flex-col text-center">
                         <i class="fas fa-check-circle text-8xl md:text-9xl mb-6 text-amber-300"></i>
-                        <p class="text-2xl md:text-3xl font-bold">太棒了！目前沒有錯題紀錄。</p>
+                        <p class="text-2xl md:text-3xl font-bold break-words">太棒了！目前沒有錯題紀錄。</p>
                     </div>`;
                 return;
             }
 
             container.innerHTML = `
-                <div class="w-full flex-1 p-3 md:p-6 lg:p-8 overflow-y-auto pb-24">
+                <div class="w-full flex-1 p-3 md:p-6 lg:p-8 overflow-y-auto overflow-x-hidden pb-24">
                     <div class="max-w-6xl mx-auto w-full">
                         <div class="flex justify-between items-center border-b-4 border-red-200 pb-4 mb-8">
-                            <h2 class="text-3xl md:text-4xl font-bold text-red-800"><i class="fas fa-book-dead mr-3"></i>錯題本</h2>
-                            <button onclick="clearMistakes()" class="text-xl text-red-500 hover:text-red-700 font-bold underline">清空錯題</button>
+                            <h2 class="text-2xl md:text-4xl font-bold text-red-800"><i class="fas fa-book-dead mr-3"></i>錯題本</h2>
+                            <button onclick="clearMistakes()" class="text-lg md:text-xl text-red-500 hover:text-red-700 font-bold underline shrink-0">清空錯題</button>
                         </div>
-                        <div class="space-y-8">
+                        <div class="space-y-6 md:space-y-8 w-full">
                             ${userData.mistakes.map((m, i) => `
-                                <div class="bg-white p-6 md:p-10 rounded-xl shadow-md border-l-8 border-red-400 w-full">
-                                    <h3 class="font-bold text-gray-800 mb-6 text-2xl md:text-3xl">${i+1}. ${m.q}</h3>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xl">
+                                <div class="bg-white p-5 md:p-10 rounded-xl shadow-md border-l-8 border-red-400 w-full overflow-hidden">
+                                    <h3 class="font-bold text-gray-800 mb-6 text-xl md:text-3xl break-words">${i+1}. ${m.q}</h3>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 text-lg md:text-xl w-full">
                                         ${m.opts.map((opt, idx) => `
-                                            <div class="p-4 md:p-5 rounded-lg ${idx === m.ans ? 'bg-emerald-100 text-emerald-800 font-bold border-2 border-emerald-300 shadow-sm' : 'bg-gray-50 text-gray-600 border border-gray-200'}">
+                                            <div class="p-4 md:p-5 rounded-lg break-words ${idx === m.ans ? 'bg-emerald-100 text-emerald-800 font-bold border-2 border-emerald-300 shadow-sm' : 'bg-gray-50 text-gray-600 border border-gray-200'}">
                                                 ${String.fromCharCode(65+idx)}. ${opt}
                                                 ${idx === m.ans ? '<i class="fas fa-check ml-2"></i>(正確答案)' : ''}
                                             </div>
@@ -1182,24 +1168,24 @@
             
             if(userData.favorites.length === 0) {
                 container.innerHTML = `
-                    <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 text-gray-400 flex-col">
+                    <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 text-gray-400 flex-col text-center">
                         <i class="fas fa-heart-broken text-8xl md:text-9xl mb-6 text-pink-200"></i>
-                        <p class="text-2xl md:text-3xl font-bold">目前還沒有收藏任何項目。</p>
-                        <p class="text-xl mt-4">到「學習區」點擊愛心圖示即可收藏！</p>
+                        <p class="text-2xl md:text-3xl font-bold break-words">目前還沒有收藏任何項目。</p>
+                        <p class="text-xl mt-4 break-words">到「學習區」點擊愛心圖示即可收藏！</p>
                     </div>`;
                 return;
             }
 
             container.innerHTML = `
-                <div class="w-full flex-1 p-3 md:p-6 lg:p-8 overflow-y-auto pb-24">
+                <div class="w-full flex-1 p-3 md:p-6 lg:p-8 overflow-y-auto overflow-x-hidden pb-24">
                     <div class="max-w-6xl mx-auto w-full">
-                        <h2 class="text-3xl md:text-4xl font-bold text-pink-800 border-b-4 border-pink-200 pb-4 mb-8"><i class="fas fa-heart mr-3"></i>我的最愛</h2>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                        <h2 class="text-2xl md:text-4xl font-bold text-pink-800 border-b-4 border-pink-200 pb-4 mb-8"><i class="fas fa-heart mr-3"></i>我的最愛</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 w-full">
                             ${userData.favorites.map(favId => `
-                                <div class="bg-white p-6 md:p-8 rounded-xl shadow-md border-2 border-pink-100 flex justify-between items-center group relative overflow-hidden transition-shadow hover:shadow-lg w-full">
+                                <div class="bg-white p-5 md:p-8 rounded-xl shadow-md border-2 border-pink-100 flex justify-between items-center group relative overflow-hidden transition-shadow hover:shadow-lg w-full">
                                     <div class="absolute inset-0 bg-pink-50 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                                    <span class="font-bold text-gray-800 z-10 text-2xl md:text-3xl">${favId}</span>
-                                    <button onclick="toggleFavorite('${favId}')" class="text-pink-500 hover:text-red-600 z-10 text-4xl"><i class="fas fa-heart"></i></button>
+                                    <span class="font-bold text-gray-800 z-10 text-xl md:text-3xl break-words flex-1 pr-2">${favId}</span>
+                                    <button onclick="toggleFavorite('${favId}')" class="text-pink-500 hover:text-red-600 z-10 text-3xl md:text-4xl shrink-0"><i class="fas fa-heart"></i></button>
                                 </div>
                             `).join('')}
                         </div>
