@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我所知道的康橋 - 互動學習系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; background-color: #fcf9f2; color: #333; font-size: 1.125rem; line-height: 1.75; }
+        .bg-wood { background-color: #e5d3b3; }
+        .text-wood-dark { color: #5c3a21; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; }
+        .status-loading { background-color: #fbbf24; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .status-success { background-color: #34d399; }
+        .status-error { background-color: #ef4444; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* 詩詞與引言區塊的特殊樣式 */
+        .poem-box { background: linear-gradient(to right, #fdfbf7, #f4eee1); border-left: 4px solid #d97706; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+        .poem-title { font-weight: bold; color: #92400e; font-size: 1.25rem; margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <div id="app" class="w-full h-full flex flex-col"></div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, arrayUnion, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAxQFt76ZPXE7d0i1XeNZ1yiiD2WYNIfHs",
+            authDomain: "chinese-learning-47f4d.firebaseapp.com",
+            projectId: "chinese-learning-47f4d",
+            storageBucket: "chinese-learning-47f4d.firebasestorage.app",
+            messagingSenderId: "76289812052",
+            appId: "1:76289812052:web:898384a916f9f341f62fc1"
+        };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'cambridge-app-default';
+        const COLLECTION_NAME = 'Chinese4-L4-V2';
+        
+        let app, auth, db;
+        let isFirebaseInitialized = false;
+        let currentUser = null;
+        let username = '';
+        let userData = { favorites: [], mistakes: [] };
+        let connectionStatus = 'loading';
+        let recentUsers = [];
+        
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        
+        const playTone = (freq, type, duration) => {
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = type;
+                oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        };
+
+        const playCorrectSound = () => { playTone(523.25, 'sine', 0.1); setTimeout(() => playTone(659.25, 'sine', 0.2), 100); };
+        const playWrongSound = () => { playTone(300, 'sawtooth', 0.2); setTimeout(() => playTone(200, 'sawtooth', 0.3), 150); };
+
+        try {
+            const actualConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : firebaseConfig;
+            if (actualConfig.apiKey && actualConfig.apiKey !== "填入key" && actualConfig.apiKey !== "YOUR_API_KEY") {
+                app = initializeApp(actualConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                isFirebaseInitialized = true;
+                connectionStatus = 'success';
+            } else {
+                connectionStatus = 'error';
+            }
+        } catch (error) { connectionStatus = 'error'; }
+
+        const initAuth = async () => {
+            if (!isFirebaseInitialized) return;
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) { connectionStatus = 'error'; }
+        };
+
+        // ==========================================
+        //  全新學習資料庫 (依照提供資料一字不漏整理)
+        // ==========================================
+        const learnData = [
+            {
+                id: 'sec1', title: '一、課文提要與結構大意',
+                content: `
+                <div class="space-y-8">
+                    <!-- 一、課文提要 -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-amber-600">
+                        <h2 class="text-2xl font-bold text-amber-800 mb-4 border-b pb-2"><i class="fas fa-book mr-2"></i>一、課文提要</h2>
+                        <ul class="space-y-3 text-lg text-gray-700">
+                            <li><span class="font-bold text-amber-700">文體：</span>記敘兼抒情文。</li>
+                            <li><span class="font-bold text-amber-700">文章出處：</span>《徐志摩全集》。</li>
+                            <li><span class="font-bold text-amber-700">內容大要：</span>作者以細膩生動的筆觸，描述康橋初春的風光，及漫遊其間的樂趣。</li>
+                            <li><span class="font-bold text-amber-700 block mb-2">作法分析：</span>本文以「時間」為主軸（早晨→白天→黃昏），配合「空間」的轉移，對康橋景物深入描繪。全文共分四段：
+                                <ol class="list-decimal ml-8 mt-2 space-y-3">
+                                    <li class="pl-2">
+                                        <span class="font-bold text-gray-800">第一段：寫康橋初春早晨的自然風光。</span><br>
+                                        ①以視覺和聽覺摹寫康橋春晨的風光。<br>
+                                        ②本段清晨尋春，作者選了兩種截然不同又具有代表性的景色：一是晨霧籠罩下的康橋原野，一是春陽下大地繽紛的美景。晨霧瀰漫下有淒迷朦朧的美，春陽照耀有著富麗溫柔的美——康橋的美就在她的多變。
+                                    </li>
+                                    <li class="pl-2">
+                                        <span class="font-bold text-gray-800">第二段：描寫康河岸上風光，與百花盛開的爛漫春景。</span><br>
+                                        連用六個「關心」句，足見作者細心地尋訪和熱切地盼望。
+                                    </li>
+                                    <li class="pl-2">
+                                        <span class="font-bold text-gray-800">第三段：寫春假騎自行車出遊的閒適愉悅。</span><br>
+                                        ①連用了四個「你如愛」點出了這有情有愛的大自然令人深深喜好。作者在此段用「你」來拉近與讀者的距離，彷彿與讀者面對面把臂歡談，顯得格外親切，熱情洋溢。<br>
+                                        ②結尾以激問作結，剛好回應了本段開頭的讚嘆。
+                                    </li>
+                                    <li class="pl-2">
+                                        <span class="font-bold text-gray-800">第四段：寫康橋如畫般的黃昏美景。</span><br>
+                                        此段描寫康橋黃昏的美景和自己的特殊經驗。文中作者先以陸游的詩句襯托自己生活的雅趣，再述說自己三次可遇不可求的特殊經驗。文末「這草田變成了……」，以刪節號留給讀者諸多的想像空間，並體會「數大之美」、「神異性」的感受，藉由此種方式再度拉近讀者與康橋的距離，實為高明。
+                                    </li>
+                                </ol>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 二、課文結構表 -->
+                    <div class="bg-amber-50 p-6 rounded-xl shadow-sm border border-amber-200">
+                        <h2 class="text-2xl font-bold text-amber-900 mb-6"><i class="fas fa-sitemap mr-2 text-amber-700"></i>二、課文結構表 & 三、段落大意</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-white p-5 rounded-lg shadow-sm border-l-8 border-orange-400">
+                                <h3 class="font-bold text-orange-800 text-xl mb-2">擁抱初春的早晨</h3>
+                                <p class="text-sm text-gray-500 mb-3 border-b pb-2">段落一：寫康橋初春早晨的自然風光。</p>
+                                <ul class="list-disc ml-6 space-y-1 text-gray-700">
+                                    <li><span class="font-bold">平視(由近而遠)：</span>水溶溶的大道 → 林子 → 平原、村舍 → 小山 → 近村的教寺。</li>
+                                    <li><span class="font-bold">俯瞰：</span>村舍、樹林。</li>
+                                    <li><span class="font-bold">仰望：</span>漸漸散去的朝霧、冉冉升起的炊煙、難得一見的朝陽。</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-white p-5 rounded-lg shadow-sm border-l-8 border-green-500">
+                                <h3 class="font-bold text-green-800 text-xl mb-2">探詢河上的春信</h3>
+                                <p class="text-sm text-gray-500 mb-3 border-b pb-2">段落二：描寫康河岸上風光，與百花盛開的爛漫春景。</p>
+                                <ul class="list-disc ml-6 space-y-1 text-gray-700">
+                                    <li><span class="font-bold">觀察：</span>小雪球、鈴蘭、香草、蓮馨、石水仙、克羅克斯、蒲公英、雛菊相繼綻放。</li>
+                                    <li><span class="font-bold">推論：</span>春光已爛縵在人間。</li>
+                                </ul>
+                            </div>
+
+                            <div class="bg-white p-5 rounded-lg shadow-sm border-l-8 border-blue-500">
+                                <h3 class="font-bold text-blue-800 text-xl mb-2">歌詠野遊的閒適</h3>
+                                <p class="text-sm text-gray-500 mb-3 border-b pb-2">段落三：寫春假騎自行車出遊的閒適愉悅。</p>
+                                <ul class="list-disc ml-6 space-y-1 text-gray-700">
+                                    <li><span class="font-bold">時間：</span>瑰麗的春假。</li>
+                                    <li><span class="font-bold">條件：</span>可愛的路政。</li>
+                                    <li><span class="font-bold">工具：</span>騎自行車。</li>
+                                    <li><span class="font-bold">歸納：</span>最適情、適性的消遣——看天，聽鳥，讀書。在草地上尋夢。</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-white p-5 rounded-lg shadow-sm border-l-8 border-purple-500">
+                                <h3 class="font-bold text-purple-800 text-xl mb-2">描繪瑰麗的暮色</h3>
+                                <p class="text-sm text-gray-500 mb-3 border-b pb-2">段落四：寫康橋如畫般的黃昏美景。</p>
+                                <ul class="list-disc ml-6 space-y-1 text-gray-700">
+                                    <li>由騎車逐日的過程，陳述自己的視覺美感經驗。</li>
+                                    <li>藉在漸隱的金光中，感應到宇宙偉大、神祕的力量，抒寫一己靈魂的悸動。</li>
+                                    <li>由草田中豔紅罌粟的搖曳，帶給他迷眩的心理作用，描摹充滿神異且無以名之的感受。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec2', title: '四、句意解說 & 五、修辭',
+                content: `
+                <div class="space-y-8">
+                    <!-- 句意解說 -->
+                    <div>
+                        <h2 class="text-2xl font-bold text-amber-800 mb-4 border-b-2 border-amber-200 pb-2"><i class="fas fa-quote-left mr-2"></i>四、句意解說</h2>
+                        <div class="space-y-4">
+                            ${[
+                                ["只遠處牛奶車的鈴聲，點綴這周遭的沉默。", "以牛奶車的鈴聲，反襯出四周的寧靜。"],
+                                ["康橋只是一帶茂林，擁戴幾處娉婷的尖閣。嫵媚的康河也望不見蹤跡，你只能循著那錦帶似的林木想像那一流清淺。村舍與樹林是這地盤上的棋子，有村舍處有佳蔭，有佳蔭處有村舍。", "以下皆為登上土阜後所見之景。"],
+                                ["遠近的炊煙，成絲的、成縷的、成捲的、輕快的、遲重的、濃灰的、淡青的、慘白的。", "從形狀、速度、顏色三種面向描述早晨炊煙的樣貌。"],
+                                ["在靜定的朝氣裡漸漸地上騰，漸漸地不見，彷彿是朝來人們的祈禱，參差地翳入了天聽。", "用聽覺印象來表現視覺感受。作者把「眼所見」與「耳所聞」巧妙地結合，感官交錯應用，使炊煙上騰的描寫更鮮活。"],
+                                ["朝陽是難得見的，這初春的天氣，但它來時是起早人莫大的愉快。", "因英國冬季和初春多霧，故覺得「物以稀為貴」。"],
+                                ["頃刻間這田野添深了顏色，一層輕紗似的金粉糝上了這草、這樹、這通道、這莊舍。頃刻間這周遭瀰漫了清晨富麗的溫柔，頃刻間你的心懷也分潤了白天誕生的光榮。", "連用三個「頃刻間」，把時間說得極為急促，表示初曉景色的瞬息變化，讓人有目不暇接之感。"],
+                                ["「春！」這勝利的晴空彷彿在你的耳邊私語。「春！」你那快活的靈魂也彷彿在那裡回響。", "連用兩個「春！」表達了歡喜雀躍的心情，將尋春人心中喜悅的感覺大聲說出來，使讀者也不禁為春的到來而歡呼，寫來極具感染力。又用「私語」、「回響」給予「春」活潑的生命力，似乎「春」正向早起尋春的人們打招呼。"],
+                                ["伺候著河上的風光，這春來一天有一天的消息。", "表示對春信殷切的盼望。「伺候」二字顯現出較主動積極、專注投入的，不放過任何細節的意思。"],
+                                ["怯怜怜的小雪球是探春信的小使，鈴蘭與香草是歡喜的初聲，窈窕的蓮馨、玲瓏的石水仙、愛熱鬧的克羅克斯、耐辛苦的蒲公英與雛菊——這時候春光已是爛縵在人間，更不須殷勤問訊。", "百花盛開，隨處可嗅到春的氣息——春，無所不在，自不須「殷勤問訊」，即可感受得到。"],
+                                ["帶一卷書，走十里路，選一塊清靜地，看天，聽鳥，讀書。倦了時，和身在草綿綿處尋夢去。", "描寫置身於大自然中，過著適情適性、逍遙自得的生活。"],
+                                ["你能想像更適情、更適性的消遣嗎？", "表達自己的讚嘆，呼應第三段首四句。"],
+                                ["陸放翁有一聯詩句：「傳呼快馬迎新月，卻上輕輿趁晚涼。」這是做地方官的風流。我在康橋時雖沒馬騎，沒轎子坐，卻也有我的風流：我常常在夕陽西晒時，騎了車迎著天邊扁大的日頭直追。日頭是追不到的，我沒有夸父的荒誕，但晚景的溫存卻被我這樣偷嘗了不少。", "作者引陸游的詩句，用來烘烘托騎自行車的風流，以及享受月夜晚涼的雅趣。"],
+                                ["有一次，我趕到一個地方，手把著一家村莊的籬笆，隔著一大田的麥浪，看西天的變幻。", "隔著一大田的麥浪，看西天的變化——壯闊之美——數大便是美的經驗。"],
+                                ["有一次，是正衝著一條寬廣的大道，過來了一大群羊——放草歸來的，偌大的太陽在牠們後背放射著萬縷的金輝。", "面對太陽的萬縷金輝，產生對「宇宙偉大與莊嚴」的虔敬情緒。"],
+                                ["我心頭頓時感著神異性的壓迫，我真的跪下了，對著這冉冉漸隱的金光。", "這是作者對宇宙萬物的偉大與莊嚴，產生了一種虔誠的情緒及感受到數大之美所導致的結果。"],
+                                ["再有一次，是更不可忘的奇景，那是臨著一大片望不到頭的草原，滿開著豔紅的罌粟，在青草裡亭亭地像是萬盞的金燈，陽光從褐色雲裡斜著過來，幻成一種異樣的紫色，透明似的，不可逼視。", "萬盞金燈般的罌粟，在陽光照射下所造成的幻象——數大之美。"],
+                                ["這草田變成了......，不說也罷，說來你們也是不信的！！", "欲語還休、戛然而止，因心靈的感受，只可意會不可言傳，留予讀者無限的想像空間及餘味。"],
+                                ["說來你們也是不信的！", "可見是「神異性」的感受。"]
+                            ].map((item, idx) => `
+                                <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 relative group hover:border-amber-400 transition-colors">
+                                    <p class="text-xl text-gray-800 font-bold mb-3 leading-relaxed">「${item[0]}」</p>
+                                    <div class="flex items-start">
+                                        <i class="fas fa-hand-point-right text-amber-500 mt-1 mr-3"></i>
+                                        <p class="text-lg text-gray-600 flex-1">${item[1]}</p>
+                                    </div>
+                                    <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button onclick="toggleFavorite('解說${idx+1}')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl" data-id="解說${idx+1}"><i class="fas fa-heart"></i></button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- 修辭說明 -->
+                    <div class="mt-12">
+                        <h2 class="text-2xl font-bold text-amber-800 mb-4 border-b-2 border-amber-200 pb-2"><i class="fas fa-magic mr-2"></i>五、修辭說明</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${[
+                                { t: "摹寫 (聽覺)", d: "只遠處牛奶車的鈴聲，點綴這周遭的沉默。" },
+                                { t: "譬喻", d: "地形像是海裡的輕波，默沉沉地起伏。<br>錦帶似的林木。<br>村舍與樹林是這地盤上的棋子。<br>有三兩幅畫圖似的經驗至今還是栩栩地留著。<br>滿開著豔紅的罌粟，在青草裡亭亭地像是萬盞的金燈。" },
+                                { t: "轉化", d: "康橋只是一帶茂林，擁戴幾處娉婷的尖閣。嫵媚的康河也望不見蹤跡。（擬人）<br>「春！」這勝利的晴空彷彿在你的耳邊私語。「春！」你那快活的靈魂也彷彿在那裡回響。<br>怯怜怜的小雪球是探春信的小使，鈴蘭與香草是歡喜的初聲，窈窕的蓮馨、玲瓏的石水仙、愛熱鬧的克羅克斯、耐辛苦的蒲公英與雛菊。（擬人）<br>我沒有夸父的荒誕，但晚景的溫存卻被我這樣偷嘗了不少。" },
+                                { t: "回文", d: "有村舍處有佳蔭，有佳蔭處有村舍。（兼類疊）" },
+                                { t: "類疊", d: "成絲的、成縷的、成捲的、輕快的、遲重的、濃灰的、淡青的、慘白的。" },
+                                { t: "排比", d: "頃刻間這田野添深了顏色，一層輕紗似的金粉糝上了這草、這樹、這通道、這莊舍。頃刻間這周遭瀰漫了清晨富麗的溫柔，頃刻間你的心懷也分潤了白天誕生的光榮。<br>關心石上的苔痕，關心敗草裡的鮮花，關心這水流的緩急，關心水草的滋長，關心天上的雲霞，關心新來的鳥語。<br>你如愛花，這裡多的是錦繡似的草原。你如愛鳥，這裡多的是巧囀的鳴禽。你如愛兒童，這鄉間到處是可親的稚子。你如愛人情，這裡多的是不嫌遠客的鄉人。" },
+                                { t: "映襯", d: "敗草裡的鮮花。" },
+                                { t: "設問 (激問)", d: "這裡哪一處不是坦蕩蕩的大道？<br>你能想像更適情、更適性的消遣嗎？" },
+                                { t: "引用", d: "陸放翁有一聯詩句：「傳呼快馬迎新月，卻上輕輿趁晚涼。」" }
+                            ].map(item => `
+                                <div class="bg-amber-50 p-5 rounded border border-amber-200 shadow-sm">
+                                    <h3 class="font-bold text-amber-900 text-xl mb-3 bg-amber-200 inline-block px-3 py-1 rounded">${item.t}</h3>
+                                    <p class="text-gray-700 leading-relaxed">${item.d}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec3', title: '六、形音義辨析',
+                content: `
+                <div class="space-y-6">
+                    <p class="text-gray-600 mb-4"><i class="fas fa-info-circle mr-2 text-amber-700"></i>本課重要字音字形與字義辨析，請左右滑動查看表格：</p>
+                    
+                    <div class="overflow-x-auto bg-white border-2 border-amber-200 rounded-xl shadow-sm mb-6 scrollbar-hide">
+                        <table class="w-full min-w-[700px]">
+                            <thead>
+                                <tr class="bg-amber-100 text-amber-900 border-b-2 border-amber-200 text-lg">
+                                    <th class="py-3 px-4 w-1/12 text-center font-bold">字</th>
+                                    <th class="py-3 px-4 w-2/12 text-center font-bold">注音</th>
+                                    <th class="py-3 px-6 w-8/12 text-left font-bold">釋義與例詞</th>
+                                    <th class="py-3 px-4 w-1/12 text-center font-bold">收藏</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${[
+                                    { w:"曙", p:"ㄕㄨˋ", d:"【形】天剛亮的時候。如：曙光。" },
+                                    { w:"糬", p:"ㄕㄨˇ", d:"—麻糬：一種糯米製成的食品。如：麻糬。" },
+                                    { w:"署", p:"ㄕㄨˋ", d:"1. 【動】布置。如：部署完畢。<br>2. 【動】簽名。如：連署。" },
+                                    { w:"署", p:"ㄕㄨˇ", d:"【名】政府機關的組織單位。如：食藥署。" },
+                                    { divider: true },
+                                    { w:"娉", p:"ㄆㄧㄥ", d:"—娉婷：輕巧美好的樣子。如：姿態娉婷。" },
+                                    { w:"聘", p:"ㄆㄧㄥˋ", d:"1. 【動】延請。如：重金禮聘。<br>2. 【名】訂婚，或訂婚時男方贈與女方之物。如：下聘。" },
+                                    { w:"騁", p:"ㄔㄥˇ", d:"【動】直馳、奔跑。如：馳騁。" },
+                                    { divider: true },
+                                    { w:"翳", p:"ㄧˋ", d:"1. 【動】隱沒。如：翳入天際。<br>2. 【名】眼珠上所生遮蔽視線的薄膜。如：眼翳病。" },
+                                    { w:"翡", p:"ㄈㄟˇ", d:"—翡翠：翠玉。如：綴滿翡翠。" },
+                                    { w:"翌", p:"ㄧˋ", d:"【形】次的、第二的。如：翌日。" },
+                                    { divider: true },
+                                    { w:"糝", p:"ㄙㄢˇ", d:"【動】撒落。如：糝上金粉。" },
+                                    { w:"滲", p:"ㄕㄣˋ", d:"【動】液體慢慢地浸透或漏出。如：滲透。" },
+                                    { w:"摻", p:"ㄔㄢ", d:"【動】混合、雜入。如：摻雜。" },
+                                    { w:"慘", p:"ㄘㄢˇ", d:"1. 【副】程度厲害、嚴重。如：慘白、慘敗。<br>2. 【形】悲哀、淒涼。如：悽慘、悲慘。" },
+                                    { divider: true },
+                                    { w:"參", p:"ㄘㄣ", d:"—參差：雜亂不齊的樣子。如：參差不齊。" },
+                                    { w:"參", p:"ㄕㄣ", d:"【名】星座名。如：動如參商。" },
+                                    { w:"參", p:"ㄘㄢ", d:"【動】加入。如：參戰、參選。" },
+                                    { w:"參", p:"ㄙㄢ", d:"【名】同「三」。" },
+                                    { divider: true },
+                                    { w:"恣", p:"ㄗˋ", d:"1. 【動】隨、任憑。如：恣意而行。<br>2. 【動】放縱。如：恣情作樂。" },
+                                    { w:"姿", p:"ㄗ", d:"【名】動作、儀態。如：搖曳生姿。" },
+                                    { w:"資", p:"ㄗ", d:"1. 【名】天生的才智。如：資質聰穎。<br>2. 【名】費用。如：郵資、車資。<br>3. 【名】財貨。如：資金、資本。" },
+                                    { w:"諮", p:"ㄗ", d:"【動】商量、詢問。如：諮詢商議。" },
+                                    { divider: true },
+                                    { w:"衝", p:"ㄔㄨㄥˋ", d:"1. 【動】向、對。如：衝著大道。<br>2. 【形】激烈、無禮。如：說話口氣很衝。<br>3. 【動】因、看。如：衝著你的面子。" },
+                                    { w:"衝", p:"ㄔㄨㄥ", d:"1. 【名】交通要道。如：交通要衝。<br>2. 【動】碰撞。如：橫衝直撞。<br>3. 【動】直著向上頂。如：怒髮衝冠。" },
+                                    { divider: true },
+                                    { w:"粟", p:"ㄙㄨˋ", d:"【名】穀物的總稱。如：滄海一粟。" },
+                                    { w:"栗", p:"ㄌㄧˋ", d:"【名】植物名。栗樹的果實。如：火中取栗。" },
+                                    { divider: true },
+                                    { w:"徒", p:"ㄊㄨˊ", d:"1. 【動】步行。如：徒步旅行。<br>2. 【副】白白地、平白。如：徒費脣舌、徒勞無功。<br>3. 【副】僅、只。如：徒有虛名。" },
+                                    { divider: true },
+                                    { w:"綴", p:"ㄓㄨㄟˋ", d:"【動】裝飾。如：點綴。" },
+                                    { w:"輟", p:"ㄔㄨㄛˋ", d:"【動】停止。如：輟學、創作不輟。" },
+                                    { w:"啜", p:"ㄔㄨㄛˋ", d:"1. 【動】吃、喝。如：啜飲。<br>2. 【動】哭泣。如：啜泣。" },
+                                    { divider: true },
+                                    { w:"腴", p:"ㄩˊ", d:"1. 【形】肥沃。如：膏腴之地。<br>2. 【形】豐滿。如：豐腴美好。" },
+                                    { w:"諛", p:"ㄩˊ", d:"【動】諂媚、奉承。如：阿諛。" },
+                                    { w:"臾", p:"ㄩˊ", d:"—須臾：片刻。如：須臾。" },
+                                    { w:"萸", p:"ㄩˊ", d:"【名】植物名。如：茱萸。" },
+                                    { divider: true },
+                                    { w:"阜", p:"ㄈㄨˋ", d:"1. 【名】土山。如：土阜。<br>2. 【形】豐厚。如：民康物阜。" },
+                                    { w:"埠", p:"ㄅㄨˋ", d:"1. 【名】碼頭，或通商的港口。如：港埠、商埠。<br>2. 【名】地方、城市。如：外埠。" },
+                                    { divider: true },
+                                    { w:"伺", p:"ㄙˋ", d:"【動】暗中偵察。如：窺伺、伺機而動。" },
+                                    { w:"伺", p:"ㄘˋ", d:"—伺候：侍奉、服侍。如：伺候父母。" },
+                                    { divider: true },
+                                    { w:"偌", p:"ㄖㄨㄛˋ", d:"【副】如此、這麼。如：偌大。" },
+                                    { w:"諾", p:"ㄋㄨㄛˋ", d:"1. 【動】答應、允許。如：一呼百諾。<br>2. 【名】允諾的話。如：一諾千金。<br>3. 【名】表示同意的應答聲。如：連連稱諾。" },
+                                    { divider: true },
+                                    { w:"冉", p:"ㄖㄢˇ", d:"—冉冉：緩慢移動的樣子。如：冉冉漸隱的金光。" },
+                                    { w:"苒", p:"ㄖㄢˇ", d:"—荏苒：時間漸漸過去。如：韶光荏苒。" },
+                                    { w:"髯", p:"ㄖㄢˊ", d:"【名】兩頰上的鬍鬚。如：鬚髯。" }
+                                ].map((item, idx) => {
+                                    if(item.divider) return `<tr class="bg-amber-200 h-1"><td></td><td></td><td></td><td></td></tr>`;
+                                    return `
+                                    <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-amber-50 transition-colors border-b border-gray-100">
+                                        <td class="py-4 px-4 text-center font-bold text-3xl text-gray-800">${item.w}</td>
+                                        <td class="py-4 px-4 text-center font-bold text-amber-700 text-xl">${item.p}</td>
+                                        <td class="py-4 px-6 text-left leading-relaxed text-gray-700 text-lg">${item.d}</td>
+                                        <td class="py-4 px-4 text-center">
+                                            <button onclick="toggleFavorite('${item.w}(${item.p})')" class="text-gray-300 hover:text-red-500 fav-btn text-2xl transition-transform hover:scale-110" data-id="${item.w}(${item.p})"><i class="fas fa-heart"></i></button>
+                                        </td>
+                                    </tr>`;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec4', title: '七、成語加油站',
+                content: `
+                <div class="space-y-8 text-lg">
+                    <!-- 類別一 -->
+                    <div>
+                        <h3 class="font-bold text-xl md:text-2xl text-amber-800 border-b-2 border-amber-200 mb-4 pb-2"><i class="fas fa-lightbulb mr-2"></i>(一) 與「光影變化」有關的成語</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${[
+                                "交相輝映：各種光彩相互照耀。",
+                                "忽明忽滅：光線明暗不定的樣子。",
+                                "閃閃爍爍：光線明滅不定的樣子。",
+                                "若隱若現：形容隱約不明，模糊不清。",
+                                "光芒萬丈：光輝燦爛，照耀遠方。比喻氣勢雄厚。亦作「光焰萬丈」。",
+                                "浮光掠影：(1)比喻見識膚淺空泛，不著邊際。(2)比喻世事稍縱即逝，不可捉摸。",
+                                "波光瀲灩：波光閃閃爍爍。瀲灩，音ㄌㄧㄢˋ ㄧㄢˋ，波光映照。",
+                                "掩映生姿：光影互相映照，景物因而更顯美好。",
+                                "照如白晝：光線把四周景物照耀得如同白天一樣明亮。",
+                                "暮色蒼茫：形容傍晚時天色朦朧昏暗的樣子。"
+                            ].map(item => `
+                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-amber-500 flex justify-between items-start relative hover:shadow-md transition">
+                                    <div><span class="font-bold text-amber-700 text-xl">${item.split('：')[0]}</span><br><span class="text-gray-700 mt-2 block text-base">${item.split('：')[1]}</span></div>
+                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-xl ml-2 shrink-0" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- 類別二 -->
+                    <div>
+                        <h3 class="font-bold text-xl md:text-2xl text-amber-800 border-b-2 border-amber-200 mb-4 pb-2"><i class="fas fa-mountain mr-2"></i>(二) 與「形容美好風光」有關的成語</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${[
+                                "美不勝收：形容美好的事物非常多，無法一一收受。",
+                                "尋幽訪勝：尋找訪求景色清雅的地方。",
+                                "風光旖旎：形容景色柔和美好。旖旎，音ㄧˇ ㄋㄧˇ，柔媚的樣子。",
+                                "人間仙境：形容景色優美，有如仙界一般。",
+                                "世外桃源：(1)稱避世隱居的地方。(2)比喻風景優美而人跡罕至的地方。",
+                                "別有洞天：指風景極為秀麗，引人入勝。",
+                                "福地洞天：本指神仙居住的地方。比喻名山勝境。亦作「洞天福地」。",
+                                "山明水秀：形容山水秀麗，風景優美。"
+                            ].map(item => `
+                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-green-500 flex justify-between items-start hover:shadow-md transition">
+                                    <div><span class="font-bold text-green-700 text-xl">${item.split('：')[0]}</span><br><span class="text-gray-700 mt-2 block text-base">${item.split('：')[1]}</span></div>
+                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-xl ml-2 shrink-0" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- 類別三 -->
+                    <div>
+                        <h3 class="font-bold text-xl md:text-2xl text-amber-800 border-b-2 border-amber-200 mb-4 pb-2"><i class="fas fa-hourglass-half mr-2"></i>(三) 與「時間短暫」有關的成語</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${[
+                                "彈指之間：(1)形容極短暫的時間。(2)形容時間過得很快。",
+                                "一時半刻：一下子、突然。指極短的時間。",
+                                "不消一刻：連一刻鐘都不需要，即一下子。形容時間短暫。",
+                                "浮生瞬息：人生虛浮而短暫。",
+                                "瞬息萬變：形容在極短的時間內變化迅速。亦作「瞬息千變」。",
+                                "電光石火：比喻轉瞬間即逝。",
+                                "浮雲朝露：浮雲易散，朝露易乾。比喻人生的短促。"
+                            ].map(item => `
+                                <div class="bg-white p-4 rounded shadow-sm border-l-4 border-rose-400 flex justify-between items-start hover:shadow-md transition">
+                                    <div><span class="font-bold text-rose-700 text-xl">${item.split('：')[0]}</span><br><span class="text-gray-700 mt-2 block text-base">${item.split('：')[1]}</span></div>
+                                    <button onclick="toggleFavorite('${item.split('：')[0].trim()}')" class="text-gray-300 hover:text-red-500 fav-btn text-xl ml-2 shrink-0" data-id="${item.split('：')[0].trim()}"><i class="fas fa-heart"></i></button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>`
+            },
+            {
+                id: 'sec5', title: '八、陸游 & 九、類文選讀',
+                content: `
+                <div class="space-y-8">
+                    <!-- 陸游 -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-blue-600">
+                        <h2 class="text-2xl font-bold text-blue-900 mb-6 border-b pb-2"><i class="fas fa-user-edit mr-2"></i>八、陸游</h2>
+                        
+                        <div class="mb-6">
+                            <h3 class="font-bold text-blue-800 text-xl mb-2">(一) 傳呼快馬迎新月，卻上輕輿趁晚涼</h3>
+                            <p class="text-gray-700 leading-relaxed">徐志摩引陸游〈醉中到白崖而歸〉詩，文字略異。原詩作：「醉眼朦朧萬事空，今年痛飲讓西東。傳呼快馬迎新月，卻上輕輿御晚風。行路八千常是客，丈夫五十未稱翁。亂山缺處如橫線，遙指孤城翠靄中。」（按：讓，山間的溪流通到江裡去的，蜀人多稱為「讓」）此詩作於陸游任職夔州通判時，故徐志摩說：「這是做地方官的風流。」</p>
+                        </div>
+
+                        <div class="mb-6">
+                            <h3 class="font-bold text-blue-800 text-xl mb-2">(二) 陸游的文學成就</h3>
+                            <p class="text-gray-700 leading-relaxed mb-4">陸游，字務觀，自號放翁，南宋山陰（今浙江省紹興市）人。生於北宋欽宗元年（西元一一二五年），卒於南宋寧宗嘉泰十年（西元一二一○年），年八十六。陸游是南宋最傑出的詩人，現存詩作共有九千三百多首，一生的精力幾乎貫注在詩歌方面，詞作的量雖不如詩作豐富，但內容與詩一樣可觀。</p>
+                            <p class="text-gray-700 leading-relaxed mb-4">陸游的作品最大特色，就是始終如一地流露出對家國的熱愛及恢復中原之志，說他是「愛國詩人」，絕不為過。梁啟超有詩云：「詩界千年靡靡風，兵魂銷盡國魂空。集中什九從軍樂，亙古男兒一放翁。」陸游的詩作，幾百年來鼓舞了千千萬萬的中國人，著實令人敬佩。</p>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="poem-box">
+                                <div class="poem-title">① 十一月四日風雨大作</div>
+                                <p class="text-gray-800 italic mb-2">僵臥孤村不自哀，尚思為國戍輪臺。<br>夜闌臥聽風吹雨，鐵馬冰河入夢來。</p>
+                                <p class="text-gray-600 text-sm"><span class="font-bold">語譯：</span>我直挺挺躺在孤寂荒涼的鄉村裡，不為自己的處境而感到悲哀，心中還想著替國家防衛邊疆。夜將盡了，我在床上聽著風雨聲，迷迷糊糊地夢見，自己騎著披著鐵甲的戰馬，跨過冰封的河流出征北方疆場。</p>
+                            </div>
+
+                            <div class="poem-box">
+                                <div class="poem-title">② 示兒</div>
+                                <p class="text-gray-800 italic mb-2">死去原知萬事空，但悲不見九州同。<br>王師北定中原日，家祭毋忘告乃翁。</p>
+                                <p class="text-gray-600 text-sm"><span class="font-bold">語譯：</span>我原本就知道人一死去便萬事皆空，但令我放心不下、感到悲傷的，就是沒看見國家統一。等到軍隊北伐平定中原的那一天，祭祀祖先的時候，千萬不要忘記把這好消息告訴你的父親（即詩人本身）。</p>
+                            </div>
+
+                            <div class="poem-box">
+                                <div class="poem-title">③ 遊山西村</div>
+                                <p class="text-gray-800 italic mb-2">莫笑農家臘酒渾，豐年留客足雞豚。<br>山重水複疑無路，柳暗花明又一村。<br>簫鼓追隨春社近，衣冠簡樸古風存。<br>從今若許閒乘月，拄杖無時夜扣門。</p>
+                                <p class="text-gray-600 text-sm"><span class="font-bold">語譯：</span>不要取笑農家為賀新春而釀造的臘酒太過渾濁，他們在豐收年歲會用豐盛佳餚來招待客人。且看此地層層疊疊的山巒密布、迂迴曲折的流水環繞，本以為無路可走，沒想到穿過茂密幽暗的柳樹叢林，卻見繁花盛放的美景，又出現一座村莊。村裡吹簫擊鼓、熱鬧歡慶，可知祭祀土神，以祈農事豐收的春社之日快到了，當地居民穿著樸實無華，保存著簡樸古風。今後若容許我趁著月色當空的夜晚到此閒遊，我將拄著拐杖再度叩門拜訪山村農家。</p>
+                                <p class="text-gray-700 text-sm mt-2 font-bold">全詩對江南春天柳暗花明的美景，還有熱鬧的節日氣氛及村民殷勤待客的熱情，都有深入的描寫。第三、四句以景寓理，更是千古傳誦的佳句。綜合而論，愛國與愛民的思想貫穿了陸游的文學作品，由其作品也可想見他的人格。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 類文選讀 -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-indigo-600">
+                        <h2 class="text-2xl font-bold text-indigo-900 mb-6 border-b pb-2"><i class="fas fa-book-reader mr-2"></i>九、類文選讀 (徐志摩)</h2>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <!-- 再別康橋 -->
+                            <div>
+                                <h3 class="font-bold text-indigo-800 text-xl mb-4 text-center">再別康橋</h3>
+                                <div class="text-gray-800 leading-relaxed text-center italic mb-6">
+                                    <p>輕輕的我走了，正如我輕輕的來；<br>我輕輕的招手，作別西天的雲彩。</p><br>
+                                    <p>那河畔的金柳，是夕陽中的新娘；<br>波光裡的豔影，在我的心頭蕩漾。</p><br>
+                                    <p>軟泥上的青荇，油油的在水底招搖；<br>在康河的柔波裡，我甘心做一條水草！</p><br>
+                                    <p>那榆蔭下的一潭，不是清泉，是天上虹，<br>揉碎在浮藻間，沉澱著彩虹似的夢。</p><br>
+                                    <p>尋夢？撐一支長篙，向青草更青處漫溯，<br>滿載一船星輝，在星輝斑斕裡放歌。</p><br>
+                                    <p>但我不能放歌，悄悄是別離的笙簫；<br>夏蟲也為我沉默，沉默是今晚的康橋！</p><br>
+                                    <p>悄悄的我走了，正如我悄悄的來；<br>我揮一揮衣袖，不帶走一片雲彩。</p>
+                                </div>
+                                <div class="bg-indigo-50 p-4 rounded text-sm text-gray-700">
+                                    <p class="font-bold text-indigo-900 mb-1">【賞析】</p>
+                                    <p class="mb-2">虛實相間的手法，將對康橋的愛戀、對往昔生活的憧憬、對眼前無可奈何的離愁，表現得十分真摯。將「河畔的金柳」大膽想像為「夕陽中的新娘」；清澈的潭水疑作「天上虹」。在意亂情迷之間，詩人如莊周夢蝶，物我兩忘，並甘心做一條招搖的水草。</p>
+                                    <p>詩人聞一多提倡現代詩歌的「音樂美」、「繪畫美」與「建築美」，此詩可說是具備了「三美」，堪稱徐志摩詩作中之絕唱。</p>
+                                </div>
+                            </div>
+
+                            <!-- 偶然 -->
+                            <div>
+                                <h3 class="font-bold text-indigo-800 text-xl mb-4 text-center">偶然</h3>
+                                <div class="text-gray-800 leading-relaxed text-center italic mb-6">
+                                    <p>我是天空裡的一片雲，<br>偶爾投影在你的波心——<br>你不必訝異，<br>更無須歡喜——<br>轉瞬間消滅了蹤影。</p><br>
+                                    <p>你我相逢在黑夜的海上，<br>你有你的，我有我的，方向。<br>記得也好，<br>最好你忘掉，<br>這交會時互放的光亮！</p>
+                                </div>
+                                <div class="bg-indigo-50 p-4 rounded text-sm text-gray-700">
+                                    <p class="font-bold text-indigo-900 mb-1">【賞析】</p>
+                                    <p class="mb-2">《偶然》一詩顯露了詩人心靈的寬容與氣度。聚散無常，緣起緣滅，追求瀟灑自如的人生，無須執著於短暫的情緣。追求自由，本是徐志摩特有的氣質，而這分氣質即傳承道家思想的「順任自然」。</p>
+                                    <p>全詩兩節，上下節格律對稱。每一節的一、二、五句都是用三個音步組成，三、四句則都是兩個音步構成。在音步的安排處理上嚴謹中不乏灑脫，讀起來紓徐從容、委婉頓挫而琅琅上口。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+            }
+        ];
+
+        // ==========================================
+        //  精編 130 題 測驗資料 (高難度、高鑑別度)
+        // ==========================================
+        const generate130Questions = () => {
+            const q = [];
+            
+            // ================== 【一、提要與結構】 (1-15題) ==================
+            q.push({ q:"《我所知道的康橋》一文的文體歸類為何？", opts:["純記敘文", "純抒情文", "記敘兼抒情文", "論說兼抒情文"], ans:2, exp:"根據課文提要，本文以細膩生動的筆觸描述風光（記敘），並抒發漫遊其間的樂趣與悸動（抒情），故為記敘兼抒情文。" });
+            q.push({ q:"本文出處為何？", opts:["猛虎集", "翡冷翠的一夜", "徐志摩全集", "落葉"], ans:2, exp:"《我所知道的康橋》收錄於《徐志摩全集》。" });
+            q.push({ q:"本文的寫作主軸與空間轉移的搭配，下列敘述何者正確？", opts:["以「空間」為主軸，配合「時間」的轉移", "以「時間」為主軸，配合「空間」的轉移", "僅有空間轉移，無時間變化", "僅有時間變化，無空間轉移"], ans:1, exp:"作法分析提到：本文以「時間」為主軸（早晨→白天→黃昏），配合「空間」的轉移，對康橋景物深入描繪。" });
+            q.push({ q:"在描寫「擁抱初春的早晨」時，作者的「平視」視角由近而遠的順序，下列何者正確？", opts:["水溶溶的大道 → 平原、村舍 → 林子小徑 → 近村的教寺 → 小山", "林子小徑 → 水溶溶的大道 → 小山 → 平原、村舍 → 近村的教寺", "水溶溶的大道 → 林子小徑 → 平原、村舍 → 小山 → 近村的教寺", "平原、村舍 → 水溶溶的大道 → 林子小徑 → 小山 → 近村的教寺"], ans:2, exp:"結構表顯示平視順序：水溶溶的大道 → 林子 → 平原、村舍 → 小山 → 近村的教寺。" });
+            q.push({ q:"在第一段「寫康橋初春早晨的自然風光」中，作者選了哪兩種截然不同又具代表性的景色來呈現康橋的「多變」之美？", opts:["晨霧籠罩與夕陽餘暉", "春陽照耀與秋風掃葉", "晨霧籠罩下的原野與春陽下大地繽紛的美景", "水溶溶的大道與漸漸散去的朝霧"], ans:2, exp:"作法分析第一段②指出，作者選了「晨霧籠罩下的康橋原野」與「春陽下大地繽紛的美景」，呈現淒迷朦朧與富麗溫柔的多變之美。" });
+            q.push({ q:"第二段描寫康河岸上風光時，作者連用了六個什麼字詞，展現其細心的尋訪和熱切的盼望？", opts:["尋覓", "關心", "期待", "探問"], ans:1, exp:"作法分析第二段指出，連用六個「關心」句，足見作者細心地尋訪和熱切地盼望。" });
+            q.push({ q:"第三段寫春假騎自行車出遊的閒適，作者連用了四個「你如愛…」，其主要用意為何？", opts:["為了湊足字數", "為了展現排比氣勢，別無他意", "點出大自然令人喜好，並拉近與讀者的距離，顯得親切", "指責讀者不懂得欣賞大自然"], ans:2, exp:"作法分析第三段①：連用四個「你如愛」點出大自然令人喜好，用「你」拉近與讀者的距離，彷彿把臂歡談，格外親切。" });
+            q.push({ q:"第四段「寫康橋如畫般的黃昏美景」中，作者先以誰的詩句來襯托自己生活的雅趣？", opts:["李白", "蘇軾", "陸游", "杜甫"], ans:2, exp:"作法分析第四段指出：文中作者先以陸游的詩句襯托自己生活的雅趣。" });
+            q.push({ q:"在文末，作者使用了什麼標點符號，留給讀者諸多想像空間，並藉此拉近與康橋的距離？", opts:["驚嘆號！", "問號？", "破折號——", "刪節號……"], ans:3, exp:"作法分析第四段指出，文末「這草田變成了……」，以刪節號留給讀者諸多的想像空間。" });
+            q.push({ q:"根據結構表，作者「仰望」的景物包含下列何者？", opts:["村舍、樹林", "漸漸散去的朝霧、冉冉升起的炊煙、難得一見的朝陽", "水溶溶的大道、林子", "小雪球、鈴蘭"], ans:1, exp:"結構表第一段載明「仰望」的景物有：漸漸散去的朝霧、冉冉升起的炊煙、難得一見的朝陽。" });
+            q.push({ q:"作者觀察到多種花朵相繼綻放後，推論出了什麼？", opts:["夏季即將到來", "春光已爛縵在人間", "秋意漸濃", "路政十分完善"], ans:1, exp:"探詢河上的春信段落中，觀察到花朵綻放後，推論：春光已爛縵在人間。" });
+            q.push({ q:"下列何者「不是」作者歸納出「最適情、適性的消遣」的活動之一？", opts:["看天", "聽鳥", "讀書", "垂釣"], ans:3, exp:"歸納的活動為：看天，聽鳥，讀書。在草地上尋夢。不含垂釣。" });
+            q.push({ q:"作者能享受騎車野遊的閒適，其必備的「條件」為何？", opts:["瑰麗的春假", "可愛的路政", "晴朗的天氣", "同伴的隨行"], ans:1, exp:"結構表中「歌詠野遊的閒適」列出：時間是春假，條件是「可愛的路政」。" });
+            q.push({ q:"作者在描繪瑰麗暮色時，藉由草田中「何種植物」的搖曳，帶給他迷眩的心理作用？", opts:["金柳", "蓮馨", "豔紅罌粟", "石水仙"], ans:2, exp:"結構表第四段載明：由草田中「豔紅罌粟」的搖曳，帶給他迷眩的心理作用。" });
+            q.push({ q:"作者在漸隱的金光中感應到了什麼，進而抒寫靈魂的悸動？", opts:["宇宙偉大、神祕的力量", "家國興亡的無奈", "時光飛逝的哀愁", "個人渺小與無助"], ans:0, exp:"結構表第四段載明：藉在漸隱的金光中，感應到宇宙偉大、神祕的力量。" });
+
+            // ================== 【二、句意解說】 (16-40題) ==================
+            q.push({ q:"「只遠處牛奶車的鈴聲，點綴這周遭的沉默。」此句運用了何種手法？", opts:["以靜襯動", "以動（鈴聲）反襯靜（沉默）", "完全的聽覺摹寫，無襯托", "視覺與聽覺的交錯"], ans:1, exp:"句意解說指出：以牛奶車的鈴聲，反襯出四周的寧靜。這就是「以動襯靜」。" });
+            q.push({ q:"「康橋只是一帶茂林，擁戴幾處娉婷的尖閣。嫵媚的康河也望不見蹤跡……」這些景象是作者在何處所見？", opts:["河畔散步時", "騎車追日時", "登上土阜後", "躺在草地上時"], ans:2, exp:"句意解說載明：以下皆為「登上土阜後」所見之景。" });
+            q.push({ q:"「成絲的、成縷的、成捲的、輕快的、遲重的、濃灰的、淡青的、慘白的。」作者是從哪三個面向來描述早晨的炊煙？", opts:["高度、溫度、顏色", "形狀、速度、顏色", "味道、形狀、速度", "方向、形狀、氣味"], ans:1, exp:"句意解說指出：從「形狀」(絲、縷、捲)、「速度」(輕快、遲重)、「顏色」(濃灰、淡青、慘白)三種面向描述炊煙。" });
+            q.push({ q:"「彷彿是朝來人們的祈禱，參差地翳入了天聽。」此句的巧妙之處為何？", opts:["將觸覺轉換為視覺", "將「眼所見」(炊煙)與「耳所聞」(祈禱/天聽)巧妙結合，感官交錯", "完全使用嗅覺摹寫", "使用激問法引起反思"], ans:1, exp:"句意解說指出：用聽覺印象來表現視覺感受，把眼所見與耳所聞巧妙結合，感官交錯。" });
+            q.push({ q:"為何作者認為「朝陽是難得見的……但它來時是起早人莫大的愉快」？", opts:["因為英國人普遍晚起", "因為當地只有夏天才有太陽", "因為英國冬季和初春多霧，覺得物以稀為貴", "因為看日出需要收費"], ans:2, exp:"句意解說指出：因英國冬季和初春多霧，故覺得「物以稀為貴」。" });
+            q.push({ q:"「頃刻間這田野添深了顏色……頃刻間這周遭瀰漫了……頃刻間你的心懷……」連用三個「頃刻間」的作用為何？", opts:["表達時間極為漫長", "表示初曉景色的瞬息變化，讓人有目不暇接之感", "為了湊滿三個排比句式", "顯現作者不耐煩的心情"], ans:1, exp:"句意解說指出：把時間說得極為急促，表示初曉景色的瞬息變化，讓人有目不暇接之感。" });
+            q.push({ q:"「『春！』這勝利的晴空彷彿在你的耳邊私語。」連用兩個「春！」的目的為何？", opts:["表達對冬天的厭惡", "單純的口吃", "將尋春人心中喜悅的感覺大聲說出來，極具感染力", "模仿鳥類的叫聲"], ans:2, exp:"句意解說指出：表達了歡喜雀躍的心情，將喜悅大聲說出，具感染力。" });
+            q.push({ q:"「伺候著河上的風光」中，「伺候」二字顯現出作者何種態度？", opts:["被動等待", "不耐煩的敷衍", "主動積極、專注投入，不放過任何細節", "恐懼害怕"], ans:2, exp:"句意解說指出：「伺候」二字顯現出較主動積極、專注投入的，不放過任何細節的意思。" });
+            q.push({ q:"「怯怜怜的小雪球是探春信的小使……這時候春光已是爛縵在人間，更不須殷勤問訊。」為何「不須殷勤問訊」？", opts:["因為沒有人可以問", "因為百花盛開，春無所不在，自然能感受得到", "因為作者已經看膩了", "因為氣候突然變冷"], ans:1, exp:"句意解說指出：百花盛開，隨處可嗅到春的氣息，自不須「殷勤問訊」，即可感受得到。" });
+            q.push({ q:"「帶一卷書，走十里路，選一塊清靜地……和身在草綿綿處尋夢去。」這段話主要描寫什麼境界？", opts:["逃避現實的痛苦", "準備考試的辛苦", "置身大自然中，適情適性、逍遙自得的生活", "迷路在森林中的徬徨"], ans:2, exp:"句意解說指出：描寫置身於大自然中，過著適情適性、逍遙自得的生活。" });
+            q.push({ q:"「你能想像更適情、更適性的消遣嗎？」此句為激問，其作用為？", opts:["真心詢問讀者的意見", "表達自己的讚嘆，呼應段落開頭", "測試讀者的想像力", "表示自己其實不喜歡這種消遣"], ans:1, exp:"句意解說指出：表達自己的讚嘆，呼應第三段首四句。" });
+            q.push({ q:"作者引陸游詩句「傳呼快馬迎新月，卻上輕輿趁晚涼」的用意為何？", opts:["炫耀自己的國學常識", "烘托騎自行車的風流，以及享受月夜晚涼的雅趣", "批評陸游做官太奢侈", "感嘆自己買不起馬和轎子"], ans:1, exp:"句意解說指出：作者引陸游詩句，用來烘托騎自行車的風流，以及享受月夜晚涼的雅趣。" });
+            q.push({ q:"「隔著一大田的麥浪，看西天的變幻」帶給作者何種經驗？", opts:["數大便是美的經驗", "悲涼滄桑的經驗", "飢餓想吃麥子的經驗", "恐懼黑夜的經驗"], ans:0, exp:"句意解說指出：看西天的變化——壯闊之美——數大便是美的經驗。" });
+            q.push({ q:"「一大群羊……偌大的太陽在牠們後背放射著萬縷的金輝。」這景象讓作者產生何種情緒？", opts:["想吃羊肉的食慾", "對「宇宙偉大與莊嚴」的虔敬情緒", "被太陽曬傷的痛苦", "想成為牧羊人的衝動"], ans:1, exp:"句意解說指出：面對太陽的萬縷金輝，產生對「宇宙偉大與莊嚴」的虔敬情緒。" });
+            q.push({ q:"「我心頭頓時感著神異性的壓迫，我真的跪下了……」作者為何而跪？", opts:["因為騎車跌倒", "因為腳酸疲倦", "因對宇宙萬物的偉大與莊嚴產生虔誠情緒及感受到數大之美", "為了向農夫乞求食物"], ans:2, exp:"句意解說指出：這是作者對宇宙萬物的偉大與莊嚴，產生了一種虔誠的情緒及感受到數大之美所導致的結果。" });
+            q.push({ q:"「滿開著豔紅的罌粟，在青草裡亭亭地像是萬盞的金燈……幻成一種異樣的紫色」這景象造成了什麼效果？", opts:["因為毒品中毒而產生幻覺", "萬盞金燈般的罌粟在陽光下造成的幻象——數大之美", "單純的光學折射，毫無美感", "讓作者感到恐懼而逃跑"], ans:1, exp:"句意解說指出：萬盞金燈般的罌粟，在陽光照射下所造成的幻象——數大之美。" });
+            q.push({ q:"「這草田變成了......，不說也罷，說來你們也是不信的！！」為何作者欲語還休？", opts:["因為忘記草田變成什麼", "因為心靈的感受只可意會不可言傳，留予想像空間", "因為怕被別人嘲笑", "因為打字太累了"], ans:1, exp:"句意解說指出：欲語還休，因心靈的感受只可意會不可言傳，留予讀者無限的想像空間及餘味。" });
+            q.push({ q:"「說來你們也是不信的！」這句話暗示了作者體驗到何種感受？", opts:["平凡無奇的感受", "神異性的感受", "虛假騙人的感受", "枯燥乏味的感受"], ans:1, exp:"句意解說特別標註：「說來你們也是不信的！」可見是「神異性」的感受。" });
+            q.push({ q:"「有村舍處有佳蔭，有佳蔭處有村舍」這句話在修辭上使用了何種技巧？", opts:["排比與誇飾", "回文與類疊", "譬喻與擬人", "映襯與雙關"], ans:1, exp:"修辭說明中指出這句使用了「回文」，同時「有...有...」也兼具「類疊」。" });
+            q.push({ q:"「只遠處牛奶車的鈴聲，點綴這周遭的沉默。」在修辭上屬於何種摹寫？", opts:["視覺摹寫", "嗅覺摹寫", "觸覺摹寫", "聽覺摹寫"], ans:3, exp:"修辭說明中明確將此句歸類為「聽覺摹寫」。" });
+            q.push({ q:"「敗草裡的鮮花」使用了何種修辭？", opts:["譬喻", "映襯", "轉化", "回文"], ans:1, exp:"修辭說明中將「敗草裡的鮮花」歸類為映襯（敗草對比鮮花）。" });
+            q.push({ q:"下列何者「沒有」使用「譬喻」修辭？", opts:["地形像是海裡的輕波", "錦帶似的林木", "村舍與樹林是這地盤上的棋子", "我真的跪下了，對著這冉冉漸隱的金光"], ans:3, exp:"前三者皆有「像、似、是」的喻詞，為譬喻。最後一句只是敘述動作，無譬喻。" });
+            q.push({ q:"「康橋只是一帶茂林，擁戴幾處娉婷的尖閣。」句中的「擁戴」與「娉婷」使用了何種修辭？", opts:["轉化 (擬人)", "轉化 (擬物)", "譬喻 (明喻)", "譬喻 (借喻)"], ans:0, exp:"將茂林與尖閣賦予人的動作(擁戴)與姿態(娉婷)，為擬人化(轉化)。" });
+            q.push({ q:"「『春！』這勝利的晴空彷彿在你的耳邊私語。」此句使用了何種修辭？", opts:["映襯", "轉化 (擬人)", "排比", "層遞"], ans:1, exp:"晴空會在耳邊「私語」，賦予無生命事物以人的行為，為轉化(擬人)。" });
+            q.push({ q:"「這裡哪一處不是坦蕩蕩的大道？」此句屬於何種修辭？", opts:["懸問", "提問", "激問", "雙關"], ans:2, exp:"修辭說明中將此句歸類為設問中的「激問」（答案在問題反面：處處都是大道）。" });
+
+            // ================== 【三、修辭說明】 (41-55題) ==================
+            q.push({ q:"「成絲的、成縷的、成捲的、輕快的、遲重的、濃灰的、淡青的、慘白的。」此句的修辭為何？", opts:["排比", "層遞", "類疊", "對偶"], ans:2, exp:"修辭說明中將此句歸類為「類疊」（「的、的、的」疊字連續出現）。" });
+            q.push({ q:"「頃刻間這田野添深了顏色……頃刻間這周遭瀰漫了……頃刻間你的心懷也分潤了……」主要運用了哪兩種修辭？", opts:["排比、類疊", "譬喻、誇飾", "回文、頂真", "映襯、雙關"], ans:0, exp:"結構相似的三個長句構成「排比」，而「頃刻間」的重複出現構成「類疊」。" });
+            q.push({ q:"「你如愛花……你如愛鳥……你如愛兒童……你如愛人情……」這段文字的修辭是？", opts:["層遞", "排比", "映襯", "回文"], ans:1, exp:"修辭說明中將此段四個結構相似的句型歸類為「排比」。" });
+            q.push({ q:"「我沒有夸父的荒誕，但晚景的溫存卻被我這樣偷嘗了不少。」這句將晚景的溫存「偷嘗」，屬於何種修辭？", opts:["譬喻", "轉化", "排比", "借代"], ans:1, exp:"修辭說明將此句歸為「轉化」，將抽象的晚景溫存具象化為可以「偷嘗」的食物。" });
+            q.push({ q:"「怯怜怜的小雪球是探春信的小使……」將花朵擬為小使，屬於何種修辭？", opts:["轉化 (擬人)", "譬喻 (明喻)", "映襯", "誇飾"], ans:0, exp:"賦予小雪球「怯怜怜」的神態並視為「小使」(使者)，修辭說明歸為轉化(擬人)。" });
+            q.push({ q:"下列何者「不是」譬喻修辭？", opts:["有三兩幅畫圖似的經驗", "像是萬盞的金燈", "敗草裡的鮮花", "錦帶似的林木"], ans:2, exp:"「敗草裡的鮮花」是映襯，其餘三者皆有明顯的喻詞（似的、像是），為譬喻。" });
+            q.push({ q:"作者用「棋子」來比喻什麼？", opts:["星空中的星星", "草原上的牛羊", "村舍與樹林", "河面上的浮萍"], ans:2, exp:"課文原句：「村舍與樹林是這地盤上的棋子。」為譬喻修辭。" });
+            q.push({ q:"「關心石上的苔痕，關心敗草裡的鮮花，關心這水流的緩急……」連用六個關心，構成了什麼修辭？", opts:["排比", "回文", "譬喻", "層遞"], ans:0, exp:"修辭說明中將這連串結構相同的「關心...」句型歸為排比。" });
+            q.push({ q:"下列關於修辭的配對，何者「錯誤」？", opts:["只遠處牛奶車的鈴聲——聽覺摹寫", "地形像是海裡的輕波——譬喻", "有村舍處有佳蔭，有佳蔭處有村舍——層遞", "你能想像更適情、更適性的消遣嗎——激問"], ans:2, exp:"「有村舍處有佳蔭，有佳蔭處有村舍」是回文(兼類疊)，不是層遞。" });
+            q.push({ q:"「滿開著豔紅的罌粟，在青草裡亭亭地像是萬盞的金燈」此句兼具哪兩種修辭？", opts:["視覺摹寫、譬喻", "聽覺摹寫、轉化", "嗅覺摹寫、映襯", "觸覺摹寫、排比"], ans:0, exp:"「豔紅」、「金燈」是色彩的視覺摹寫；「像是」則是譬喻。" });
+            q.push({ q:"「陸放翁有一聯詩句：『傳呼快馬迎新月……』」此處使用了何種修辭？", opts:["借代", "引用", "誇飾", "雙關"], ans:1, exp:"修辭說明將直接寫出他人詩句歸類為「引用」。" });
+            q.push({ q:"「嫵媚的康河也望不見蹤跡」賦予康河「嫵媚」的特質，這是哪一種轉化？", opts:["擬人", "擬物", "形象化", "擬聲"], ans:0, exp:"嫵媚通常形容女子的姿態美好，用來形容河流，是將物擬人。" });
+            q.push({ q:"「這勝利的晴空彷彿在你的耳邊私語」此句「沒有」使用下列哪一種修辭？", opts:["轉化", "擬人", "聽覺摹寫", "誇飾"], ans:3, exp:"晴空「私語」是轉化(擬人)，也帶有聽覺的想像，但並沒有過度誇大的「誇飾」。" });
+            q.push({ q:"作者描寫炊煙「參差地翳入了天聽」，將視覺的炊煙消失與聽覺的「天聽」結合，在現代修辭學上常被稱為？", opts:["移覺 (通感)", "借代", "互文", "層遞"], ans:0, exp:"將「眼所見」與「耳所聞」感官交錯應用，學理上稱為通感或移覺(句意解說有提及感官交錯)。" });
+            q.push({ q:"下列哪一句話展現了「以動襯靜」的效果？", opts:["地形像是海裡的輕波", "只遠處牛奶車的鈴聲，點綴這周遭的沉默", "怯怜怜的小雪球是探春信的小使", "陽光從褐色雲裡斜著過來"], ans:1, exp:"用鈴聲(動)來點綴沉默(靜)，正是以動襯靜的經典範例。" });
+
+            // ================== 【四、形音義辨析】 (56-90題) ==================
+            q.push({ q:"「曙光」的「曙」，注音與字義為何？", opts:["ㄕㄨˋ，天剛亮的時候", "ㄕㄨˇ，天剛亮的時候", "ㄕㄨˋ，布置", "ㄕㄨˇ，政府機關"], ans:0, exp:"「曙」讀 ㄕㄨˋ，日部，意為天剛亮的時候。" });
+            q.push({ q:"「部署完畢」與「食藥署」的「署」，讀音是否相同？", opts:["相同，皆讀 ㄕㄨˋ", "相同，皆讀 ㄕㄨˇ", "不同，前者 ㄕㄨˋ，後者 ㄕㄨˇ", "不同，前者 ㄕㄨˇ，後者 ㄕㄨˋ"], ans:2, exp:"「部署、連署」讀 ㄕㄨˋ(動詞)；政府機關如「食藥署」讀 ㄕㄨˇ(名詞)。" });
+            q.push({ q:"「姿態娉婷」的「娉婷」，注音為何？", opts:["ㄆㄧㄥ ㄊㄧㄥˊ", "ㄆㄧㄥˋ ㄊㄧㄥˊ", "ㄆㄧㄥ ㄊㄧㄥˇ", "ㄆㄧㄥˋ ㄊㄧㄥˋ"], ans:0, exp:"「娉婷」皆為輕聲或原音，娉讀 ㄆㄧㄥ(第一聲)，形容輕巧美好的樣子。" });
+            q.push({ q:"「重金禮聘」的「聘」，注音與字義為何？", opts:["ㄆㄧㄥ，訂婚", "ㄆㄧㄥˋ，延請", "ㄔㄥˇ，直馳", "ㄆㄧㄥ，直馳"], ans:1, exp:"「聘」讀 ㄆㄧㄥˋ，動詞，延請之意。" });
+            q.push({ q:"「馳騁」的「騁」，注音為何？", opts:["ㄆㄧㄥ", "ㄆㄧㄥˋ", "ㄔㄥˇ", "ㄔㄥˋ"], ans:2, exp:"「騁」讀 ㄔㄥˇ(馬部)，意為直馳、奔跑。" });
+            q.push({ q:"「翳入天際」的「翳」，注音與字義為何？", opts:["ㄧˋ，隱沒", "ㄧˋ，眼珠薄膜", "ㄈㄟˇ，翠玉", "ㄧˊ，隱沒"], ans:0, exp:"「翳」讀 ㄧˋ，此處作動詞，為隱沒之意。" });
+            q.push({ q:"下列「」中字的讀音，何者「錯誤」？", opts:["「翌」日：ㄧˋ", "「糝」上金粉：ㄙㄢˇ", "「滲」透：ㄕㄣˋ", "「摻」雜：ㄘㄢ"], ans:3, exp:"「摻」雜的正確讀音為 ㄔㄢ(第一聲)，不是 ㄘㄢ。" });
+            q.push({ q:"「參差不齊」的「參」，注音為何？", opts:["ㄕㄣ", "ㄘㄢ", "ㄘㄣ", "ㄙㄢ"], ans:2, exp:"「參差」為聯綿詞，讀作 ㄘㄣ ㄘ (皆平舌音)。" });
+            q.push({ q:"「動如參商」的「參」，注音與字義為何？", opts:["ㄘㄣ，雜亂", "ㄕㄣ，星座名", "ㄘㄢ，加入", "ㄙㄢ，數字三"], ans:1, exp:"參、商皆為星宿名，參星在西，商星在東，此出彼沒，不相相見。讀作 ㄕㄣ。" });
+            q.push({ q:"「慘白」的「慘」，在此處的詞性與字義為何？", opts:["副詞，程度厲害、嚴重", "形容詞，悲哀、淒涼", "動詞，傷害", "名詞，災難"], ans:0, exp:"「慘」白是修飾「白」的程度，作副詞用，指程度厲害。" });
+            q.push({ q:"「恣意而行」的「恣」，注音為何？", opts:["ㄗ", "ㄗˋ", "ㄘ", "ㄘˋ"], ans:1, exp:"「恣」讀作 ㄗˋ(第四聲)，意為隨、任憑。" });
+            q.push({ q:"「諮詢商議」的「諮」，注音為何？", opts:["ㄗ", "ㄗˋ", "ㄘ", "ㄘˋ"], ans:0, exp:"「諮」讀作 ㄗ(第一聲)，意為商量、詢問。" });
+            q.push({ q:"「衝著大道」與「說話很衝」的「衝」，讀音為何？", opts:["皆讀 ㄔㄨㄥ", "皆讀 ㄔㄨㄥˋ", "前者 ㄔㄨㄥ，後者 ㄔㄨㄥˋ", "前者 ㄔㄨㄥˋ，後者 ㄔㄨㄥ"], ans:1, exp:"向著、對著(衝著大道)，以及激烈無禮(說話很衝)，皆讀作 ㄔㄨㄥˋ(第四聲)。" });
+            q.push({ q:"「交通要衝」與「怒髮衝冠」的「衝」，讀音為何？", opts:["皆讀 ㄔㄨㄥ", "皆讀 ㄔㄨㄥˋ", "前者 ㄔㄨㄥ，後者 ㄔㄨㄥˋ", "前者 ㄔㄨㄥˋ，後者 ㄔㄨㄥ"], ans:0, exp:"交通要道(名詞)、直著向上頂(動詞)，皆讀作 ㄔㄨㄥ(第一聲)。" });
+            q.push({ q:"「滄海一粟」的「粟」，注音與字義為何？", opts:["ㄌㄧˋ，植物果實", "ㄙㄨˋ，穀物總稱", "ㄌㄧˋ，穀物總稱", "ㄙㄨˋ，植物果實"], ans:1, exp:"「粟」讀 ㄙㄨˋ(米部)，指小米、穀物。" });
+            q.push({ q:"「徒費脣舌」的「徒」，詞性與字義為何？", opts:["動詞，步行", "副詞，僅、只", "副詞，白白地、平白", "名詞，學生"], ans:2, exp:"「徒」作副詞，修飾費，指白白浪費。" });
+            q.push({ q:"「點綴」的「綴」，注音為何？", opts:["ㄔㄨㄛˋ", "ㄓㄨㄟˋ", "ㄗㄨㄟˋ", "ㄘㄨㄛˋ"], ans:1, exp:"「綴」讀 ㄓㄨㄟˋ(系部)，裝飾之意。" });
+            q.push({ q:"「創作不輟」的「輟」，注音與字義為何？", opts:["ㄔㄨㄛˋ，停止", "ㄓㄨㄟˋ，停止", "ㄔㄨㄛˋ，吃喝", "ㄓㄨㄟˋ，吃喝"], ans:0, exp:"「輟」讀 ㄔㄨㄛˋ(車部)，停止之意。" });
+            q.push({ q:"「啜飲」與「啜泣」的「啜」，注音為何？", opts:["皆讀 ㄔㄨㄛˋ", "皆讀 ㄓㄨㄟˋ", "前者 ㄔㄨㄛˋ，後者 ㄓㄨㄟˋ", "前者 ㄓㄨㄟˋ，後者 ㄔㄨㄛˋ"], ans:0, exp:"口部的「啜」皆讀 ㄔㄨㄛˋ，可解為吃喝或哭泣。" });
+            q.push({ q:"「膏腴之地」的「腴」，注音與字義為何？", opts:["ㄩˊ，諂媚", "ㄩˊ，片刻", "ㄩˊ，肥沃", "ㄩˇ，豐滿"], ans:2, exp:"「腴」讀 ㄩˊ(肉部)，形容土地肥沃或人體豐滿。" });
+            q.push({ q:"「阿諛奉承」的「諛」，注音與字義為何？", opts:["ㄩˊ，肥沃", "ㄩˊ，諂媚", "ㄩˊ，片刻", "ㄩˇ，植物"], ans:1, exp:"「諛」讀 ㄩˊ(言部)，意為諂媚。" });
+            q.push({ q:"「須臾」的意思是？", opts:["必須", "長久", "片刻", "植物名"], ans:2, exp:"「須臾(ㄩˊ)」指極短的時間、片刻。" });
+            q.push({ q:"「茱萸」是一種？", opts:["動物", "礦物", "植物", "節日"], ans:2, exp:"「萸(ㄩˊ)」(艸部)，為植物名，如茱萸(重陽節常佩帶)。" });
+            q.push({ q:"「土阜」與「民康物阜」的「阜」，注音與字義配對何者正確？", opts:["ㄈㄨˋ，前者為碼頭，後者為豐厚", "ㄈㄨˋ，前者為土山，後者為豐厚", "ㄅㄨˋ，前者為土山，後者為城市", "ㄅㄨˋ，前者為碼頭，後者為豐厚"], ans:1, exp:"「阜」讀 ㄈㄨˋ，可作土山(名詞)或豐厚(形容詞)。" });
+            q.push({ q:"「商埠」的「埠」，注音為何？", opts:["ㄈㄨˋ", "ㄅㄨˋ", "ㄆㄨˋ", "ㄈㄨˇ"], ans:1, exp:"「埠」讀 ㄅㄨˋ(土部)，指碼頭或城市。" });
+            q.push({ q:"「窺伺」與「伺候父母」的「伺」，讀音是否相同？", opts:["相同，皆讀 ㄙˋ", "相同，皆讀 ㄘˋ", "不同，前者 ㄙˋ，後者 ㄘˋ", "不同，前者 ㄘˋ，後者 ㄙˋ"], ans:2, exp:"暗中偵察為 ㄙˋ；服侍為 ㄘˋ。" });
+            q.push({ q:"「偌大」的「偌」，注音為何？", opts:["ㄋㄨㄛˋ", "ㄖㄨㄛˋ", "ㄖㄜˇ", "ㄋㄨㄛˇ"], ans:1, exp:"「偌」讀 ㄖㄨㄛˋ(人部)，副詞，如此之意。" });
+            q.push({ q:"「一呼百諾」的「諾」，注音為何？", opts:["ㄋㄨㄛˋ", "ㄖㄨㄛˋ", "ㄖㄜˇ", "ㄋㄨㄛˇ"], ans:0, exp:"「諾」讀 ㄋㄨㄛˋ(言部)，答應之意。" });
+            q.push({ q:"「冉冉漸隱」與「韶光荏苒」的讀音為何？", opts:["皆讀 ㄖㄢˊ", "皆讀 ㄖㄢˇ", "前者 ㄖㄢˇ，後者 ㄖㄢˊ", "前者 ㄖㄢˊ，後者 ㄖㄢˇ"], ans:1, exp:"冉冉、荏苒皆讀 ㄖㄢˇ(第三聲)。" });
+            q.push({ q:"「鬚髯」的「髯」，注音與字義為何？", opts:["ㄖㄢˇ，下巴鬍鬚", "ㄖㄢˊ，兩頰鬍鬚", "ㄖㄢˇ，嘴唇鬍鬚", "ㄖㄢˊ，全部毛髮"], ans:1, exp:"「髯」讀 ㄖㄢˊ(第二聲，髟部)，特指兩頰上的鬍鬚。" });
+            q.push({ q:"下列字形何者完全正確？", opts:["部署完畢", "連署簽名", "食藥曙", "麻署"], ans:0, exp:"正確為：部署、連署、食藥「署」、麻「糬」。" });
+            q.push({ q:"下列字形何者完全正確？", opts:["重金禮娉", "姿態聘婷", "馳騁沙場", "眼翡病"], ans:2, exp:"正確為：禮「聘」、姿態「娉」婷、馳騁、眼「翳」病。" });
+            q.push({ q:"下列字音何者完全相同？", opts:["慘 / 參(差) / 摻", "署 / 曙 / 糬", "粟 / 栗", "綴 / 輟 / 啜"], ans:1, exp:"署(ㄕㄨˋ/ㄕㄨˇ)、曙(ㄕㄨˋ)、糬(ㄕㄨˇ)皆為ㄕㄨ聲系。慘(ㄘㄢˇ)參(ㄘㄣ)摻(ㄔㄢ)不同。粟(ㄙㄨˋ)栗(ㄌㄧˋ)不同。綴(ㄓㄨㄟˋ)輟(ㄔㄨㄛˋ)不同。" });
+            q.push({ q:"下列讀音配對何者錯誤？", opts:["「翌」日：ㄧˋ", "膏「腴」：ㄩˊ", "「摻」雜：ㄘㄢ", "商「埠」：ㄅㄨˋ"], ans:2, exp:"摻雜應讀 ㄔㄢ。" });
+            q.push({ q:"「他為人阿_，真令人受不了。」空格應填？", opts:["腴", "臾", "萸", "諛"], ans:3, exp:"阿諛奉承，用言部的「諛」。" });
+
+            // ================== 【五、成語加油站】 (91-110題) ==================
+            q.push({ q:"下列哪個成語用來形容「光線明暗不定的樣子」？", opts:["交相輝映", "忽明忽滅", "浮光掠影", "光芒萬丈"], ans:1, exp:"「忽明忽滅」及「閃閃爍爍」皆指光線明暗不定。" });
+            q.push({ q:"「波光瀲灩」的「瀲灩」，注音為何？", opts:["ㄌㄧㄢˇ ㄧㄢˋ", "ㄌㄧㄢˋ ㄧㄢˋ", "ㄌㄧㄢˊ ㄧㄢˋ", "ㄌㄧㄢˋ ㄧㄢˇ"], ans:1, exp:"「瀲灩」皆為第四聲 ㄌㄧㄢˋ ㄧㄢˋ，意為波光映照。" });
+            q.push({ q:"下列成語何者比喻「見識膚淺空泛，不著邊際」？", opts:["若隱若現", "掩映生姿", "浮光掠影", "以管窺天"], ans:2, exp:"「浮光掠影」比喻見識膚淺空泛，或世事稍縱即逝。" });
+            q.push({ q:"「暮色蒼茫」用來形容什麼時間的天色？", opts:["清晨", "正午", "傍晚", "深夜"], ans:2, exp:"「暮色」即指傍晚，形容天色朦朧昏暗的樣子。" });
+            q.push({ q:"下列哪個成語可以用來比喻「氣勢雄厚」？", opts:["交相輝映", "光芒萬丈", "照如白晝", "掩映生姿"], ans:1, exp:"「光芒萬丈」原指光輝燦爛，比喻氣勢雄厚或成就非凡。" });
+            q.push({ q:"「美不勝收」的「勝」字，意思最接近？", opts:["勝利", "超越", "盡、完全", "美麗"], ans:2, exp:"「勝(ㄕㄥ)」在此作「盡」解。美不勝收即美好的事物太多，無法「完全」收受。" });
+            q.push({ q:"「風光旖旎」的「旖旎」，注音為何？", opts:["ㄑㄧˊ ㄋㄧˇ", "ㄧˇ ㄋㄧˇ", "ㄧˊ ㄋㄧˇ", "ㄑㄧˊ ㄋㄧˊ"], ans:1, exp:"「旖旎」讀作 ㄧˇ ㄋㄧˇ(第三聲)，形容景色柔和、柔媚的樣子。" });
+            q.push({ q:"下列哪個成語比喻「風景優美而人跡罕至的地方」？", opts:["別有洞天", "福地洞天", "世外桃源", "尋幽訪勝"], ans:2, exp:"「世外桃源」源自陶淵明，比喻避世隱居或風景優美人跡罕至之處。" });
+            q.push({ q:"「指風景極為秀麗，引人入勝」是哪一個成語的解釋？", opts:["別有洞天", "福地洞天", "美不勝收", "山明水秀"], ans:0, exp:"「別有洞天」常指穿越某處後，發現另一個風景秀麗引人入勝的境界。" });
+            q.push({ q:"「福地洞天」本指何處？", opts:["皇帝的陵寢", "神仙居住的地方", "高僧隱居的深山", "繁華的京城"], ans:1, exp:"道教傳說中的仙境。後比喻名山勝境。" });
+            q.push({ q:"下列何者「不是」用來形容時間短暫的成語？", opts:["彈指之間", "浮光掠影", "不消一刻", "電光石火"], ans:1, exp:"浮光掠影雖有世事稍縱即逝之意，但最主要常用來比喻見識膚淺。其餘三者明確指極短時間。" });
+            q.push({ q:"「浮雲朝露」比喻什麼？", opts:["天氣變化無常", "人生的短促", "友情的脆弱", "事業的成功"], ans:1, exp:"浮雲易散，朝露易乾。古人常以此比喻生命無常與人生的短促。" });
+            q.push({ q:"「浮生瞬息」的意思是？", opts:["人生虛浮而短暫", "在極短時間內變化迅速", "連一刻鐘都不需要", "比喻轉瞬間即逝"], ans:0, exp:"浮生(虛浮的人生)＋瞬息(極短時間)＝人生虛浮而短暫。" });
+            q.push({ q:"「瞬息萬變」的意思是？", opts:["人生虛浮而短暫", "在極短的時間內變化迅速", "連一刻鐘都不需要", "比喻轉瞬間即逝"], ans:1, exp:"形容在極短的時間內(瞬息)變化非常多且迅速(萬變)。" });
+            q.push({ q:"「電光石火」的典故主要用來比喻？", opts:["怒氣爆發", "轉瞬間即逝", "力量強大", "極度光明"], ans:1, exp:"閃電與石頭撞擊的火花皆瞬間消失，比喻事物消逝極快。" });
+            q.push({ q:"「夸父逐日」在現代常被用來比喻什麼？", opts:["追求真理堅持不懈", "不自量力，或有雄心壯志但未竟大業", "形容跑得跟飛一樣快", "形容天氣極端炎熱"], ans:1, exp:"神話故事引申為貶義的不自量力，或褒義的懷有雄心壯志卻未竟大業。" });
+            q.push({ q:"「荒唐而不近情理」是哪一個成語的解釋？", opts:["荒誕不經", "以管窺天", "繪聲繪影", "一償宿願"], ans:0, exp:"「荒誕」即荒唐，「不經」即不合常理。" });
+            q.push({ q:"「以管窺天」比喻什麼？", opts:["做事小心謹慎", "見識片面而狹窄", "喜歡偷窺他人", "科技儀器的進步"], ans:1, exp:"透過細管看天，視野極小。比喻眼界狹窄，見識片面。" });
+            q.push({ q:"「形容講述或描摹事物，十分深刻入微、生動逼真」是指哪一個成語？", opts:["交相輝映", "掩映生姿", "繪聲繪影", "美不勝收"], ans:2, exp:"連聲音和影子都能生動描繪出來，即「繪聲繪影」。" });
+            q.push({ q:"「一償宿願」的「宿」意思為何？", opts:["住夜", "星辰", "前世的", "平常，向來的"], ans:3, exp:"「宿願」指平常、向來抱持的願望(舊願)。(非掛單借宿的住夜之意)。" });
+
+            // ================== 【六、陸游】 (111-122題) ==================
+            q.push({ q:"徐志摩引用陸游的「傳呼快馬迎新月，卻上輕輿趁晚涼」來烘托什麼？", opts:["自己做官的威風", "騎自行車的風流與享受晚涼的雅趣", "對宋朝文學的熱愛", "康橋的月色比中國美"], ans:1, exp:"文意解說指出：用以烘托騎自行車的風流，以及享受月夜晚涼的雅趣。" });
+            q.push({ q:"陸游是哪一個朝代的傑出詩人？", opts:["北宋", "南宋", "唐朝", "明朝"], ans:1, exp:"陸游生於北宋末，主要活躍於南宋，是南宋最傑出的詩人。" });
+            q.push({ q:"陸游自號為何？", opts:["香山居士", "六一居士", "放翁", "東坡居士"], ans:2, exp:"陸游字務觀，自號放翁。" });
+            q.push({ q:"陸游的作品最大特色，是始終如一地流露出什麼情感？", opts:["隱居山林的閒適", "對家國的熱愛及恢復中原之志", "男女相思的哀愁", "懷才不遇的憤怨"], ans:1, exp:"陸游被譽為「愛國詩人」，其作品最大特色是流露對家國的熱愛及恢復中原之志。" });
+            q.push({ q:"梁啟超詩云：「集中什九從軍樂，亙古男兒一放翁。」這是在讚美誰？", opts:["辛棄疾", "岳飛", "陸游", "蘇軾"], ans:2, exp:"詩中的「放翁」即指陸游，讚美其愛國的男兒氣概。" });
+            q.push({ q:"在《十一月四日風雨大作》中，「夜闌臥聽風吹雨，鐵馬冰河入夢來」表達了詩人何種心境？", opts:["害怕風雨交加的夜晚", "夢見過去遊歷的冰河美景", "即使年老僵臥，仍夢想騎馬跨越冰河出征報國", "感嘆村莊過於孤寂荒涼"], ans:2, exp:"詩中表達即便身處孤村，依然心繫國家，夢想跨越冰河出征的愛國情操。" });
+            q.push({ q:"《示兒》一詩中，「王師北定中原日，家祭毋忘告乃翁」的「乃翁」是指誰？", opts:["皇帝", "祖父", "陸游自己 (父親)", "老師"], ans:2, exp:"「乃翁」意指「你的父親」，即詩人陸游自己。他叮囑兒子收復中原時要在祭祀時告訴他。" });
+            q.push({ q:"陸游《遊山西村》中，「莫笑農家臘酒渾，豐年留客足雞豚」展現了什麼？", opts:["農家釀酒技術很差", "村民殷勤待客的熱情與豐收的喜悅", "作者嫌棄農家食物粗糙", "農村生活非常貧困"], ans:1, exp:"語譯指出：不要笑臘酒渾，豐年時農家會用豐盛的雞豬佳餚熱情招待客人。" });
+            q.push({ q:"「山重水複疑無路，柳暗花明又一村」除了寫景外，常被後人引申寓含什麼哲理？", opts:["迷路時不要慌張", "遇到困境時，堅持下去往往會出現新的轉機", "山區開發破壞了自然生態", "植物生長隨季節變化"], ans:1, exp:"此兩句以景寓理，千古傳誦，比喻在絕境中往往會出現新的轉機與希望。" });
+            q.push({ q:"《遊山西村》中提到的「春社」是什麼樣的活動？", opts:["祭祀春神祈求姻緣", "祭祀土神以祈農事豐收", "慶祝春天到來的賞花大會", "迎接春風的風箏節"], ans:1, exp:"語譯指出：「春社」是祭祀土神，以祈農事豐收的日子。" });
+            q.push({ q:"《遊山西村》中「拄杖無時夜扣門」表達了作者何種心情？", opts:["因為生病必須拄拐杖", "夜晚睡不著到處騷擾鄰居", "喜愛當地淳樸古風，希望能隨時趁月色來訪", "想要趁夜黑風高時逃離村莊"], ans:2, exp:"語譯指出：作者希望能趁著月色閒遊，隨時拄杖叩門拜訪，顯現其對農村生活的喜愛。" });
+            q.push({ q:"綜合而論，貫穿陸游文學作品的兩大核心思想為何？", opts:["愛國與愛民", "修仙與煉丹", "浪漫與唯美", "批判與諷刺"], ans:0, exp:"教材結語：綜合而論，愛國與愛民的思想貫穿了陸游的文學作品。" });
+
+            // ================== 【七、類文選讀】 (123-130題) ==================
+            q.push({ q:"徐志摩《再別康橋》中，「那河畔的金柳，是夕陽中的新娘」運用了何種修辭將無生命的景物化作有生命的活物？", opts:["排比", "借代", "譬喻 (暗喻)", "誇飾"], ans:2, exp:"「是」為暗喻詞。賞析提到：大膽想像為新娘，使無生命的景語化作有生命的活物。" });
+            q.push({ q:"在《再別康橋》中，詩人「甘心做一條水草」表達了什麼境界？", opts:["覺得當人太辛苦", "主客觀合一，物我兩忘，對康橋極度熱愛", "想要在河底尋找寶藏", "認為水草的生命力最強"], ans:1, exp:"賞析提到：在意亂情迷間，詩人如莊周夢蝶，物我兩忘，直覺得波光豔影蕩漾，甘心做水草。" });
+            q.push({ q:"聞一多提倡現代詩歌應具備「三美」，《再別康橋》被視為兼具三美的絕唱。請問是哪三美？", opts:["文字美、節奏美、意象美", "音樂美、繪畫美、建築美", "古典美、現代美、融合美", "聽覺美、視覺美、觸覺美"], ans:1, exp:"賞析最後一段明確指出，聞一多提倡的現代詩歌三美為：「音樂美」、「繪畫美」、「建築美」。" });
+            q.push({ q:"《再別康橋》最後一節「我揮一揮衣袖，不帶走一片雲彩」展現了詩人何種態度？", opts:["憤怒地離開", "依依不捨且充滿怨恨", "瀟灑地來，又瀟灑地走", "害怕留下任何證據"], ans:2, exp:"賞析指出：與首節對應，瀟灑地來，又瀟灑地走。既然涅槃過，又何必帶走一片雲彩。" });
+            q.push({ q:"徐志摩《偶然》一詩中，「我是天空裡的一片雲，偶爾投影在你的波心」傳達了什麼樣的人生哲理？", opts:["命運由天注定", "聚散無常，緣起緣滅，無須執著於短暫情緣", "氣候變化無常，要帶雨傘", "人應該像雲一樣到處流浪"], ans:1, exp:"賞析提到：《偶然》顯露心靈寬容，聚散無常，緣起緣滅，追求瀟灑，無須執著短暫情緣。" });
+            q.push({ q:"《偶然》一詩中，詩人把人生比作什麼？", opts:["天空裡的一片雲", "交會時的光亮", "黑夜的海", "投影的波心"], ans:2, exp:"賞析提到：詩人把人生比作「黑夜的海」，繼續朝自己的方向前行。" });
+            q.push({ q:"關於《偶然》一詩的格律特色，下列敘述何者正確？", opts:["完全沒有押韻", "上下節格律不對稱", "全詩使用文言文創作", "長短音步相間，讀起來紓徐從容、琅琅上口"], ans:3, exp:"賞析指出：上下節格律對稱，長短音步相間，讀起來紓徐從容、委婉頓挫而琅琅上口。" });
+            q.push({ q:"徐志摩特有的「追求自由、追求瀟灑自如」的氣質，在《偶然》賞析中被認為是傳承了哪一家的思想？", opts:["儒家思想的「入世濟民」", "道家思想的「順任自然」", "法家思想的「嚴刑峻法」", "墨家思想的「兼愛非攻」"], ans:1, exp:"賞析提到：追求自由，本是徐志摩特有氣質，傳承了道家思想的「順任自然」。" });
+
+            return q;
+        };
+
+        // ==========================================
+        //  UI 狀態與邏輯
+        // ==========================================
+        let currentTab = 'login';
+        let learnSubTab = 'sec1';
+        let quizState = { active: false, currentQ: 0, score: 0, answers: [], questions: [], showExplanation: false, selectedAns: null };
+        let isLearnMenuOpen = false;
+
+        const el = id => document.getElementById(id);
+
+        window.toggleLearnMenu = (show) => {
+            isLearnMenuOpen = typeof show === 'boolean' ? show : !isLearnMenuOpen;
+            const drawer = el('learn-drawer');
+            const overlay = el('learn-overlay');
+            if(drawer && overlay) {
+                if(isLearnMenuOpen) {
+                    drawer.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden');
+                } else {
+                    drawer.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                }
+            }
+        };
+
+        const loadRecentUsers = async () => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            try {
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', COLLECTION_NAME);
+                const snap = await getDoc(ref);
+                if(snap.exists() && snap.data().users) recentUsers = snap.data().users;
+            } catch(e) {}
+            if (currentTab === 'login') renderLogin();
+        };
+
+        const saveRecentUser = async (name) => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            try {
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', COLLECTION_NAME);
+                await setDoc(ref, { users: arrayUnion(name) }, { merge: true });
+                if (!recentUsers.includes(name)) recentUsers.push(name);
+            } catch(e) {}
+        };
+
+        const initApp = async () => {
+            renderApp();
+            if (isFirebaseInitialized) {
+                await initAuth();
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        await loadUserData();
+                        await loadRecentUsers();
+                        if (username) renderMain(); else renderLogin();
+                    } else {
+                        renderLogin();
+                    }
+                });
+            } else {
+                if (username) renderMain(); else renderLogin();
+            }
+        };
+
+        window.handleLogin = async (name) => {
+            if(!name.trim()) {
+                const inputEl = document.getElementById('usernameInput');
+                inputEl.classList.add('border-red-500', 'bg-red-50');
+                inputEl.placeholder = "名稱不能為空！";
+                setTimeout(() => {
+                    inputEl.classList.remove('border-red-500', 'bg-red-50');
+                    inputEl.placeholder = "請輸入您的姓名/座號";
+                }, 2000);
+                return;
+            }
+            username = name;
+            
+            if (isFirebaseInitialized && currentUser) {
+                const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid);
+                await setDoc(userRef, { username, lastLogin: new Date() }, { merge: true });
+                const loginRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_logs'));
+                await setDoc(loginRef, { type: 'login', time: new Date() });
+                await saveRecentUser(name);
+            }
+            renderMain();
+        };
+
+        const loadUserData = async () => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
+            try {
+                const snap = await getDoc(ref);
+                if (snap.exists()) {
+                    userData = snap.data();
+                    if(!userData.favorites) userData.favorites = [];
+                    if(!userData.mistakes) userData.mistakes = [];
+                } else {
+                    await setDoc(ref, userData);
+                }
+            } catch(e) {}
+        };
+
+        const saveUserData = async () => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
+            try { await updateDoc(ref, userData); } catch(e) {}
+        };
+
+        window.toggleFavorite = async (itemId) => {
+            const idx = userData.favorites.indexOf(itemId);
+            if (idx > -1) {
+                userData.favorites.splice(idx, 1);
+            } else {
+                userData.favorites.push(itemId);
+            }
+            saveUserData();
+            if(currentTab === 'learn') renderLearnContent();
+            if(currentTab === 'favorites') renderFavorites();
+        };
+
+        const renderApp = () => { el('app').innerHTML = `<div id="view-container" class="w-full h-full flex flex-col"></div>`; };
+
+        window.renderLogin = () => {
+            currentTab = 'login';
+            el('view-container').innerHTML = `
+                <div class="flex-1 flex flex-col items-center justify-center bg-wood bg-opacity-30 relative overflow-hidden p-6">
+                    <div class="absolute top-6 right-6 z-20">
+                        <div class="flex items-center bg-gray-50 px-4 py-2 rounded-full border border-gray-200 shadow-inner text-base font-bold text-gray-700">
+                            <span class="status-dot ${connectionStatus === 'loading' ? 'status-loading' : connectionStatus === 'success' ? 'status-success' : 'status-error'}"></span>
+                            ${connectionStatus === 'loading' ? '雲端讀取中...' : connectionStatus === 'success' ? '雲端已同步' : '雲端連線失敗'}
+                        </div>
+                    </div>
+                    <div class="absolute -top-20 -left-20 w-80 h-80 bg-amber-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+                    <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+                    
+                    <div class="bg-white p-6 md:p-10 rounded-xl shadow-2xl z-10 w-[28rem] max-w-full text-center border-t-8 border-amber-600">
+                        <h1 class="text-4xl md:text-5xl font-bold text-wood-dark mb-4 tracking-widest leading-tight">我所知道的<br>康橋</h1>
+                        <p class="text-gray-500 mb-10 text-xl">互動學習系統</p>
+                        <div class="space-y-6">
+                            <input type="text" id="usernameInput" placeholder="請輸入您的姓名/座號" class="w-full px-5 py-4 text-lg rounded-lg border-2 border-gray-300 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-center transition-colors">
+                            <button onclick="handleLogin(document.getElementById('usernameInput').value)" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-6 text-xl rounded-lg shadow-md transition duration-200">開始學習</button>
+                        </div>
+                        <div class="mt-10 border-t-2 border-gray-100 pt-6">
+                            <p class="text-base text-gray-400 mb-3 font-medium">雲端最近登入</p>
+                            <div class="flex flex-wrap justify-center gap-3">
+                                ${recentUsers.length > 0 ? recentUsers.slice(-5).map(u => `<button onclick="handleLogin('${u}')" class="text-base font-bold bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 px-4 py-2 rounded shadow-sm transition">${u}</button>`).join('') : `<span class="text-sm text-gray-400">尚無紀錄</span>`}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        };
+
+        window.renderMain = () => {
+            el('view-container').innerHTML = `
+                <nav class="bg-wood text-wood-dark shadow-md z-20 shrink-0 relative">
+                    <div class="w-full overflow-x-auto scrollbar-hide">
+                        <div class="flex items-center justify-between h-16 md:h-20 px-4 sm:px-6 lg:px-8 min-w-max">
+                            <div class="flex items-center gap-3 shrink-0 mr-8">
+                                <span class="font-bold text-lg md:text-2xl tracking-widest hidden lg:block shrink-0"><i class="fas fa-book-open mr-3 text-amber-700"></i>康橋</span>
+                                <div class="flex items-center bg-gray-50 px-2 sm:px-3 py-1.5 rounded-full border border-gray-200 shadow-inner text-xs sm:text-sm font-bold text-gray-700 shrink-0">
+                                    <span class="status-dot ${connectionStatus === 'loading' ? 'status-loading' : connectionStatus === 'success' ? 'status-success' : 'status-error'}"></span>
+                                    <span class="hidden sm:inline">${connectionStatus === 'success' ? '雲端同步' : '連線失敗'}</span>
+                                </div>
+                                <div id="nav-quiz-stats" class="hidden items-center ml-1 sm:ml-4 animate-fade-in shrink-0">
+                                    <div class="flex items-center bg-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-gray-200 shadow-sm text-sm sm:text-base font-bold shrink-0">
+                                        <span class="text-emerald-600 flex items-center"><i class="fas fa-check-circle mr-1"></i><span id="nav-stat-correct">0</span></span>
+                                        <div class="w-px bg-gray-300 h-4 mx-2 sm:mx-3"></div>
+                                        <span class="text-red-500 flex items-center"><i class="fas fa-times-circle mr-1"></i><span id="nav-stat-incorrect">0</span></span>
+                                    </div>
+                                    <div class="hidden md:flex flex-col w-24 lg:w-32 ml-3 shrink-0">
+                                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden shadow-inner">
+                                            <div id="nav-stat-progress-bar" class="bg-gradient-to-r from-orange-400 to-orange-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center space-x-2 md:space-x-4 shrink-0">
+                                <button onclick="switchTab('learn')" id="nav-learn" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">學習區</button>
+                                <button onclick="switchTab('quiz')" id="nav-quiz" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">測驗(130題)</button>
+                                <button onclick="switchTab('mistakes')" id="nav-mistakes" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">錯題本</button>
+                                <button onclick="switchTab('favorites')" id="nav-favorites" class="px-3 py-2 sm:px-4 sm:py-3 rounded-md text-sm sm:text-base md:text-lg font-bold hover:bg-amber-700 hover:text-white transition">最愛</button>
+                                <div class="ml-2 sm:ml-4 flex items-center pl-2 sm:pl-4 border-l-2 border-amber-400">
+                                    <span class="text-sm sm:text-lg font-bold mr-2 sm:mr-3"><i class="fas fa-user-circle mr-1 sm:mr-2"></i>${username}</span>
+                                    <button onclick="logout()" class="text-lg text-red-600 hover:text-red-800" title="登出"><i class="fas fa-sign-out-alt"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                <div id="main-content" class="flex-1 overflow-hidden bg-white bg-opacity-50 flex flex-col"></div>
+            `;
+            switchTab('learn');
+        };
+
+        window.logout = () => {
+            username = ''; userData = { favorites: [], mistakes: [] };
+            quizState = { active: false, currentQ: 0, score: 0, answers: [], questions: [], showExplanation: false, selectedAns: null };
+            renderLogin();
+        };
+
+        window.switchTab = (tab) => {
+            currentTab = tab;
+            ['learn', 'quiz', 'mistakes', 'favorites'].forEach(t => {
+                const btn = el(`nav-${t}`);
+                if(btn) {
+                    if(t === tab) { btn.classList.add('bg-amber-700', 'text-white'); btn.classList.remove('hover:bg-amber-700', 'hover:text-white'); }
+                    else { btn.classList.remove('bg-amber-700', 'text-white'); btn.classList.add('hover:bg-amber-700', 'hover:text-white'); }
+                }
+            });
+
+            const navStats = el('nav-quiz-stats');
+            if (navStats) {
+                if (tab === 'quiz' && quizState.active) { navStats.classList.remove('hidden'); navStats.classList.add('flex'); updateQuizStats(); }
+                else { navStats.classList.add('hidden'); navStats.classList.remove('flex'); }
+            }
+
+            const content = el('main-content');
+            if(tab === 'learn') renderLearnView(content);
+            if(tab === 'quiz') renderQuizView(content);
+            if(tab === 'mistakes') renderMistakes(content);
+            if(tab === 'favorites') renderFavorites(content);
+        };
+
+        const renderLearnView = (container) => {
+            const currentData = learnData.find(d => d.id === learnSubTab);
+            container.innerHTML = `
+                <div class="w-full bg-amber-50 border-b border-amber-200 p-4 flex items-center shadow-sm z-10 shrink-0">
+                    <button onclick="toggleLearnMenu(true)" class="text-amber-800 hover:text-amber-600 focus:outline-none flex items-center px-4 py-2 bg-white rounded border border-amber-300 shadow-sm mr-4 transition-colors shrink-0">
+                        <i class="fas fa-bars text-xl mr-2"></i><span class="font-bold">目錄</span>
+                    </button>
+                    <span class="font-bold text-xl md:text-2xl text-wood-dark truncate" id="current-learn-title">${currentData ? currentData.title : ''}</span>
+                </div>
+                <div id="learn-overlay" onclick="toggleLearnMenu(false)" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden transition-opacity"></div>
+                <div id="learn-drawer" class="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-gray-50 border-r border-gray-200 z-40 transform -translate-x-full transition-transform duration-300 overflow-y-auto shadow-2xl flex flex-col">
+                    <div class="p-6 bg-amber-100 flex justify-between items-center border-b border-amber-200 shrink-0">
+                        <span class="font-bold text-2xl text-amber-900 truncate"><i class="fas fa-list-ul mr-3"></i>學習目錄</span>
+                        <button onclick="toggleLearnMenu(false)" class="text-amber-800 hover:text-red-600 transition-colors shrink-0 ml-2"><i class="fas fa-times text-3xl"></i></button>
+                    </div>
+                    <ul class="py-4 flex-1">
+                        ${learnData.map(d => `
+                            <li><button onclick="selectLearnTab('${d.id}')" id="ltab-${d.id}" class="w-full text-left px-6 py-4 text-lg md:text-xl font-bold hover:bg-amber-100 transition-colors ${learnSubTab === d.id ? 'bg-amber-100 text-amber-800 border-l-8 border-amber-600' : 'text-gray-600 border-l-8 border-transparent'}">${d.title}</button></li>
+                        `).join('')}
+                    </ul>
+                </div>
+                <div class="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto w-full" id="learn-content-area"></div>
+            `;
+            renderLearnContent();
+        };
+
+        window.selectLearnTab = (id) => {
+            learnSubTab = id; const data = learnData.find(d => d.id === id);
+            const titleEl = el('current-learn-title'); if(titleEl && data) titleEl.innerText = data.title;
+            learnData.forEach(d => {
+                const btn = el(`ltab-${d.id}`);
+                if(btn) {
+                    if(d.id === id) { btn.classList.add('bg-amber-100', 'text-amber-800', 'border-l-8', 'border-amber-600'); btn.classList.remove('text-gray-600', 'border-transparent'); }
+                    else { btn.classList.remove('bg-amber-100', 'text-amber-800', 'border-l-8', 'border-amber-600'); btn.classList.add('text-gray-600', 'border-transparent'); }
+                }
+            });
+            renderLearnContent(); toggleLearnMenu(false);
+        };
+
+        window.renderLearnContent = () => {
+            const area = el('learn-content-area'); if(!area) return;
+            const data = learnData.find(d => d.id === learnSubTab);
+            area.innerHTML = `<div class="max-w-6xl mx-auto w-full"><div class="text-gray-800 leading-relaxed text-lg md:text-xl">${data.content}</div></div>`;
+            setTimeout(() => {
+                document.querySelectorAll('.fav-btn').forEach(btn => {
+                    const id = btn.getAttribute('data-id');
+                    if(userData.favorites.includes(id)) { btn.classList.remove('text-gray-300'); btn.classList.add('text-red-500'); }
+                });
+            }, 0);
+        };
+
+        const renderQuizView = (container) => {
+            if(!quizState.active) {
+                container.innerHTML = `
+                    <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+                        <div class="bg-white p-8 md:p-10 rounded-xl shadow-md text-center max-w-4xl w-full border-t-8 border-orange-600 shrink-0">
+                            <i class="fas fa-stream text-6xl text-orange-600 mb-6"></i>
+                            <h2 class="text-3xl md:text-4xl font-bold mb-6">瀑布流綜合測驗 (共130題)</h2>
+                            <p class="text-gray-600 mb-8 text-xl md:text-2xl leading-relaxed">挑戰全新編撰 130 題高鑑別度測驗！<br>涵蓋：課文提要、細節、修辭、字音字形辨析、成語精熟及陸游詩作。<br><br><span class="bg-orange-100 text-orange-800 font-bold px-2 py-1 rounded">點擊選項後立即顯示詳解，快速複習最有效率！</span></p>
+                            <button onclick="startQuiz()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-12 text-2xl rounded-full shadow-lg transition transform hover:scale-105">開始測驗</button>
+                        </div>
+                    </div>`;
+            } else { renderQuizWaterfall(container); }
+        };
+
+        window.startQuiz = () => {
+            const qList = [...generate130Questions()].sort(() => 0.5 - Math.random()).map(q => ({ ...q, selectedAns: null, showExplanation: false, isCorrect: false }));
+            quizState = { active: true, questions: qList };
+            renderQuizView(el('main-content'));
+            const navStats = el('nav-quiz-stats'); if (navStats) { navStats.classList.remove('hidden'); navStats.classList.add('flex'); }
+            updateQuizStats();
+        };
+
+        window.updateQuizStats = () => {
+            if (!quizState.active) return;
+            let correct = 0, incorrect = 0, answered = 0; const total = quizState.questions.length;
+            quizState.questions.forEach(q => { if (q.showExplanation) { answered++; if (q.isCorrect) correct++; else incorrect++; } });
+            const progressPercent = (answered / total) * 100;
+            const elCorrect = document.getElementById('nav-stat-correct'), elIncorrect = document.getElementById('nav-stat-incorrect'), elBar = document.getElementById('nav-stat-progress-bar');
+            if (elCorrect) elCorrect.innerText = correct; if (elIncorrect) elIncorrect.innerText = incorrect; if (elBar) elBar.style.width = progressPercent + '%';
+        };
+
+        const renderQuizWaterfall = (container) => {
+            let html = `<div class="w-full flex-1 p-3 md:p-6 lg:p-8 overflow-y-auto pb-24 scrollbar-hide bg-gray-50/50" id="quiz-scroll-container"><div class="max-w-6xl mx-auto relative w-full"><div id="questions-list" class="space-y-8 w-full mt-4">`;
+            quizState.questions.forEach((_, qIdx) => { html += `<div id="q-block-${qIdx}" class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 transition-all">${generateSingleQuestionHtml(qIdx)}</div>`; });
+            html += `</div><button onclick="finishQuizWaterfall()" class="w-full mt-10 bg-orange-600 hover:bg-orange-700 text-white font-bold py-6 text-3xl rounded-xl shadow-xl transition transform hover:scale-[1.01] flex items-center justify-center"><i class="fas fa-flag-checkered mr-4"></i> 完成測驗並結算成績</button></div></div>`;
+            container.innerHTML = html;
+        };
+
+        const generateSingleQuestionHtml = (qIdx) => {
+            const q = quizState.questions[qIdx]; let optionsHtml = '';
+            q.opts.forEach((opt, i) => {
+                let btnClass = "w-full text-left p-5 md:p-6 text-xl md:text-2xl rounded-lg border-2 transition-all flex items-center group ";
+                let iconHtml = `<span class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mr-4 md:mr-6 font-bold text-xl md:text-2xl transition-colors shrink-0">${String.fromCharCode(65+i)}</span>`;
+                if (!q.showExplanation) {
+                    btnClass += "border-gray-300 hover:border-orange-500 hover:bg-orange-50 group-hover:bg-orange-500 group-hover:text-white cursor-pointer";
+                } else {
+                    if (i === q.ans) { btnClass += "border-emerald-500 bg-emerald-100 text-emerald-800 font-bold scale-[1.01] shadow-md z-10 relative"; iconHtml = `<span class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center mr-4 md:mr-6 font-bold text-xl md:text-2xl shrink-0"><i class="fas fa-check"></i></span>`; }
+                    else if (i === q.selectedAns) { btnClass += "border-red-500 bg-red-50 text-red-800 font-bold scale-[0.99]"; iconHtml = `<span class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-500 text-white flex items-center justify-center mr-4 md:mr-6 font-bold text-xl md:text-2xl shrink-0"><i class="fas fa-times"></i></span>`; }
+                    else { btnClass += "border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed"; }
+                }
+                optionsHtml += `<button ${q.showExplanation ? 'disabled' : `onclick="answerWaterfallQuestion(${qIdx}, ${i})"`} class="${btnClass}">${iconHtml}<span class="flex-1 leading-relaxed">${opt}</span></button>`;
+            });
+
+            let expHtml = '';
+            if (q.showExplanation) {
+                const isCorrect = q.selectedAns === q.ans;
+                expHtml = `
+                    <div class="mt-8 p-6 md:p-8 rounded-xl border-2 ${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'} animate-fade-in shadow-inner">
+                        <div class="flex items-center mb-6">
+                            <i class="fas ${isCorrect ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-red-500'} text-4xl mr-4"></i>
+                            <span class="font-bold text-3xl">${isCorrect ? '太棒了，答對了！' : '哎呀，答錯了！'}</span>
+                        </div>
+                        <div class="bg-white bg-opacity-70 p-5 md:p-8 rounded-lg border ${isCorrect ? 'border-emerald-100' : 'border-red-100'}">
+                            <p class="font-bold mb-3 text-2xl"><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>完整題目解析：</p>
+                            <p class="mt-3 text-xl">正確答案為 <strong class="${isCorrect ? 'text-emerald-700' : 'text-red-700'} text-2xl">(${String.fromCharCode(65+q.ans)}) ${q.opts[q.ans]}</strong>。</p>
+                            <div class="mt-5 p-5 md:p-6 bg-orange-50 border border-orange-200 rounded-lg text-orange-900 shadow-sm"><p class="font-bold text-xl mb-2"><i class="fas fa-book-reader mr-2 text-orange-700"></i>深度解析：</p><p class="text-xl leading-relaxed">${q.exp}</p></div>
+                        </div>
+                    </div>`;
+            }
+
+            return `
+                <div class="bg-gray-50 px-6 md:px-8 py-5 border-b border-gray-100 flex justify-between items-center transition-colors ${q.showExplanation ? (q.selectedAns === q.ans ? 'bg-emerald-50' : 'bg-red-50') : ''}">
+                    <span class="font-bold text-gray-700 text-xl">第 ${qIdx + 1} 題</span>
+                    ${q.showExplanation ? (q.selectedAns === q.ans ? '<span class="text-emerald-600 font-bold text-xl"><i class="fas fa-check mr-1"></i>答對</span>' : '<span class="text-red-600 font-bold text-xl"><i class="fas fa-times mr-1"></i>答錯</span>') : '<span class="text-gray-400 font-medium text-lg"><i class="fas fa-pen mr-1"></i>尚未作答</span>'}
+                </div>
+                <div class="p-6 md:p-10"><h3 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-relaxed">${q.q}</h3><div class="space-y-5">${optionsHtml}</div>${expHtml}</div>`;
+        };
+
+        window.answerWaterfallQuestion = (qIdx, optIdx) => {
+            const q = quizState.questions[qIdx]; if(q.showExplanation) return;
+            const isCorrect = optIdx === q.ans;
+            q.selectedAns = optIdx; q.showExplanation = true; q.isCorrect = isCorrect;
+            
+            if (isCorrect) { playCorrectSound(); confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 }, zIndex: 10000, colors: ['#10b981', '#34d399', '#f59e0b'] }); }
+            else {
+                playWrongSound();
+                const mistakeId = q.q; const exists = userData.mistakes.find(m => m.id === mistakeId);
+                if(!exists) { userData.mistakes.push({ id: mistakeId, q: q.q, opts: q.opts, ans: q.ans, time: new Date().toISOString() }); saveUserData(); }
+            }
+            const block = document.getElementById(`q-block-${qIdx}`); if (block) block.innerHTML = generateSingleQuestionHtml(qIdx);
+            updateQuizStats();
+        };
+
+        window.finishQuizWaterfall = async () => {
+            let correctCount = 0, answeredCount = 0;
+            quizState.questions.forEach(q => { if (q.showExplanation) { answeredCount++; if (q.isCorrect) correctCount++; } });
+            if (answeredCount < quizState.questions.length) { if(!confirm(`您還有 ${quizState.questions.length - answeredCount} 題尚未作答，確定要直接交卷結算嗎？`)) return; }
+
+            quizState.active = false; const total = quizState.questions.length; const scorePercent = Math.round((correctCount / total) * 100);
+            const navStats = el('nav-quiz-stats'); if (navStats) { navStats.classList.add('hidden'); navStats.classList.remove('flex'); }
+
+            if(isFirebaseInitialized && currentUser) {
+                const docRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_quizzes'));
+                try { await setDoc(docRef, { score: scorePercent, date: new Date(), total, correct: correctCount }); } catch(e) {}
+            }
+
+            el('main-content').innerHTML = `
+                <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 overflow-y-auto pb-24">
+                    <div class="bg-white p-12 rounded-xl shadow-xl text-center max-w-4xl w-full border-t-8 border-orange-600 shrink-0">
+                        <i class="fas fa-trophy text-8xl text-yellow-500 mb-6"></i>
+                        <h2 class="text-4xl md:text-5xl font-bold mb-6">測驗完成！</h2>
+                        <p class="text-7xl md:text-8xl font-extrabold text-orange-600 mb-10">${scorePercent} <span class="text-3xl md:text-4xl text-gray-500">分</span></p>
+                        <p class="text-gray-600 mb-10 text-2xl md:text-3xl">您答對了 <span class="text-orange-600 font-bold">${correctCount}</span> 題，共作答 ${answeredCount} 題 <br><span class="text-xl md:text-2xl mt-3 inline-block">(總題數 ${total} 題)</span></p>
+                        <div class="space-y-5">
+                            <button onclick="switchTab('mistakes')" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-5 px-6 text-2xl rounded-lg shadow transition">查看錯題本</button>
+                            <button onclick="startQuiz()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-5 px-6 text-2xl rounded-lg shadow transition">重新測驗</button>
+                        </div>
+                    </div>
+                </div>`;
+            confetti({ particleCount: 250, spread: 120, origin: { y: 0.4 }, zIndex: 10000 });
+        };
+
+        window.renderMistakes = (container) => {
+            if(!container) container = el('main-content');
+            if(userData.mistakes.length === 0) {
+                container.innerHTML = `<div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 text-gray-400 flex-col"><i class="fas fa-check-circle text-8xl md:text-9xl mb-6 text-amber-300"></i><p class="text-2xl md:text-3xl font-bold">太棒了！目前沒有錯題紀錄。</p></div>`;
+                return;
+            }
+            container.innerHTML = `
+                <div class="w-full flex-1 p-3 md:p-6 lg:p-8 overflow-y-auto pb-24"><div class="max-w-6xl mx-auto w-full">
+                    <div class="flex justify-between items-center border-b-4 border-red-200 pb-4 mb-8"><h2 class="text-3xl md:text-4xl font-bold text-red-800"><i class="fas fa-book-dead mr-3"></i>錯題本</h2><button onclick="clearMistakes()" class="text-xl text-red-500 hover:text-red-700 font-bold underline shrink-0">清空錯題</button></div>
+                    <div class="space-y-8">${userData.mistakes.map((m, i) => `
+                        <div class="bg-white p-6 md:p-10 rounded-xl shadow-md border-l-8 border-red-400 w-full overflow-hidden">
+                            <h3 class="font-bold text-gray-800 mb-6 text-2xl md:text-3xl">${i+1}. ${m.q}</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xl">
+                                ${m.opts.map((opt, idx) => `<div class="p-4 md:p-5 rounded-lg ${idx === m.ans ? 'bg-emerald-100 text-emerald-800 font-bold border-2 border-emerald-300 shadow-sm' : 'bg-gray-50 text-gray-600 border border-gray-200'}">${String.fromCharCode(65+idx)}. ${opt}${idx === m.ans ? '<i class="fas fa-check ml-2"></i>(正確答案)' : ''}</div>`).join('')}
+                            </div>
+                        </div>`).reverse().join('')}
+                    </div>
+                </div></div>`;
+        };
+
+        window.clearMistakes = () => { if(confirm('確定要清空所有錯題紀錄嗎？')) { userData.mistakes = []; saveUserData(); renderMistakes(); } };
+
+        window.renderFavorites = (container) => {
+            if(!container) container = el('main-content');
+            if(userData.favorites.length === 0) {
+                container.innerHTML = `<div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 text-gray-400 flex-col"><i class="fas fa-heart-broken text-8xl md:text-9xl mb-6 text-pink-200"></i><p class="text-2xl md:text-3xl font-bold">目前還沒有收藏任何項目。</p><p class="text-xl mt-4">到「學習區」點擊愛心圖示即可收藏！</p></div>`;
+                return;
+            }
+            container.innerHTML = `
+                <div class="w-full flex-1 p-3 md:p-6 lg:p-8 overflow-y-auto pb-24"><div class="max-w-6xl mx-auto w-full">
+                    <h2 class="text-3xl md:text-4xl font-bold text-pink-800 border-b-4 border-pink-200 pb-4 mb-8"><i class="fas fa-heart mr-3"></i>我的最愛</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                        ${userData.favorites.map(favId => `
+                            <div class="bg-white p-6 md:p-8 rounded-xl shadow-md border-2 border-pink-100 flex justify-between items-center group relative overflow-hidden transition-shadow hover:shadow-lg w-full">
+                                <div class="absolute inset-0 bg-pink-50 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                                <span class="font-bold text-gray-800 z-10 text-2xl md:text-3xl">${favId}</span>
+                                <button onclick="toggleFavorite('${favId}')" class="text-pink-500 hover:text-red-600 z-10 text-4xl"><i class="fas fa-heart"></i></button>
+                            </div>`).join('')}
+                    </div>
+                </div></div>`;
+        };
+
+        initApp();
+    </script>
+</body>
+</html>
