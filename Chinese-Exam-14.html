@@ -1014,12 +1014,14 @@
                         </div>
                         
                         <div class="mt-12 pt-8 relative">
-                            <div class="absolute inset-0 flex items-center" aria-hidden="true"><div class="w-full border-t border-gray-200"></div></div>
+                            <!-- 加入 pointer-events-none 避免透明的絕對定位圖層遮擋到下方按鈕的點擊 -->
+                            <div class="absolute inset-0 flex items-center pointer-events-none" aria-hidden="true"><div class="w-full border-t border-gray-200"></div></div>
                             <div class="relative flex justify-center"><span class="px-4 bg-white/0 backdrop-blur-sm text-sm text-gray-500 font-medium">雲端最近登入</span></div>
                             
-                            <div class="flex flex-wrap justify-center gap-3 mt-6">
+                            <!-- 加入 relative z-10 確保按鈕位在最上層，並優化 onclick 避免引號中斷語法 -->
+                            <div class="relative z-10 flex flex-wrap justify-center gap-3 mt-6">
                                 ${recentUsers.length > 0 
-                                    ? recentUsers.slice(-5).map(u => `<button onclick="handleLogin('${u}')" class="text-base font-bold bg-white border border-orange-100 text-orange-800 hover:bg-orange-50 hover:border-orange-300 px-5 py-2.5 rounded-xl shadow-sm hover:shadow transition-all">${u}</button>`).join('')
+                                    ? recentUsers.slice(-5).map(u => `<button type="button" onclick="handleLogin(this.innerText)" class="text-base font-bold bg-white border border-orange-100 text-orange-800 hover:bg-orange-50 hover:border-orange-300 px-5 py-2.5 rounded-xl shadow-sm hover:shadow transition-all">${u}</button>`).join('')
                                     : `<span class="text-sm text-gray-400 bg-gray-50 px-4 py-2 rounded-full">尚無紀錄或尚未連線</span>`
                                 }
                             </div>
