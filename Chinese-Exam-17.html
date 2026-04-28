@@ -939,6 +939,7 @@
 
         window.executePrint = (showAnswer) => {
             const printArea = document.getElementById('print-area');
+            const mainContent = document.getElementById('main-content');
             
             let itemsHtml = '';
             wordData.forEach(w => {
@@ -961,8 +962,17 @@
                 </div>
             `;
 
-            // 觸發瀏覽器列印
-            window.print();
+            // 移除隱藏，並隱藏主畫面以利列印引擎抓取完整高度
+            printArea.classList.remove('hidden');
+            if(mainContent) mainContent.classList.add('hidden');
+
+            // 確保 DOM 更新後再觸發列印
+            setTimeout(() => {
+                window.print();
+                // 列印對話框關閉後，恢復原本的畫面狀態
+                printArea.classList.add('hidden');
+                if(mainContent) mainContent.classList.remove('hidden');
+            }, 300);
         };
 
         initApp();
