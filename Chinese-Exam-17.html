@@ -39,10 +39,10 @@
             
             .print-grid { 
                 display: grid; 
-                grid-template-columns: repeat(4, minmax(0, 1fr)); 
-                row-gap: 8mm; /* 加大題目的上下間距 */
-                column-gap: 5mm;
-                font-size: 12.5pt; /* 加大測驗卷字體 */
+                grid-template-columns: repeat(3, minmax(0, 1fr)); /* 改為 3 欄 */
+                row-gap: 8mm; /* 題目的上下間距 */
+                column-gap: 8mm; /* 加大欄與欄之間的間距 */
+                font-size: 13pt; /* 稍微再放大字體 */
                 width: 100%;
             }
             .print-item { 
@@ -56,9 +56,9 @@
             }
             .print-ans-box { 
                 display: inline-block; 
-                flex-grow: 1; /* 讓底線彈性填滿剩餘空間，避免撐破版面 */
-                min-width: 12mm; /* 稍微加寬答案底線 */
-                max-width: 25mm;
+                flex-grow: 1; /* 讓底線彈性填滿剩餘空間 */
+                min-width: 15mm; /* 加寬底線最小值 */
+                max-width: 35mm; /* 加大底線最大值 */
                 border-bottom: 1px solid black; 
                 text-align: center; 
                 margin-left: 2px; 
