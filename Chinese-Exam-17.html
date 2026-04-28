@@ -23,17 +23,49 @@
         
         /* 列印專用樣式 */
         @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; color: black; background: white; }
+            body, html { height: auto !important; overflow: visible !important; background-color: white !important; margin: 0; padding: 0; }
+            #app, #view-container { height: auto !important; overflow: visible !important; display: block !important; }
+            nav, .glass-nav { display: none !important; }
+            #main-content { display: none !important; }
+            #print-area { display: block !important; position: static !important; width: 100%; color: black; background: white; padding: 0; }
             .no-print { display: none !important; }
-            @page { size: A4 portrait; margin: 1.5cm; }
-            .print-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem 0.5rem; font-size: 14pt; }
-            .print-title { font-size: 24pt; font-weight: bold; text-align: center; margin-bottom: 1.5rem; font-family: 'DFKai-sb', serif; }
-            .print-header { display: flex; justify-content: flex-end; font-size: 14pt; margin-bottom: 1rem; font-family: 'DFKai-sb', serif; }
-            .print-item { display: flex; align-items: center; white-space: nowrap; font-family: 'DFKai-sb', 'Microsoft JhengHei', serif; }
-            .print-ans-box { display: inline-block; width: 1.5cm; border-bottom: 1px solid black; text-align: center; margin-left: 4px; height: 1.2em; line-height: 1.2em; }
-            .print-ans-text { color: red; font-weight: bold; }
+            
+            /* 設定 A4 直式與邊距 */
+            @page { size: A4 portrait; margin: 10mm; }
+            
+            .print-title { font-size: 18pt; font-weight: bold; text-align: center; margin-bottom: 4mm; font-family: 'DFKai-sb', 'BiauKai', serif; letter-spacing: 1px; }
+            .print-header { display: flex; justify-content: center; font-size: 11pt; margin-bottom: 5mm; font-family: 'DFKai-sb', 'BiauKai', serif; }
+            .print-header span { margin: 0 8px; }
+            
+            .print-grid { 
+                display: grid; 
+                grid-template-columns: repeat(4, minmax(0, 1fr)); 
+                row-gap: 3.5mm; /* 精準控制行距，確保 32 列能塞入一頁 */
+                column-gap: 3mm;
+                font-size: 10.5pt; 
+                width: 100%;
+            }
+            .print-item { 
+                display: flex; 
+                align-items: flex-end; 
+                font-family: 'DFKai-sb', 'BiauKai', 'Microsoft JhengHei', serif;
+                white-space: nowrap;
+            }
+            .print-item .q-text {
+                overflow: hidden;
+            }
+            .print-ans-box { 
+                display: inline-block; 
+                flex-grow: 1; /* 讓底線彈性填滿剩餘空間，避免撐破版面 */
+                min-width: 10mm;
+                max-width: 16mm;
+                border-bottom: 1px solid black; 
+                text-align: center; 
+                margin-left: 2px; 
+                height: 1.2em; 
+                line-height: 1.2em; 
+            }
+            .print-ans-text { color: red !important; font-weight: bold; font-family: sans-serif; font-size: 10pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
     </style>
 </head>
@@ -946,7 +978,7 @@
                 const ansText = showAnswer ? `<span class="print-ans-text">${w.a}</span>` : '';
                 itemsHtml += `
                     <div class="print-item">
-                        <span>${w.no}. ${w.q}</span>
+                        <span class="q-text">${w.no}. ${w.q}</span>
                         <div class="print-ans-box">${ansText}</div>
                     </div>
                 `;
