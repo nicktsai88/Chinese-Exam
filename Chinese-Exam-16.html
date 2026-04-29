@@ -767,7 +767,9 @@
                         const d = docSnap.data();
                         if(d.favorites) userData.favorites = d.favorites;
                         if(d.mistakes) userData.mistakes = d.mistakes;
-                        if(d.quizState && d.quizState.active && !quizState.active) {
+                        
+                        // 【修正跨平台同步問題】：只要雲端有最新的 quizState，就強制同步並覆寫本地端
+                        if(d.quizState) {
                             quizState = d.quizState; 
                         }
                     }
@@ -776,9 +778,8 @@
                     else if (currentTab === 'mistakes') renderMistakes(document.getElementById('main-content'));
                     else if (currentTab === 'favorites') renderFavorites(document.getElementById('main-content'));
                     else if (currentTab === 'quiz') {
-                         if(quizState.active) {
-                             renderQuizView(document.getElementById('main-content'));
-                         }
+                         renderQuizView(document.getElementById('main-content'));
+                         if(quizState.active) updateQuizStats();
                     }
                     updateNavStatus();
                 }, (err) => {
@@ -1102,6 +1103,11 @@
 
         const renderQuizWaterfall = (container) => {
             const total = quizState.questions.length;
+            
+            // 【修正跳回頂部問題】：在畫面重新渲染前，先取得並記錄當前捲軸的高度
+            const scrollContainer = document.getElementById('quiz-scroll-container');
+            const currentScrollPos = scrollContainer ? scrollContainer.scrollTop : 0;
+            
             let html = `
                 <div class="w-full flex-1 p-3 md:p-6 lg:p-8 overflow-y-auto overflow-x-hidden pb-24 scrollbar-hide relative z-10" id="quiz-scroll-container">
                     <div class="max-w-4xl mx-auto relative w-full">
@@ -1123,6 +1129,12 @@
                 </div>
             `;
             container.innerHTML = html;
+
+            // 【修正跳回頂部問題】：畫面覆寫完畢後，立即將捲軸高度恢復至作答前的位置
+            const newScrollContainer = document.getElementById('quiz-scroll-container');
+            if (newScrollContainer && currentScrollPos > 0) {
+                newScrollContainer.scrollTop = currentScrollPos;
+            }
         };
 
         const generateSingleQuestionHtml = (qIdx) => {
