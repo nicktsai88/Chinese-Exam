@@ -1003,7 +1003,7 @@
                         `}).join('')}
                     </ul>
                 </div>
-                <div class="flex-1 p-4 md:p-6 lg:p-10 overflow-y-auto overflow-x-hidden w-full relative z-10" id="learn-content-area"></div>
+                <div class="flex-1 p-3 md:p-4 lg:p-6 overflow-y-auto overflow-x-hidden w-full relative z-10" id="learn-content-area"></div>
             `;
             renderLearnContent();
         };
@@ -1019,7 +1019,7 @@
             if(!area) return;
             const data = learnData.find(d => d.id === learnSubTab);
             area.innerHTML = `
-                <div class="max-w-5xl mx-auto w-full animate-fade-in pb-12">
+                <div class="w-[96%] max-w-7xl mx-auto animate-fade-in pb-12">
                     ${data.content}
                 </div>
             `;
