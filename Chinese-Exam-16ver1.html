@@ -8,51 +8,29 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        /* 提升閱讀舒適度：調整字體、暖色柔和背景與加寬行距 */
-        body { 
-            font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; 
-            background-color: #fffbeb; /* Tailwind amber-50 */
-            color: #431407; /* Tailwind orange-950 */
-            font-size: 1.125rem; 
-            line-height: 1.8; 
-        }
-        
-        /* 隱藏捲軸但保持可捲動 */
+        body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; background-color: #fffbeb; color: #431407; font-size: 1.125rem; line-height: 1.8; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* 雲端狀態燈號 CSS */
         .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
         .status-loading { background-color: #fbbf24; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; box-shadow: 0 0 8px #fbbf24; }
         .status-success { background-color: #34d399; box-shadow: 0 0 8px #34d399; }
         .status-error { background-color: #f87171; box-shadow: 0 0 8px #f87171; }
-        
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-        
-        /* 平滑浮現動畫 */
         .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* 玻璃擬真特效 (暖色系琥珀/橘紅色底) */
         .glass-nav { background: rgba(194, 65, 12, 0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
         .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
     </style>
 </head>
 <body class="h-screen w-full flex flex-col overflow-hidden bg-amber-50">
 
-    <div id="app" class="w-full h-full flex flex-col overflow-hidden">
-        <!-- 內容將由 JS 動態渲染 -->
-    </div>
+    <div id="app" class="w-full h-full flex flex-col overflow-hidden"></div>
 
-    <!-- Firebase SDK (v11.6.1) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, arrayUnion, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ==========================================
-        //  Firebase 設定與全域變數
-        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyAxQFt76ZPXE7d0i1XeNZ1yiiD2WYNIfHs", 
             authDomain: "chinese-learning-47f4d.firebaseapp.com",
@@ -63,34 +41,18 @@
         };
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'idiom-app-default';
-        const ORIGINAL_PREFIX = 'Chinese4-exam2-idiom'; 
         const COLLECTION_NAME = 'Chinese4-exam2-idiom'; 
-        const DOC_GLOBAL = 'Global_Users';
         
         let app, auth, db;
-        let isFirebaseReady = false;
+        let isFirebaseInitialized = false;
         let currentUser = null;
         let username = '';
         let userData = { favorites: [], mistakes: [] };
         let connectionStatus = 'loading';
         let recentUsers = [];
-
-        // --- 核心狀態變數 ---
-        let currentTab = 'login';
-        let learnSubTab = 'sec1';
-        let quizState = { active: false, currentQ: 0, score: 0, answers: [], questions: [], showExplanation: false, selectedAns: null };
-        let isLearnMenuOpen = false;
-
-        // Firebase 監聽器註銷函數
-        let unsubscribeUser = null;
-        let unsubscribeGlobal = null;
         
-        // ==========================================
-        //  音效系統 (Web Audio API)
-        // ==========================================
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         const audioCtx = new AudioContext();
-        
         const playTone = (freq, type, duration) => {
             try {
                 if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -106,7 +68,6 @@
                 oscillator.stop(audioCtx.currentTime + duration);
             } catch(e) {}
         };
-
         const playCorrectSound = () => { playTone(523.25, 'sine', 0.1); setTimeout(() => playTone(659.25, 'sine', 0.2), 100); };
         const playWrongSound = () => { playTone(300, 'sawtooth', 0.2); setTimeout(() => playTone(200, 'sawtooth', 0.3), 150); };
 
@@ -116,44 +77,19 @@
                 app = initializeApp(actualConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
-                isFirebaseReady = true;
+                isFirebaseInitialized = true;
                 connectionStatus = 'success';
             } else { connectionStatus = 'error'; }
         } catch (error) { connectionStatus = 'error'; }
 
-        // --- Firebase Auth 與全域監聽 ---
         const initAuth = async () => {
-            if (!isFirebaseReady) return;
+            if (!isFirebaseInitialized) return;
             try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+                else await signInAnonymously(auth);
             } catch (error) { connectionStatus = 'error'; }
         };
 
-        // --- UI 輔助函數 ---
-        const el = id => document.getElementById(id);
-
-        window.toggleLearnMenu = (show) => {
-            isLearnMenuOpen = typeof show === 'boolean' ? show : !isLearnMenuOpen;
-            const drawer = el('learn-drawer');
-            const overlay = el('learn-overlay');
-            if(drawer && overlay) {
-                if(isLearnMenuOpen) {
-                    drawer.classList.remove('-translate-x-full');
-                    overlay.classList.remove('hidden');
-                } else {
-                    drawer.classList.add('-translate-x-full');
-                    overlay.classList.add('hidden');
-                }
-            }
-        };
-
-        // ==========================================
-        //  學習資料庫 (題辭解釋)
-        // ==========================================
         const learnData = [
             {
                 id: 'sec1', title: '第一部分（慶賀類） 🎊', theme: 'orange',
@@ -161,15 +97,11 @@
                 <div class="space-y-8 text-lg md:text-xl text-gray-800">
                     <div class="bg-gradient-to-br from-orange-50 to-amber-50 p-6 md:p-8 rounded-2xl border-l-8 border-orange-500 shadow-lg">
                         <div class="text-center font-black text-2xl md:text-3xl text-orange-950 mb-6 border-b-2 border-orange-200 pb-2">🎯 題辭解釋：第一部分（慶賀類）</div>
-                        
                         <div class="space-y-6 text-orange-950 leading-relaxed">
                             <div class="bg-white p-5 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-orange-800 text-2xl mb-3 border-b border-orange-100 pb-2">💍 1. 訂婚 (賀訂婚)</h4>
-                                <ul class="list-none space-y-2 ml-2">
-                                    <li><span class="font-bold text-orange-700">(1) 文定吉祥：</span>指訂婚大吉大利。</li>
-                                </ul>
+                                <ul class="list-none space-y-2 ml-2"><li><span class="font-bold text-orange-700">(1) 文定吉祥：</span>指訂婚大吉大利。</li></ul>
                             </div>
-
                             <div class="bg-white p-5 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-orange-800 text-2xl mb-3 border-b border-orange-100 pb-2">💒 2. 結婚 (賀新婚)</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -186,7 +118,6 @@
                                     <li><span class="font-bold text-orange-700">(11) 百年好合：</span>祝福夫妻一生感情和諧。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-white p-5 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-orange-800 text-2xl mb-3 border-b border-orange-100 pb-2">👰 3. 嫁女 (賀嫁女)</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -195,7 +126,6 @@
                                     <li><span class="font-bold text-orange-700">(3) 宜室宜家：</span>指女子有德行，能使家庭和睦。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-white p-5 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-orange-800 text-2xl mb-3 border-b border-orange-100 pb-2">👶 4. 生男 (賀弄璋之喜)</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -204,7 +134,6 @@
                                     <li><span class="font-bold text-orange-700">(3) 熊夢徵祥：</span>相傳夢見熊是生男孩的預兆。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-white p-5 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-orange-800 text-2xl mb-3 border-b border-orange-100 pb-2">👧 5. 生女 (賀弄瓦之喜)</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -213,7 +142,6 @@
                                     <li><span class="font-bold text-orange-700">(3) 明珠入掌：</span>比喻生下可愛的女兒，如珍珠捧在掌心。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-white p-5 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-orange-800 text-2xl mb-3 border-b border-orange-100 pb-2">🏠 6. 新居 (賀落成)</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -222,7 +150,6 @@
                                     <li><span class="font-bold text-orange-700">(3) 堂構更新：</span>指繼承祖業並擴大發展，也賀房屋新蓋。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-white p-5 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-orange-800 text-2xl mb-3 border-b border-orange-100 pb-2">📦 7. 搬家 (賀遷徙/家鄉)</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -231,7 +158,6 @@
                                     <li><span class="font-bold text-orange-700">(3) 德必有鄰：</span>有德行的人必有志同道合的人親近。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-white p-5 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-orange-800 text-2xl mb-3 border-b border-orange-100 pb-2">🏫 8. 賀校慶/教育界</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -244,7 +170,6 @@
                                     <li><span class="font-bold text-orange-700">(7) 春風化雨：</span>比喻老師教化如雨露般自然滋潤。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-white p-5 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-orange-800 text-2xl mb-3 border-b border-orange-100 pb-2">🎓 9. 賀畢業/勉勵前程</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -253,7 +178,6 @@
                                     <li><span class="font-bold text-orange-700">(3) 鵬程萬里：</span>比喻前程遠大。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-white p-5 rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-orange-800 text-2xl mb-3 border-b border-orange-100 pb-2">🗳️ 10. 賀當選/政界民代</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -273,9 +197,7 @@
                 <div class="space-y-6 text-lg md:text-xl text-gray-800">
                     <div class="bg-gradient-to-b from-amber-50 to-white p-6 md:p-8 rounded-2xl border-t-8 border-amber-500 shadow-lg">
                         <div class="text-center font-black text-2xl md:text-3xl text-amber-950 mb-6 border-b-2 border-amber-200 pb-2">🎯 題辭解釋：第二部分（比賽與開業類）</div>
-                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-amber-950">
-                            
                             <div class="bg-amber-50/50 p-5 rounded-xl shadow-sm border border-amber-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-amber-800 text-2xl mb-3 border-b border-amber-200 pb-2">💃 1. 比舞蹈</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -284,7 +206,6 @@
                                     <li><span class="font-bold text-amber-700">(3) 飄逸生姿：</span>形容動作灑脫自然，展現出優美的姿態。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-amber-50/50 p-5 rounded-xl shadow-sm border border-amber-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-amber-800 text-2xl mb-3 border-b border-amber-200 pb-2">🎵 2. 比音樂</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -294,7 +215,6 @@
                                     <li><span class="font-bold text-amber-700">(4) 繞樑三日：</span>形容歌聲美妙，餘音長久不絕。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-amber-50/50 p-5 rounded-xl shadow-sm border border-amber-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-amber-800 text-2xl mb-3 border-b border-amber-200 pb-2">🎭 3. 比戲劇</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -303,7 +223,6 @@
                                     <li><span class="font-bold text-amber-700">(3) 維妙維肖：</span>形容模仿、表演得非常逼真傳神。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-amber-50/50 p-5 rounded-xl shadow-sm border border-amber-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-amber-800 text-2xl mb-3 border-b border-amber-200 pb-2">🖌️ 4. 比書法</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -314,7 +233,6 @@
                                     <li><span class="font-bold text-amber-700">(5) 龍飛鳳舞：</span>形容氣勢奔放，也常指書法筆勢活潑。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-amber-50/50 p-5 rounded-xl shadow-sm border border-amber-100 hover:shadow-md transition-shadow md:col-span-2">
                                 <h4 class="font-bold text-amber-800 text-2xl mb-3 border-b border-amber-200 pb-2">✍️ 5. 比作文</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -338,7 +256,6 @@
                                     </ul>
                                 </div>
                             </div>
-
                             <div class="bg-amber-50/50 p-5 rounded-xl shadow-sm border border-amber-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-amber-800 text-2xl mb-3 border-b border-amber-200 pb-2">🏃‍♂️ 6. 比體育活動</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -348,7 +265,6 @@
                                     <li><span class="font-bold text-amber-700">(4) 身手矯健：</span>形容動作敏捷、體力強健。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-amber-50/50 p-5 rounded-xl shadow-sm border border-amber-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-amber-800 text-2xl mb-3 border-b border-amber-200 pb-2">🗣️ 7. 比演講辯論</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -359,7 +275,6 @@
                                     <li><span class="font-bold text-amber-700">(5) 口若懸河：</span>比喻說話滔滔不絕，能言善辯。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-amber-50/50 p-5 rounded-xl shadow-sm border border-amber-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-amber-800 text-2xl mb-3 border-b border-amber-200 pb-2">🏨 8. 開旅館飯店</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -370,7 +285,6 @@
                                     <li><span class="font-bold text-amber-700">(5) 賓至如歸：</span>形容服務周到，讓客人感覺像回到家一樣。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-amber-50/50 p-5 rounded-xl shadow-sm border border-amber-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-amber-800 text-2xl mb-3 border-b border-amber-200 pb-2">🏥 9. 開醫院</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -381,7 +295,6 @@
                                     <li><span class="font-bold text-amber-700">(5) 仁心仁術：</span>形容醫者有仁愛之心，且醫術精良。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-amber-50/50 p-5 rounded-xl shadow-sm border border-amber-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-amber-800 text-2xl mb-3 border-b border-amber-200 pb-2">📚 10. 開書局</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -390,7 +303,6 @@
                                     <li><span class="font-bold text-amber-700">(3) 坐擁百城：</span>形容藏書極豐富，勝過坐擁百座城池的財富。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-amber-50/50 p-5 rounded-xl shadow-sm border border-amber-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-amber-800 text-2xl mb-3 border-b border-amber-200 pb-2">🏪 11. 開商店</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -401,7 +313,6 @@
                                     <li><span class="font-bold text-amber-700">(5) 大展鴻圖：</span>祝人能大規模地施展抱負與發展事業。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-amber-50/50 p-5 rounded-xl shadow-sm border border-amber-100 hover:shadow-md transition-shadow">
                                 <h4 class="font-bold text-amber-800 text-2xl mb-3 border-b border-amber-200 pb-2">🏭 12. 開工廠</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -424,16 +335,13 @@
                         <h3 class="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-500 text-2xl md:text-4xl mb-8 border-b-2 border-rose-100 pb-4 relative z-10 text-center">
                             🕊️ 題辭解釋：第三部分（壽誕與哀輓類）
                         </h3>
-                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-                            
                             <div class="bg-gradient-to-br from-rose-50 to-red-50 p-6 rounded-2xl shadow-sm border border-rose-100 hover:shadow-md transition">
                                 <h4 class="font-bold text-rose-800 text-2xl mb-3 flex items-center border-b border-rose-200 pb-2">👴👵 1. 雙壽</h4>
                                 <ul class="list-none space-y-2 ml-2">
                                     <li><span class="font-bold text-rose-700">(1) 椿萱並茂：</span>比喻父母都健在且健康。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-gradient-to-br from-rose-50 to-red-50 p-6 rounded-2xl shadow-sm border border-rose-100 hover:shadow-md transition">
                                 <h4 class="font-bold text-rose-800 text-2xl mb-3 flex items-center border-b border-rose-200 pb-2">👴 2. 男壽 (賀男性長輩)</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -441,7 +349,6 @@
                                     <li><span class="font-bold text-rose-700">(2) 椿庭長青：</span>比喻父親長壽。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-gradient-to-br from-rose-50 to-red-50 p-6 rounded-2xl shadow-sm border border-rose-100 hover:shadow-md transition">
                                 <h4 class="font-bold text-rose-800 text-2xl mb-3 flex items-center border-b border-rose-200 pb-2">👵 3. 女壽 (賀女性長輩)</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -452,7 +359,6 @@
                                     <li><span class="font-bold text-rose-700">(5) 萱草長青：</span>祝母親長壽。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-gradient-to-br from-rose-50 to-red-50 p-6 rounded-2xl shadow-sm border border-rose-100 hover:shadow-md transition">
                                 <h4 class="font-bold text-rose-800 text-2xl mb-3 flex items-center border-b border-rose-200 pb-2">🎂 4. 祝壽 (男女通用)</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -462,7 +368,6 @@
                                     <li><span class="font-bold text-rose-700">(4) 壽比南山：</span>祝人壽命如南山般長久。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-gradient-to-br from-slate-100 to-gray-200 p-6 rounded-2xl shadow-sm border border-gray-300 hover:shadow-md transition md:col-span-2">
                                 <h4 class="font-bold text-gray-800 text-2xl mb-3 flex items-center border-b border-gray-300 pb-2">🪦 5. 男喪 (輓男性)</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -478,7 +383,6 @@
                                     </ul>
                                 </div>
                             </div>
-
                             <div class="bg-gradient-to-br from-slate-100 to-gray-200 p-6 rounded-2xl shadow-sm border border-gray-300 hover:shadow-md transition md:col-span-2">
                                 <h4 class="font-bold text-gray-800 text-2xl mb-3 flex items-center border-b border-gray-300 pb-2">🪦 6. 女喪 (輓女性)</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -495,7 +399,6 @@
                                     </ul>
                                 </div>
                             </div>
-
                             <div class="bg-gradient-to-br from-slate-100 to-gray-200 p-6 rounded-2xl shadow-sm border border-gray-300 hover:shadow-md transition">
                                 <h4 class="font-bold text-gray-800 text-2xl mb-3 flex items-center border-b border-gray-300 pb-2">🪦 7. 哀輓 (男女通用)</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -504,7 +407,6 @@
                                     <li><span class="font-bold text-gray-700">(3) 五福全歸：</span>祝人擁有長壽、富貴、康寧、好德、善終。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-gradient-to-br from-slate-100 to-gray-200 p-6 rounded-2xl shadow-sm border border-gray-300 hover:shadow-md transition">
                                 <h4 class="font-bold text-gray-800 text-2xl mb-3 flex items-center border-b border-gray-300 pb-2">👨‍🏫 8. 喪師長 (輓老師)</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -514,7 +416,6 @@
                                     <li><span class="font-bold text-gray-700">(4) 教澤長存：</span>感念老師的教誨恩德永遠存在。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-gradient-to-br from-slate-100 to-gray-200 p-6 rounded-2xl shadow-sm border border-gray-300 hover:shadow-md transition">
                                 <h4 class="font-bold text-gray-800 text-2xl mb-3 flex items-center border-b border-gray-300 pb-2">🤝 9. 喪朋友 (輓平輩)</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -524,7 +425,6 @@
                                     <li><span class="font-bold text-gray-700">(4) 響絕牙琴：</span>借俞伯牙碎琴哀悼鍾子期，指失去知己。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-gradient-to-br from-slate-100 to-gray-200 p-6 rounded-2xl shadow-sm border border-gray-300 hover:shadow-md transition">
                                 <h4 class="font-bold text-gray-800 text-2xl mb-3 flex items-center border-b border-gray-300 pb-2">👨‍👦 10-13. 喪親屬</h4>
                                 <ul class="list-none space-y-2 ml-2">
@@ -535,7 +435,6 @@
                                     <li><span class="font-bold text-gray-700">(13) 喪子-西河抱痛：</span>子夏喪子痛哭失明，指喪子之痛。</li>
                                 </ul>
                             </div>
-
                             <div class="bg-gradient-to-br from-slate-100 to-gray-200 p-6 rounded-2xl shadow-sm border border-gray-300 hover:shadow-md transition md:col-span-2">
                                 <h4 class="font-bold text-gray-800 text-2xl mb-3 flex items-center border-b border-gray-300 pb-2">🏛️ 14-15. 哀輓 (學界與政界)</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -556,17 +455,12 @@
             }
         ];
 
-        // ==========================================
-        //  148題 高鑑別度精編測驗資料 (涵蓋每一個成語)
-        // ==========================================
+        // 148題 生成器
         const generate120Questions = () => {
             const qList = [];
-            let currentId = 1;
-            const addQ = (q, o0, o1, o2, o3, ans, exp) => {
-                qList.push({ id: `Q${currentId++}`, q, opts:[o0,o1,o2,o3], ans, showExplanation: false, selectedAns: null, isCorrect: false, exp });
-            };
+            const addQ = (q, o0, o1, o2, o3, ans, exp) => qList.push({ q, opts:[o0,o1,o2,o3], ans, showExplanation: false, selectedAns: null, isCorrect: false, exp });
 
-            // === 第一部分（慶賀類）===
+            // --- Part 1 (41) ---
             addQ("好朋友即將舉辦訂婚宴，下列哪一個題辭最適合寫在賀卡上？","文定吉祥","天作之合","弄璋誌喜","華屋生輝",0,"【解析】(A)文定吉祥：賀訂婚。(B)賀結婚。(C)賀生男。(D)賀新居。");
             addQ("「天作之合」這個題辭最適合用於下列哪一種場合？","賀訂婚","賀新婚","賀生女","賀新居",1,"【解析】(B)天作之合：上天成就的姻緣，專賀新婚。(A)訂婚用文定吉祥。(C)生女用明珠入掌。(D)新居用美輪美奐。");
             addQ("「鳳凰于飛」比喻夫妻和睦恩愛，此成語專門用於祝賀？","生男","高升","新婚","搬家",2,"【解析】(C)鳳凰于飛賀新婚。(A)生男如天賜麟兒。(B)高升如鵬程萬里。(D)搬家如喬遷誌喜。");
@@ -609,7 +503,7 @@
             addQ("「桑梓之光」這個題辭中，「桑梓」代表什麼意思？","老師","家鄉","父母","朋友",1,"【解析】(B)桑梓指家鄉。桑梓之光即為家鄉爭光，常賀政界當選。");
             addQ("祝賀某人當選里長，下列題辭何者最適當？","里仁為美","造福鄉里","德必有鄰","華屋生輝",1,"【解析】(B)造福鄉里：為家鄉的人謀求福利，賀當選。(A)(C)賀搬家。(D)賀新居。");
 
-            // --- Part 2 (45題) ---
+            // --- Part 2 (61) ---
             addQ("小美參加全國舞蹈大賽獲得冠軍，下列題辭何者最適當？","舞姿曼妙","陽春白雪","唱作俱佳","筆走龍蛇",0,"【解析】(A)舞姿曼妙：形容舞姿柔美，賀舞蹈。(B)賀音樂。(C)賀戲劇。(D)賀書法。");
             addQ("「舞藝超群」與下列哪一個題辭一樣，皆適合用於祝賀舞蹈比賽？","珠圓玉潤","飄逸生姿","鐵畫銀鉤","生龍活虎",1,"【解析】(B)飄逸生姿形容動作灑脫自然，展現優美姿態(比舞蹈)。(A)比音樂。(C)比書法。(D)比體育。");
             addQ("「飄逸生姿」最適合用來稱讚什麼表現？","寫作","演講","舞蹈","唱歌",2,"【解析】(C)飄逸生姿：形容動作灑脫自然，展現出優美的姿態，專用於比舞蹈。");
@@ -661,7 +555,7 @@
             addQ("「輸巧婁明」這個題辭中的「輸」與「婁」是指古代的技藝大師，請問此題辭用於何處？","開書局","開醫院","開工廠","開旅館",2,"【解析】(C)輸巧婁明：形容技藝精巧(魯班公輸班與離婁)，專賀開工廠。");
             addQ("「開物成務」的意思為通達萬物之理並成就各種事業，最適合賀什麼開業？","開醫院","開工廠","開書局","開旅館",1,"【解析】(B)開物成務列於「開工廠」的題辭中。");
 
-            // --- Part 3 (57題) ---
+            // --- Part 3 (46) ---
             addQ("「椿萱並茂」這個題辭專門用來祝賀什麼？","雙胞胎滿月","夫妻新婚","父母雙壽(皆健在且健康)","兄弟雙雙升官",2,"【解析】(C)椿代表父親，萱代表母親。椿萱並茂比喻父母都健在且健康，賀雙壽。");
             addQ("下列哪一個題辭專門用來祝賀「男性長輩」的壽誕？","蟠桃獻壽","慈竹風和","瑤池春永","松柏長青",3,"【解析】(D)松柏長青比喻壽如松柏經冬不凋，賀男壽。(A)(B)(C)皆為賀女壽。");
             addQ("「椿庭長青」的「椿庭」是指誰？","母親","父親","爺爺","老師",1,"【解析】(B)椿庭代指父親。椿庭長青比喻父親長壽，賀男壽。");
@@ -703,40 +597,152 @@
             addQ("「忠勤足式」讚美其忠誠與勤勉的精神足以讓後人效法，最適合用於哀輓誰？","剛畢業的學生","政治界官員","商人","藝術家",1,"【解析】(B)忠勤足式列於「哀輓(政治界/社會)」中。");
             addQ("「甘棠遺愛」比喻為官清正，死後仍留下受人懷念的德澤。其典故與誰有關？","孔子","召公","諸葛亮","包拯",1,"【解析】(B)典故出自周代召公巡行南方行德政，百姓愛護其憩息過的甘棠樹。賀政界官員離世。");
 
-            // --- 補足到 148 題，確保每一個成語都被覆蓋 ---
-            addQ("要祝賀朋友商店開幕，下列題辭何者不適用？","萬商雲集","駿業宏開","大展鴻圖","懸壺濟世",3,"【解析】(D)懸壺濟世專指開醫院。(A)(B)(C)皆可賀開商店。");
-            addQ("「業紹陶朱」的「業」是指什麼事業？","教育事業","醫療事業","經商事業","政治事業",2,"【解析】(C)陶朱公(范蠡)為商人祖師爺，業紹陶朱指繼承經商志業。");
-            addQ("「百工居肆」的「百工」是指什麼人？","一百個工人","各行各業的工作者","學生","老師",1,"【解析】(B)百工居肆：各行各業的人都在工廠或商店裡工作。");
-            addQ("「輸巧婁明」稱讚人工廠開業，其「巧」與「明」是指？","技藝精巧","口齒伶俐","視力很好","文章寫得好",0,"【解析】(A)輸巧婁明：形容技藝精巧(取自魯班公輸班與離婁)。");
-            addQ("「開物成務」不僅用於開工廠，它的本意是什麼？","開發荒地","通達萬物之理並成就事業","開啟寶箱","開創學校",1,"【解析】(B)開物成務：通達萬物之理，並以此成就各種事業。");
-            addQ("「德必有鄰」語出《論語》，現在最常用來祝賀什麼？","生小孩","搬家","結婚","考試及格",1,"【解析】(B)有德行的人必有志同道合的人親近，賀搬家(好鄰居)。");
-            addQ("「作育英才」的「作育」是什麼意思？","寫作文章","培育、造就","作弊","做衣服",1,"【解析】(B)作育即培育，作育英才指培育優秀的人才。");
-            addQ("「前程似錦」的「錦」是指什麼？","一種金屬","錦繡，華麗的絲織品","錦鯉","錦州",1,"【解析】(B)比喻前途如錦繡般燦爛。");
-            addQ("「青雲有志」的「青雲」借代什麼？","高遠的志向或地位","藍色的雲","下雨天","神仙",0,"【解析】(A)青雲有志比喻志向高遠，賀勉勵前程。");
-            addQ("「鵬程萬里」的典故出自《莊子》，大鵬鳥飛得很遠，用來比喻什麼？","前程遠大","體力很好","鳥類繁多","天氣晴朗",0,"【解析】(A)鵬程萬里比喻前程遠大。");
-            addQ("「造福鄉里」與「桑梓之光」皆適合送給什麼身分的人？","醫生","商人","民意代表/政界","老師",2,"【解析】(C)兩者皆與家鄉、鄉里有關，多賀當選/政界。");
-            addQ("「舞藝超群」是稱讚哪方面的技藝出眾？","武術","舞蹈","唱歌","畫畫",1,"【解析】(B)舞藝即舞蹈技巧。");
-            addQ("「陽春白雪」除了指高深難懂的樂曲外，也常和哪個成語成對比(指通俗樂曲)？","下里巴人","高山流水","餘音繞樑","曲高和寡",0,"【解析】(A)陽春白雪(高雅)常與下里巴人(通俗)對比。");
-            addQ("「珠圓玉潤」可以用來形容歌聲，也可以形容什麼？","舞蹈","文字流暢","長相美麗","食物美味",1,"【解析】(B)形容歌聲婉轉圓潤，或文字流暢。");
-            addQ("「新鶯出谷」的「鶯」是指哪一種動物？","老鷹","小鶯鳥","燕子","麻雀",1,"【解析】(B)形容歌聲清脆悅耳，像小鶯鳥飛出山谷鳴叫。");
-            addQ("「維妙維肖」的「肖」意思是什麼？","微笑","相似、逼真","生肖","畫像",1,"【解析】(B)肖即相似，形容模仿、表演得非常逼真傳神。");
-            addQ("「筆走龍蛇」形容什麼動作極快？","走路","畫畫","書法運筆","寫信",2,"【解析】(C)形容書法筆勢雄健灑脫，運筆極快。");
-            addQ("「鐵畫銀鉤」是用來形容哪一種藝術表現？","水墨畫","雕塑","書法","刺繡",2,"【解析】(C)形容書法筆劃剛健有力，結構優美。");
-            addQ("「秀麗遒勁」的「遒勁」是指什麼？","清秀","有力","快速","緩慢",1,"【解析】(B)遒勁指強健有力，形容字跡清秀美麗且有力。");
-            addQ("「龍飛鳳舞」除了形容氣勢奔放，也常指什麼表現活潑？","跳舞","唱歌","書法筆勢","說話",2,"【解析】(C)常指書法筆勢活潑。");
-            addQ("「文采斐然」的「斐然」是什麼意思？","飛快的樣子","華麗、有文采的樣子","悲傷的樣子","生氣的樣子",1,"【解析】(B)形容文章內容華麗且富有文采。");
-            addQ("「如椽巨筆」的「椽」是指什麼？","屋頂的柱子(大木頭)","一種巨大的毛筆","一種神話動物","一種樂器",0,"【解析】(A)椽指放在檁上架著屋頂的木條。如椽巨筆讚譽筆力雄健。");
-            addQ("「文情並茂」的「文」與「情」分別指什麼？","文字與圖畫","內容(理)與情感(情)","文憑與人情","文言文與白話文",1,"【解析】(B)文章的內容(理)與情感(情)都非常動人。");
-            addQ("「文章天成」的「天成」是指什麼？","天上的星星","自然天成，不假修飾","神仙寫的文章","長度很長",1,"【解析】(B)形容文章才華橫溢，自然天成。");
-            addQ("「匠心獨運」的「匠心」是指什麼？","工匠的心","高妙巧思","狠毒的心","善良的心",1,"【解析】(B)形容人創作高妙巧思。");
-            addQ("「字字珠璣」的「珠璣」是指什麼？","豬肉","珍貴的珍珠","玻璃珠","雨滴",1,"【解析】(B)形容文辭優美，每個字都像珍珠般珍貴。");
-
             return qList;
         };
 
-        const renderApp = () => {
-            el('app').innerHTML = `<div id="view-container" class="w-full h-full flex flex-col bg-amber-50"></div>`;
+        // ==========================================
+        //  應用程式狀態與邏輯
+        // ==========================================
+        let currentTab = 'login';
+        let learnSubTab = 'sec1';
+        let quizState = { active: false, currentQ: 0, score: 0, answers: [], questions: [], showExplanation: false, selectedAns: null };
+        let isLearnMenuOpen = false;
+
+        const el = id => document.getElementById(id);
+
+        window.toggleLearnMenu = (show) => {
+            isLearnMenuOpen = typeof show === 'boolean' ? show : !isLearnMenuOpen;
+            const drawer = el('learn-drawer');
+            const overlay = el('learn-overlay');
+            if(drawer && overlay) {
+                if(isLearnMenuOpen) {
+                    drawer.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden');
+                } else {
+                    drawer.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                }
+            }
         };
+
+        const loadRecentUsers = async () => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            try {
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', COLLECTION_NAME);
+                const snap = await getDoc(ref);
+                if(snap.exists() && snap.data().users) {
+                    recentUsers = snap.data().users;
+                }
+            } catch(e) {}
+            if (currentTab === 'login') renderLogin();
+        };
+
+        const saveRecentUser = async (name) => {
+            if (!isFirebaseInitialized || !currentUser) return;
+            try {
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'recent_users', COLLECTION_NAME);
+                await setDoc(ref, { users: arrayUnion(name) }, { merge: true });
+                if (!recentUsers.includes(name)) recentUsers.push(name);
+            } catch(e) {}
+        };
+
+        const initApp = async () => {
+            renderApp();
+            if (isFirebaseInitialized) {
+                await initAuth(); 
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        await loadUserData();
+                        await loadRecentUsers();
+                        if (username) renderMain();
+                        else renderLogin();
+                    } else renderLogin();
+                });
+            } else {
+                if (username) renderMain(); else renderLogin();
+            }
+        };
+
+        window.handleLogin = async (name) => {
+            if(!name.trim()) {
+                const inputEl = document.getElementById('usernameInput');
+                inputEl.classList.add('border-red-500', 'bg-red-50');
+                inputEl.placeholder = "名稱不能為空！";
+                setTimeout(() => {
+                    inputEl.classList.remove('border-red-500', 'bg-red-50');
+                    inputEl.placeholder = "✍️ 請輸入您的姓名/座號";
+                }, 2000);
+                return;
+            }
+            username = name;
+            await loadUserData();
+            
+            if (isFirebaseInitialized && currentUser) {
+                const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid);
+                await setDoc(userRef, { username, lastLogin: new Date() }, { merge: true });
+                const loginRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_logs'));
+                await setDoc(loginRef, { type: 'login', time: new Date() });
+                await saveRecentUser(name);
+            }
+            renderMain();
+        };
+
+        const loadUserData = async () => {
+            if (isFirebaseInitialized && currentUser) {
+                const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
+                try {
+                    const snap = await getDoc(ref);
+                    if (snap.exists()) {
+                        const d = snap.data();
+                        if(d.favorites) userData.favorites = d.favorites;
+                        if(d.mistakes) userData.mistakes = d.mistakes;
+                    }
+                } catch(e) {}
+            } else {
+                try {
+                    const localData = localStorage.getItem(`idiom_${username}_data_exam3`);
+                    if (localData) {
+                        const d = JSON.parse(localData);
+                        if(d.favorites) userData.favorites = d.favorites;
+                        if(d.mistakes) userData.mistakes = d.mistakes;
+                    }
+                } catch(e) {}
+            }
+            
+            try {
+                const localQuiz = localStorage.getItem(`idiom_${username}_quiz_exam3`);
+                if (localQuiz) {
+                    const q = JSON.parse(localQuiz);
+                    if (q && q.active) quizState = q;
+                }
+            } catch(e) {}
+        };
+
+        const saveUserData = async () => {
+            try {
+                if (username) localStorage.setItem(`idiom_${username}_data_exam3`, JSON.stringify(userData));
+            } catch(e) {}
+
+            if (!isFirebaseInitialized || !currentUser) return;
+            const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, 'profile');
+            try { await setDoc(ref, userData, { merge: true }); } catch(e) {}
+        };
+
+        const saveQuizState = () => {
+            try { if(username) localStorage.setItem(`idiom_${username}_quiz_exam3`, JSON.stringify(quizState)); } catch(e) {}
+        };
+
+        window.toggleFavorite = async (itemId) => {
+            const idx = userData.favorites.indexOf(itemId);
+            if (idx > -1) userData.favorites.splice(idx, 1);
+            else userData.favorites.push(itemId);
+            saveUserData();
+            if(currentTab === 'learn') renderLearnContent();
+            if(currentTab === 'favorites') renderFavorites();
+        };
+
+        const renderApp = () => { el('app').innerHTML = `<div id="view-container" class="w-full h-full flex flex-col bg-amber-50"></div>`; };
 
         window.renderLogin = () => {
             currentTab = 'login';
@@ -774,12 +780,7 @@
                             <p class="text-sm text-orange-700/60 mb-4 font-medium tracking-wide">☁️ 雲端最近登入 👥</p>
                             <div class="flex flex-wrap justify-center gap-3">
                                 ${recentUsers.length > 0 
-                                    ? recentUsers.slice(-10).map(u => `
-                                        <div class="inline-flex items-center bg-white/60 border border-orange-200 text-orange-800 rounded-lg shadow-sm transition-all overflow-hidden group">
-                                            <button onclick="handleLogin('${u}')" class="px-4 py-2 hover:bg-orange-100 hover:text-orange-900 font-bold">${u}</button>
-                                            <button onclick="deleteUser('${u}')" class="px-3 py-2 bg-rose-50 text-rose-400 hover:bg-rose-500 hover:text-white transition-colors" title="刪除紀錄"><i class="fas fa-times"></i></button>
-                                        </div>
-                                      `).join('')
+                                    ? recentUsers.slice(-5).map(u => `<button onclick="handleLogin('${u}')" class="text-sm font-bold bg-white/60 border border-orange-200 text-orange-800 hover:bg-orange-100 hover:text-orange-900 hover:border-orange-300 px-4 py-2 rounded-lg shadow-sm transition-all">${u}</button>`).join('')
                                     : `<span class="text-sm text-orange-700/60 bg-white/50 px-4 py-2 rounded-lg">尚無紀錄或尚未連線</span>`
                                 }
                             </div>
@@ -789,174 +790,539 @@
             `;
         };
 
-        const listenToGlobalUsers = () => {
-            if (!isFirebaseReady) return;
-            const globalRef = doc(db, 'artifacts', appId, 'public', 'data', COLLECTION_NAME, DOC_GLOBAL);
-            unsubscribeGlobal = onSnapshot(globalRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    recentUsers = docSnap.data().users || [];
-                } else {
-                    recentUsers = [];
-                }
-                if (currentTab === 'login') renderLogin();
-            }, (error) => console.error("Global Users Sync Error:", error));
+        window.renderMain = () => {
+            el('view-container').innerHTML = `
+                <nav class="glass-nav text-white shadow-lg z-20 shrink-0">
+                    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+                        <div class="flex justify-between h-20">
+                            <div class="flex items-center gap-2 sm:gap-4 flex-1 overflow-hidden min-w-0">
+                                <span class="font-extrabold text-xl md:text-2xl tracking-widest hidden lg:flex items-center shrink-0 text-white">
+                                    <span class="bg-white/20 p-2 rounded-lg mr-3">🧧</span>題辭高手版 🎓✨
+                                </span>
+                                <div class="flex items-center bg-white/10 px-3 py-1.5 rounded-full border border-white/20 shadow-inner text-xs sm:text-sm font-medium shrink-0">
+                                    <span class="status-dot ${connectionStatus === 'loading' ? 'bg-amber-400' : connectionStatus === 'success' ? 'bg-emerald-400' : 'bg-red-400'}"></span>
+                                    <span class="hidden sm:inline text-white">${connectionStatus === 'loading' ? '讀取中' : connectionStatus === 'success' ? '已同步' : '連線失敗'}</span>
+                                </div>
+                                <div id="nav-quiz-stats" class="hidden items-center ml-1 sm:ml-4 animate-fade-in shrink-0 min-w-0">
+                                    <div class="flex items-center bg-white/95 px-3 py-1.5 rounded-xl shadow-md text-sm sm:text-base font-bold shrink-0 text-orange-950">
+                                        <span class="text-emerald-600 flex items-center"><span class="mr-1.5">✅</span><span id="nav-stat-correct">0</span></span>
+                                        <div class="w-px bg-slate-300 h-4 mx-3"></div>
+                                        <span class="text-rose-600 flex items-center"><span class="mr-1.5">❌</span><span id="nav-stat-incorrect">0</span></span>
+                                    </div>
+                                    <div class="hidden md:flex flex-col w-24 lg:w-32 ml-4 shrink-0">
+                                        <div class="w-full bg-orange-950/50 rounded-full h-2.5 overflow-hidden shadow-inner border border-white/10">
+                                            <div id="nav-stat-progress-bar" class="bg-gradient-to-r from-amber-400 to-orange-400 h-full rounded-full transition-all duration-500 relative overflow-hidden" style="width: 0%">
+                                                <div class="absolute inset-0 bg-white/20 w-full h-full" style="background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent); background-size: 1rem 1rem;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center space-x-1 sm:space-x-3 shrink-0 overflow-x-auto scrollbar-hide max-w-full pl-2">
+                                <button onclick="switchTab('learn')" id="nav-learn" class="whitespace-nowrap px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all duration-200"><span class="mr-1.5 hidden sm:inline">📚</span>學習</button>
+                                <button onclick="switchTab('quiz')" id="nav-quiz" class="whitespace-nowrap px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all duration-200"><span class="mr-1.5 hidden sm:inline">🎯</span>測驗(148)</button>
+                                <button onclick="switchTab('mistakes')" id="nav-mistakes" class="whitespace-nowrap px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all duration-200"><span class="mr-1.5 hidden sm:inline">🩹</span>錯題</button>
+                                <button onclick="switchTab('favorites')" id="nav-favorites" class="whitespace-nowrap px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all duration-200"><span class="mr-1.5 hidden sm:inline">💖</span>最愛</button>
+                                <div class="ml-2 sm:ml-4 flex items-center pl-3 sm:pl-5 border-l border-white/20 shrink-0 whitespace-nowrap">
+                                    <span class="text-sm sm:text-base font-bold mr-3 bg-white/10 px-3 py-1.5 rounded-lg text-white"><span class="mr-2">👤</span>${username}</span>
+                                    <button onclick="logout()" class="text-white/70 hover:text-white hover:bg-rose-500/80 p-2 rounded-lg transition-colors" title="登出">🚪</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                <div id="main-content" class="flex-1 overflow-hidden flex flex-col w-full z-10 relative">
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+CjxyZWN0IHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgZmlsbD0ibm9uZSIvPgo8Y2lyY2xlIGN4PSI0MCIgY3k9IjQwIiByPSIxIiBmaWxsPSIjZjVjNWMyIi8+Cjwvc3ZnPg==')] opacity-50 z-0"></div>
+                </div>
+            `;
+            switchTab('learn');
         };
 
-        const updateGlobalUserList = async (name) => {
-            if (!isFirebaseReady) return;
-            const globalRef = doc(db, 'artifacts', appId, 'public', 'data', COLLECTION_NAME, DOC_GLOBAL);
-            try {
-                const snap = await getDoc(globalRef);
-                let users = [];
-                if(snap.exists()) users = snap.data().users || [];
-                if(!users.includes(name)) {
-                    users.push(name);
-                    await setDoc(globalRef, { users }, { merge: true });
-                }
-            } catch(e) { console.error("Update global user error:", e); }
+        window.logout = () => {
+            username = '';
+            userData = { favorites: [], mistakes: [] };
+            quizState = { active: false, currentQ: 0, score: 0, answers: [], questions: [], showExplanation: false, selectedAns: null };
+            renderLogin();
         };
 
-        window.deleteUser = async (name) => {
-            if(!confirm(`確定要刪除 ${name} 的所有雲端與本機紀錄嗎？\n此操作無法復原！`)) return;
-            if(!confirm(`⚠️ 再次警告：這將永久刪除 ${name} 的所有進度與錯題！`)) return;
-            
-            // Remove from global list
-            if (isFirebaseReady) {
-                const globalRef = doc(db, 'artifacts', appId, 'public', 'data', COLLECTION_NAME, DOC_GLOBAL);
-                try {
-                    const snap = await getDoc(globalRef);
-                    if(snap.exists()) {
-                        let users = snap.data().users || [];
-                        users = users.filter(u => u !== name);
-                        await setDoc(globalRef, { users });
+        window.switchTab = (tab) => {
+            currentTab = tab;
+            ['learn', 'quiz', 'mistakes', 'favorites'].forEach(t => {
+                const btn = el(`nav-${t}`);
+                if(btn) {
+                    if(t === tab) {
+                        btn.classList.add('bg-white/20', 'text-white', 'shadow-sm');
+                        btn.classList.remove('text-white/70', 'hover:bg-white/10');
+                    } else {
+                        btn.classList.remove('bg-white/20', 'text-white', 'shadow-sm');
+                        btn.classList.add('text-white/70', 'hover:bg-white/10');
                     }
-                } catch(e) {}
+                }
+            });
+
+            const navStats = el('nav-quiz-stats');
+            if (navStats) {
+                if (tab === 'quiz' && quizState.active) {
+                    navStats.classList.remove('hidden');
+                    navStats.classList.add('flex');
+                    updateQuizStats();
+                } else {
+                    navStats.classList.add('hidden');
+                    navStats.classList.remove('flex');
+                }
             }
-            
-            // Clear local storage
-            if(localStorage.getItem(`${COLLECTION_NAME}_last_user`) === name) {
-                localStorage.removeItem(`${COLLECTION_NAME}_last_user`);
-            }
-            localStorage.removeItem(`${COLLECTION_NAME}_${name}_data_exam2`);
-            localStorage.removeItem(`${COLLECTION_NAME}_${name}_quiz_exam2`);
-            
-            alert(`${name} 的紀錄已徹底刪除。`);
-            location.reload();
+
+            const content = el('main-content');
+            if(tab === 'learn') renderLearnView(content);
+            if(tab === 'quiz') renderQuizView(content);
+            if(tab === 'mistakes') renderMistakes(content);
+            if(tab === 'favorites') renderFavorites(content);
         };
 
-        window.handleLogin = async (name) => {
-            if(!name.trim()) {
-                const inputEl = document.getElementById('usernameInput');
-                inputEl.classList.add('border-red-500', 'bg-red-50');
-                inputEl.placeholder = "名稱不能為空！";
-                setTimeout(() => {
-                    inputEl.classList.remove('border-red-500', 'bg-red-50');
-                    inputEl.placeholder = "✍️ 請輸入您的姓名/座號";
-                }, 2000);
+        const renderLearnView = (container) => {
+            const currentData = learnData.find(d => d.id === learnSubTab);
+            const themeColors = {
+                'orange': 'text-orange-900 bg-orange-50 border-orange-200',
+                'amber': 'text-amber-900 bg-amber-50 border-amber-200',
+                'rose': 'text-rose-900 bg-rose-50 border-rose-200'
+            };
+            const activeTheme = currentData && currentData.theme ? themeColors[currentData.theme] : 'text-orange-900 bg-orange-50 border-orange-200';
+
+            container.innerHTML = `
+                <div class="w-full ${activeTheme} border-b p-4 flex items-center shadow-sm z-10 shrink-0 overflow-hidden transition-colors duration-300">
+                    <button onclick="toggleLearnMenu(true)" class="text-orange-800 hover:text-red-600 focus:outline-none flex items-center px-4 py-2 bg-white/80 rounded-xl border border-white shadow-sm mr-4 transition-all hover:shadow">
+                        <i class="fas fa-bars text-xl md:mr-3"></i>
+                        <span class="font-bold text-lg hidden md:inline tracking-wide">單元選單</span>
+                    </button>
+                    <span class="font-extrabold text-xl md:text-2xl truncate drop-shadow-sm" id="current-learn-title">${currentData ? currentData.title : ''}</span>
+                </div>
+                <div id="learn-overlay" onclick="toggleLearnMenu(false)" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30 hidden transition-opacity duration-300"></div>
+                <div id="learn-drawer" class="fixed inset-y-0 left-0 w-[24rem] max-w-[85vw] bg-white border-r border-orange-100 z-40 transform -translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto shadow-2xl flex flex-col">
+                    <div class="p-6 bg-orange-50 flex justify-between items-center border-b border-orange-100 shrink-0">
+                        <span class="font-extrabold text-2xl text-orange-900">📑 學習目錄 🗺️</span>
+                        <button onclick="toggleLearnMenu(false)" class="text-orange-400 hover:text-red-500 transition-colors bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm border border-orange-100"><i class="fas fa-times text-xl"></i></button>
+                        </div>
+                    <ul class="py-4 flex-1 px-3 space-y-1">
+                        ${learnData.map(d => {
+                            const isSelected = learnSubTab === d.id;
+                            const themeConfig = {
+                                'orange': isSelected ? 'bg-orange-50 text-orange-900 border-orange-500' : 'hover:bg-orange-50/50',
+                                'amber': isSelected ? 'bg-amber-50 text-amber-900 border-amber-500' : 'hover:bg-amber-50/50',
+                                'rose': isSelected ? 'bg-rose-50 text-rose-900 border-rose-500' : 'hover:bg-rose-50/50',
+                            };
+                            const defaultClass = isSelected ? 'bg-orange-50 text-orange-900 border-orange-500 shadow-sm' : 'text-slate-600 border-transparent hover:bg-orange-50';
+                            const activeClass = d.theme ? themeConfig[d.theme] : defaultClass;
+                            return `
+                            <li>
+                                <button onclick="selectLearnTab('${d.id}')" id="ltab-${d.id}" class="w-full text-left px-5 py-4 text-lg md:text-xl font-bold rounded-xl transition-all border-l-4 ${isSelected ? activeClass + ' shadow-sm' : 'text-slate-600 border-transparent hover:bg-orange-50 hover:pl-6 hover:text-orange-800'}">
+                                    ${d.title}
+                                </button>
+                            </li>
+                        `}).join('')}
+                    </ul>
+                </div>
+                <div class="flex-1 p-4 md:p-6 lg:p-10 overflow-y-auto overflow-x-hidden w-full relative z-10" id="learn-content-area"></div>
+            `;
+            renderLearnContent();
+        };
+
+        window.selectLearnTab = (id) => {
+            learnSubTab = id;
+            renderLearnView(el('main-content')); 
+            toggleLearnMenu(false);
+        };
+
+        window.renderLearnContent = () => {
+            const area = el('learn-content-area');
+            if(!area) return;
+            const data = learnData.find(d => d.id === learnSubTab);
+            area.innerHTML = `
+                <div class="max-w-5xl mx-auto w-full animate-fade-in pb-12">
+                    ${data.content}
+                </div>
+            `;
+            setTimeout(() => {
+                document.querySelectorAll('.fav-btn').forEach(btn => {
+                    const id = btn.getAttribute('data-id');
+                    if(userData.favorites.includes(id)) {
+                        btn.classList.remove('text-gray-300', 'text-white/50');
+                        btn.classList.add('text-rose-500');
+                        btn.innerHTML = '❤️';
+                    }
+                });
+            }, 0);
+        };
+
+        const renderQuizView = (container) => {
+            if(!quizState.active) {
+                container.innerHTML = `
+                    <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 overflow-y-auto relative z-10">
+                        <div class="glass-card p-8 md:p-12 rounded-3xl shadow-2xl text-center max-w-3xl w-full border border-white/60 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-40 h-40 bg-orange-100 rounded-bl-full -z-10 opacity-50"></div>
+                            
+                            <div class="w-24 h-24 bg-gradient-to-br from-orange-500 to-red-600 rounded-full mx-auto mb-8 flex items-center justify-center shadow-lg">
+                                <span class="text-5xl text-white">🧠</span>
+                            </div>
+                            
+                            <h2 class="text-3xl md:text-4xl font-extrabold mb-6 text-orange-950 tracking-wide">148題 題辭精熟測驗 🏆</h2>
+                            <p class="text-orange-800/80 mb-10 text-lg md:text-xl leading-loose">
+                                題目涵蓋講義所有題辭分類，驗收您的精熟度！<br>
+                                <span class="bg-orange-100 text-orange-800 font-bold px-4 py-1.5 rounded-full inline-block mt-4 border border-orange-200 shadow-sm">🌊 瀑布流模式</span><br>
+                                <span class="text-base text-orange-700/60 mt-2 block">點擊選項後立即顯示解析，無須換頁，快速複習最有效率！ ✨</span>
+                            </p>
+                            <button onclick="startQuiz()" class="w-full sm:w-auto bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-4 px-16 text-xl md:text-2xl rounded-2xl shadow-xl transition-all transform hover:-translate-y-1 hover:shadow-2xl">
+                                開始挑戰 🚀🔥
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                renderQuizWaterfall(container);
+            }
+        };
+
+        window.startQuiz = () => {
+            const qList = [...generate120Questions()].sort(() => 0.5 - Math.random()).map(q => ({
+                ...q,
+                selectedAns: null,
+                showExplanation: false,
+                isCorrect: false
+            }));
+            quizState = { active: true, questions: qList };
+            saveQuizState();
+            renderQuizView(el('main-content'));
+            
+            const navStats = el('nav-quiz-stats');
+            if (navStats) {
+                navStats.classList.remove('hidden');
+                navStats.classList.add('flex');
+            }
+            updateQuizStats();
+        };
+
+        window.updateQuizStats = () => {
+            if (!quizState.active) return;
+            let correct = 0; let incorrect = 0; let answered = 0;
+            const total = quizState.questions.length;
+            quizState.questions.forEach(q => {
+                if (q.showExplanation) {
+                    answered++;
+                    if (q.isCorrect) correct++; else incorrect++;
+                }
+            });
+            const progressPercent = (answered / total) * 100;
+            const elCorrect = document.getElementById('nav-stat-correct');
+            const elIncorrect = document.getElementById('nav-stat-incorrect');
+            const elBar = document.getElementById('nav-stat-progress-bar');
+            if (elCorrect) elCorrect.innerText = correct;
+            if (elIncorrect) elIncorrect.innerText = incorrect;
+            if (elBar) elBar.style.width = progressPercent + '%';
+        };
+
+        const renderQuizWaterfall = (container) => {
+            const total = quizState.questions.length;
+            let html = `
+                <div class="w-full flex-1 p-3 md:p-6 lg:p-8 overflow-y-auto overflow-x-hidden pb-24 scrollbar-hide relative z-10" id="quiz-scroll-container">
+                    <div class="max-w-4xl mx-auto relative w-full">
+                        <div class="glass-card flex justify-between items-center rounded-2xl p-4 md:p-5 shadow-sm border border-white/60 mb-8 sticky top-0 z-50 backdrop-blur-xl">
+                            <h2 class="text-xl md:text-2xl font-extrabold text-orange-900 flex items-center"><span class="mr-3 text-orange-600 bg-orange-100 p-2 rounded-lg">📝</span>測驗進行中 ⏳</h2>
+                            <button onclick="clearQuizHistory()" class="text-sm md:text-base text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center border border-transparent hover:border-rose-200"><span class="mr-1.5">🚪</span>放棄作答</button>
+                        </div>
+                        <div id="questions-list" class="space-y-8 w-full">
+            `;
+            quizState.questions.forEach((_, qIdx) => {
+                html += `<div id="q-block-${qIdx}" class="bg-white rounded-3xl shadow-lg overflow-hidden border border-orange-100 transition-all w-full">${generateSingleQuestionHtml(qIdx)}</div>`;
+            });
+            html += `
+                        </div>
+                        <button onclick="finishQuizWaterfall()" class="w-full mt-12 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-extrabold py-5 md:py-6 text-xl md:text-3xl rounded-2xl shadow-xl transition-all transform hover:-translate-y-1 hover:shadow-2xl flex items-center justify-center break-words border-b-4 border-red-700">
+                            🏁 完成測驗並結算成績 📊
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        };
+
+        const generateSingleQuestionHtml = (qIdx) => {
+            const q = quizState.questions[qIdx];
+            let optionsHtml = '';
+            
+            q.opts.forEach((opt, i) => {
+                let btnClass = "w-full text-left p-4 md:p-5 text-lg md:text-xl rounded-2xl border-2 transition-all duration-200 flex items-center group relative overflow-hidden ";
+                let iconHtml = `<span class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center mr-4 font-extrabold text-lg md:text-xl transition-colors shrink-0 shadow-inner group-hover:bg-orange-100 group-hover:text-orange-700">${String.fromCharCode(65+i)}</span>`;
+                
+                if (!q.showExplanation) {
+                    btnClass += "border-orange-100 hover:border-orange-400 hover:bg-orange-50/50 bg-white cursor-pointer hover:shadow-md";
+                } else {
+                    if (i === q.ans) {
+                        btnClass += "border-emerald-400 bg-emerald-50 text-emerald-900 font-bold shadow-md z-10 ring-2 ring-emerald-400/20";
+                        iconHtml = `<span class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center mr-4 font-bold text-xl md:text-2xl shrink-0 shadow-sm">✅</span>`;
+                    } else if (i === q.selectedAns) {
+                        btnClass += "border-rose-400 bg-rose-50 text-rose-900 font-bold";
+                        iconHtml = `<span class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-rose-500 text-white flex items-center justify-center mr-4 font-bold text-xl md:text-2xl shrink-0 shadow-sm">❌</span>`;
+                    } else {
+                        btnClass += "border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed";
+                    }
+                }
+
+                optionsHtml += `
+                    <button ${q.showExplanation ? 'disabled' : `onclick="answerWaterfallQuestion(${qIdx}, ${i})"`} class="${btnClass}">
+                        ${iconHtml}
+                        <span class="flex-1 leading-relaxed break-words z-10 text-slate-800 group-hover:text-orange-950">${opt}</span>
+                    </button>
+                `;
+            });
+
+            let explanationHtml = '';
+            if (q.showExplanation) {
+                const isCorrect = q.selectedAns === q.ans;
+                explanationHtml = `
+                    <div class="mt-8 p-5 md:p-8 rounded-2xl border ${isCorrect ? 'bg-emerald-50/50 border-emerald-200' : 'bg-rose-50/50 border-rose-200'} animate-fade-in w-full">
+                        <div class="flex items-center mb-5 border-b ${isCorrect ? 'border-emerald-200/50' : 'border-rose-200/50'} pb-4">
+                            <div class="w-12 h-12 rounded-full ${isCorrect ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'} flex items-center justify-center mr-4 shrink-0 text-3xl">
+                                ${isCorrect ? '🎉' : '😲'}
+                            </div>
+                            <span class="font-extrabold text-2xl md:text-3xl ${isCorrect ? 'text-emerald-800' : 'text-rose-800'}">${isCorrect ? '太棒了，答對了！' : '哎呀，答錯了！'}</span>
+                        </div>
+                        <div class="w-full">
+                            <p class="font-bold mb-3 text-lg md:text-xl text-slate-700 flex items-center"><span class="mr-2">🔍</span>完整題目解析</p>
+                            <p class="mt-2 text-lg md:text-xl break-words text-slate-700 bg-white p-4 rounded-xl border border-orange-100 shadow-sm">正確答案為 <strong class="${isCorrect ? 'text-emerald-600' : 'text-rose-600'} text-xl md:text-2xl ml-2">(${String.fromCharCode(65+q.ans)}) ${q.opts[q.ans]}</strong></p>
+                            <div class="mt-4 p-5 md:p-6 bg-orange-50/50 border border-orange-200/60 rounded-xl text-orange-950 w-full relative overflow-hidden">
+                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-orange-400"></div>
+                                <p class="font-bold text-lg md:text-xl mb-2 flex items-center"><span class="mr-2 text-xl">💡</span>深度解析</p>
+                                <p class="text-lg md:text-xl leading-loose break-words whitespace-pre-wrap pl-1">${q.exp}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="px-5 md:px-8 py-4 border-b border-orange-100 flex justify-between items-center transition-colors ${q.showExplanation ? (q.selectedAns === q.ans ? 'bg-gradient-to-r from-emerald-50 to-white' : 'bg-gradient-to-r from-rose-50 to-white') : 'bg-orange-50/30'}">
+                    <span class="font-extrabold text-orange-400 text-lg md:text-xl bg-white px-3 py-1 rounded-lg border border-orange-100 shadow-sm">🤔 Q ${qIdx + 1}</span>
+                    ${q.showExplanation 
+                        ? (q.selectedAns === q.ans 
+                            ? '<span class="text-emerald-600 font-bold text-lg md:text-xl flex items-center bg-emerald-100 px-3 py-1 rounded-full"><span class="mr-1.5">✅</span>答對</span>' 
+                            : '<span class="text-rose-600 font-bold text-lg md:text-xl flex items-center bg-rose-100 px-3 py-1 rounded-full"><span class="mr-1.5">❌</span>答錯</span>') 
+                        : '<span class="text-orange-400 font-bold text-sm md:text-base flex items-center bg-orange-100/50 px-3 py-1 rounded-full"><span class="mr-1.5">✍️</span>作答區</span>'}
+                </div>
+                <div class="p-5 md:p-8 w-full overflow-hidden">
+                    <h3 class="text-xl md:text-2xl font-extrabold text-slate-800 mb-8 leading-loose break-words">${q.q}</h3>
+                    <div class="space-y-4 w-full">
+                        ${optionsHtml}
+                    </div>
+                    ${explanationHtml}
+                </div>
+            `;
+        };
+
+        window.answerWaterfallQuestion = (qIdx, optIdx) => {
+            const q = quizState.questions[qIdx];
+            if(q.showExplanation) return; 
+
+            const isCorrect = optIdx === q.ans;
+            
+            q.selectedAns = optIdx;
+            q.showExplanation = true;
+            q.isCorrect = isCorrect;
+            
+            if (isCorrect) {
+                playCorrectSound();
+                confetti({ particleCount: 60, spread: 70, origin: { y: 0.7 }, zIndex: 10000, colors: ['#f59e0b', '#fbbf24', '#fcd34d', '#ef4444', '#f97316'] });
+            } else {
+                playWrongSound();
+                const mistakeId = q.q; 
+                const exists = userData.mistakes.find(m => m.id === mistakeId);
+                if(!exists) {
+                    userData.mistakes.push({
+                        id: mistakeId, q: q.q, opts: q.opts, ans: q.ans, time: new Date().toISOString()
+                    });
+                    saveUserData();
+                }
+            }
+            saveQuizState();
+            const block = document.getElementById(`q-block-${qIdx}`);
+            if (block) {
+                block.innerHTML = generateSingleQuestionHtml(qIdx);
+            }
+            updateQuizStats();
+        };
+
+        window.finishQuizWaterfall = async () => {
+            let correctCount = 0;
+            let answeredCount = 0;
+            quizState.questions.forEach(q => {
+                if (q.showExplanation) {
+                    answeredCount++;
+                    if (q.isCorrect) correctCount++;
+                }
+            });
+
+            if (answeredCount < quizState.questions.length) {
+                if(!confirm(`您還有 ${quizState.questions.length - answeredCount} 題尚未作答，確定要直接交卷結算嗎？`)) {
+                    return;
+                }
+            }
+
+            quizState.active = false;
+            saveQuizState();
+            
+            const total = quizState.questions.length;
+            const scorePercent = Math.round((correctCount / total) * 100);
+            
+            const navStats = el('nav-quiz-stats');
+            if (navStats) {
+                navStats.classList.add('hidden');
+                navStats.classList.remove('flex');
+            }
+
+            if(isFirebaseInitialized && currentUser) {
+                const docRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME + '_quizzes'));
+                try {
+                    await setDoc(docRef, { score: scorePercent, date: new Date(), total, correct: correctCount });
+                } catch(e) { console.error("Save Quiz Error", e); }
+            }
+
+            const container = el('main-content');
+            container.innerHTML = `
+                <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 overflow-y-auto pb-24 relative z-10">
+                    <div class="glass-card p-8 md:p-12 rounded-3xl shadow-2xl text-center max-w-3xl w-full border border-white/60 relative overflow-hidden">
+                        <div class="absolute -top-20 -left-20 w-48 h-48 bg-amber-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70 -z-10"></div>
+                        
+                        <div class="w-28 h-28 bg-gradient-to-br from-amber-300 to-orange-500 rounded-full mx-auto mb-6 flex items-center justify-center shadow-xl border-4 border-white text-6xl">
+                            🏆
+                        </div>
+                        
+                        <h2 class="text-3xl md:text-4xl font-extrabold mb-4 text-orange-950">🎉 測驗完成！ 🎊</h2>
+                        <div class="my-8 relative inline-block">
+                            <span class="text-8xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 drop-shadow-sm">${scorePercent}</span>
+                            <span class="text-2xl md:text-3xl text-orange-600 font-bold absolute bottom-2 -right-10">分</span>
+                        </div>
+                        <div class="bg-orange-50/80 rounded-2xl p-6 mb-8 border border-orange-100 shadow-inner inline-block">
+                            <p class="text-orange-900 text-xl md:text-2xl font-medium">答對 🎯 <span class="text-rose-600 font-black text-2xl mx-1">${correctCount}</span> 題 / 共作答 📝 ${answeredCount} 題</p>
+                            <p class="text-sm md:text-base mt-2 text-orange-700/60 font-bold tracking-widest">(總題數 ${total} 題)</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-4 w-full">
+                            <button onclick="switchTab('mistakes')" class="flex-1 bg-white border-2 border-orange-200 hover:border-orange-300 hover:bg-orange-50 text-orange-700 font-extrabold py-4 px-6 text-xl rounded-2xl shadow-sm hover:shadow-md transition-all">
+                                🩹 查看錯題
+                            </button>
+                            <button onclick="startQuiz()" class="flex-1 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-extrabold py-4 px-6 text-xl rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 border-b-4 border-red-800">
+                                🔄 重新挑戰
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            confetti({ particleCount: 300, spread: 100, origin: { y: 0.3 }, zIndex: 10000, colors: ['#f59e0b', '#fbbf24', '#fcd34d', '#ef4444', '#f97316'] });
+        };
+
+        window.clearQuizHistory = () => {
+            if(confirm('警告：確定要清除目前的作答紀錄嗎？\n(此動作將會遺失目前所有測驗進度)')) {
+                if(confirm('【第二次確認】真的要清除作答紀錄並放棄目前測驗嗎？\n按下「確定」將會清空並返回測驗首頁。')) {
+                    quizState = { active: false, currentQ: 0, score: 0, answers: [], questions: [], showExplanation: false, selectedAns: null };
+                    saveQuizState();
+                    const navStats = el('nav-quiz-stats');
+                    if (navStats) {
+                        navStats.classList.add('hidden');
+                        navStats.classList.remove('flex');
+                    }
+                    renderQuizView(el('main-content'));
+                }
+            }
+        };
+
+        window.renderMistakes = (container) => {
+            if(!container) container = el('main-content');
+            if(userData.mistakes.length === 0) {
+                container.innerHTML = `
+                    <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 text-orange-400 flex-col text-center relative z-10 animate-fade-in">
+                        <div class="w-32 h-32 bg-emerald-50 rounded-full flex items-center justify-center mb-6 shadow-inner border-2 border-emerald-200 text-6xl">🥳</div>
+                        <h2 class="text-3xl md:text-4xl font-extrabold text-orange-950 mb-2">太棒了！✨</h2>
+                        <p class="text-xl md:text-2xl font-medium text-orange-800/60">目前沒有任何錯題紀錄 🎉</p>
+                    </div>`;
                 return;
             }
-            username = name;
-            localStorage.setItem(`${COLLECTION_NAME}_last_user`, username);
-            
-            if (isFirebaseReady) {
-                updateGlobalUserList(username);
 
-                // 寫入登入日誌 (Log)
-                const logRef = doc(db, 'artifacts', appId, 'public', 'data', COLLECTION_NAME + '_logs', `${username}_login_${Date.now()}`);
-                setDoc(logRef, { type: 'login', user: username, time: new Date() }).catch(e=>{});
-
-                // 監聽專屬 UserProfile (實現跨裝置同步)
-                const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, `userProfile_${username}`);
-                
-                if(unsubscribeUser) unsubscribeUser();
-                
-                unsubscribeUser = onSnapshot(userRef, (docSnap) => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        userData.favorites = data.favorites || [];
-                        userData.mistakes = data.mistakes || [];
-                        if (data.quizState && data.quizState.active) {
-                            quizState = data.quizState;
-                        }
-                    } else {
-                        // Init new user
-                        setDoc(userRef, { favorites: [], mistakes: [], quizState: null }, { merge: true });
-                    }
-                    // Refresh UI
-                    if(currentTab === 'learn') renderLearnContent();
-                    if(currentTab === 'mistakes') renderMistakes();
-                    if(currentTab === 'favorites') renderFavorites();
-                    if(currentTab === 'quiz') updateQuizStats();
-                });
-            } else {
-                // Offline fallback
-                try {
-                    const localData = localStorage.getItem(`${COLLECTION_NAME}_${username}_data`);
-                    if (localData) {
-                        const d = JSON.parse(localData);
-                        userData.favorites = d.favorites || [];
-                        userData.mistakes = d.mistakes || [];
-                    }
-                    const localQuiz = localStorage.getItem(`${COLLECTION_NAME}_${username}_quiz`);
-                    if (localQuiz) {
-                        const q = JSON.parse(localQuiz);
-                        if (q && q.active) quizState = q;
-                    }
-                } catch(e) {}
-            }
-            renderMain();
+            container.innerHTML = `
+                <div class="w-full flex-1 p-3 md:p-6 lg:p-10 overflow-y-auto overflow-x-hidden pb-24 relative z-10">
+                    <div class="max-w-5xl mx-auto w-full">
+                        <div class="flex justify-between items-end border-b-4 border-rose-200 pb-4 mb-10">
+                            <div>
+                                <h2 class="text-3xl md:text-4xl font-extrabold text-rose-800 flex items-center"><span class="bg-rose-100 text-rose-600 w-12 h-12 flex items-center justify-center rounded-xl mr-4">🩹</span>錯題本 📚</h2>
+                                <p class="text-rose-900/50 mt-2 ml-16 font-medium">收錄您在測驗中答錯的題目，溫故知新 🔄💡</p>
+                            </div>
+                            <button onclick="clearMistakes()" class="text-sm md:text-base text-rose-500 hover:text-rose-700 bg-white hover:bg-rose-50 px-4 py-2 rounded-lg border border-rose-200 shadow-sm font-bold transition-all flex items-center shrink-0 mb-2"><span class="mr-2">🗑️</span>清空</button>
+                        </div>
+                        <div class="space-y-8 md:space-y-10 w-full">
+                            ${userData.mistakes.map((m, i) => `
+                                <div class="bg-white p-6 md:p-10 rounded-3xl shadow-lg border border-orange-100 w-full overflow-hidden relative group">
+                                    <div class="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-rose-400 to-orange-400"></div>
+                                    <h3 class="font-extrabold text-orange-950 mb-8 text-xl md:text-2xl break-words leading-loose flex items-start">
+                                        <span class="text-rose-500 mr-3 text-2xl font-black bg-rose-50 px-2 rounded-lg">🤔 Q</span>${m.q}
+                                    </h3>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 text-lg md:text-xl w-full">
+                                        ${m.opts.map((opt, idx) => `
+                                            <div class="p-4 md:p-5 rounded-2xl break-words transition-all ${idx === m.ans ? 'bg-emerald-50 text-emerald-900 font-bold border-2 border-emerald-400 shadow-md ring-2 ring-emerald-400/20' : 'bg-orange-50 text-slate-600 border border-orange-100'}">
+                                                <span class="inline-block w-8 font-bold ${idx === m.ans ? 'text-emerald-600' : 'text-orange-400'}">${String.fromCharCode(65+idx)}.</span> ${opt}
+                                                ${idx === m.ans ? '<span class="float-right text-emerald-500">✅</span>' : ''}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `).reverse().join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
         };
 
-        const saveUserData = async () => {
-            try { if (username) localStorage.setItem(`${COLLECTION_NAME}_${username}_data`, JSON.stringify(userData)); } catch(e) {}
-
-            if (!isFirebaseReady || !username || !currentUser) return;
-            const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, `userProfile_${username}`);
-            try { await setDoc(userRef, { favorites: userData.favorites, mistakes: userData.mistakes }, { merge: true }); } catch(e) {}
-        };
-
-        const saveQuizState = async () => {
-            try { if(username) localStorage.setItem(`${COLLECTION_NAME}_${username}_quiz`, JSON.stringify(quizState)); } catch(e) {}
-            
-            if (!isFirebaseReady || !username || !currentUser) return;
-            const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, COLLECTION_NAME, `userProfile_${username}`);
-            try { await setDoc(userRef, { quizState: quizState }, { merge: true }); } catch(e) {}
-        };
-
-        window.toggleFavorite = async (itemId) => {
-            const idx = userData.favorites.indexOf(itemId);
-            if (idx > -1) userData.favorites.splice(idx, 1);
-            else userData.favorites.push(itemId);
-            saveUserData();
-            if(currentTab === 'learn') renderLearnContent();
-            if(currentTab === 'favorites') renderFavorites();
-        };
-
-        const initApp = async () => {
-            renderApp();
-            if (isFirebaseReady) {
-                await initAuth(); 
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        currentUser = user;
-                        listenToGlobalUsers();
-                        
-                        const lastUser = localStorage.getItem(`${COLLECTION_NAME}_last_user`);
-                        if(lastUser) {
-                            window.handleLogin(lastUser);
-                        } else {
-                            renderLogin();
-                        }
-                    } else renderLogin();
-                });
-            } else {
-                const lastUser = localStorage.getItem(`${COLLECTION_NAME}_last_user`);
-                if(lastUser) {
-                    window.handleLogin(lastUser);
-                } else {
-                    renderLogin();
+        window.clearMistakes = () => {
+            if(confirm('警告：確定要清空所有錯題紀錄嗎？\n(此動作無法復原)')) {
+                if(confirm('【第二次確認】真的要徹底清空錯題本嗎？\n按下「確定」將會刪除所有錯題資料。')) {
+                    userData.mistakes = [];
+                    saveUserData();
+                    renderMistakes();
                 }
             }
+        };
+
+        window.renderFavorites = (container) => {
+            if(!container) container = el('main-content');
+            if(userData.favorites.length === 0) {
+                container.innerHTML = `
+                    <div class="w-full flex-1 flex items-center justify-center p-4 md:p-6 text-orange-400 flex-col text-center relative z-10 animate-fade-in">
+                        <div class="w-32 h-32 bg-rose-50 rounded-full flex items-center justify-center mb-6 shadow-inner border-2 border-rose-100 text-6xl">💔</div>
+                        <h2 class="text-3xl md:text-4xl font-extrabold text-orange-950 mb-2">暫無收藏</h2>
+                        <p class="text-xl md:text-2xl font-medium text-orange-800/60 mb-8">到「學習區」點擊愛心圖示即可收藏！ 📌✨</p>
+                        <button onclick="switchTab('learn')" class="bg-white border-2 border-rose-200 text-rose-600 hover:bg-rose-50 font-bold px-8 py-3 rounded-full shadow-sm transition-colors">🏃‍♂️💨 前往學習區</button>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="w-full flex-1 p-3 md:p-6 lg:p-10 overflow-y-auto overflow-x-hidden pb-24 relative z-10">
+                    <div class="max-w-6xl mx-auto w-full">
+                        <div class="flex items-end border-b-4 border-rose-200 pb-4 mb-10">
+                            <h2 class="text-3xl md:text-4xl font-extrabold text-rose-800 flex items-center"><span class="bg-rose-100 text-rose-600 w-12 h-12 flex items-center justify-center rounded-xl mr-4 shadow-sm">💖</span>我的最愛 🌟</h2>
+                            <p class="text-rose-900/50 mt-2 ml-6 font-medium hidden sm:block mb-1">您專屬的重點筆記收藏夾 🎒✨</p>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 w-full">
+                            ${userData.favorites.map(favId => `
+                                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-md border border-rose-100 flex flex-col justify-between group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 w-full h-full min-h-[160px]">
+                                    <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-gradient-to-tl from-rose-100 to-orange-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+                                    <span class="font-bold text-orange-950 z-10 text-xl md:text-2xl break-words flex-1 leading-relaxed mb-4">${favId}</span>
+                                    <div class="flex justify-end mt-auto z-10">
+                                        <button onclick="toggleFavorite('${favId}')" class="bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white w-12 h-12 rounded-full flex items-center justify-center text-xl transition-colors shadow-sm">❤️</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
         };
 
         initApp();
