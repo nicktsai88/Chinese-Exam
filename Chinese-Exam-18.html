@@ -1065,7 +1065,7 @@
         };
 
         window.startQuiz = () => {
-            const qList = [...generate100Questions()].sort(() => 0.5 - Math.random()).map(q => ({
+            const qList = [...generate100Questions()].map(q => ({
                 ...q,
                 selectedAns: null,
                 showExplanation: false,
