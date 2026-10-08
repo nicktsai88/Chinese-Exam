@@ -1,0 +1,36 @@
+﻿Firebase 設定｜家庭姓名模式（已移除電子郵件／密碼登入介面）
+
+專案：chinese-learning-47f4d
+appId 命名空間：forest-app-default（__app_id 如有指定則沿用）
+COLLECTION_NAME：Chinese5-exam1
+資料路徑：artifacts/forest-app-default/Chinese5-exam1/name_<名稱UTF-8編碼>
+
+孩子只輸入名字。網站在背景使用 Firebase Anonymous 認證，無需孩子註冊信箱或設定密碼。
+跨裝置以穩定的姓名文件位置存取同一帳本，不依賴各裝置不同的匿名UID。
+登入名字為家庭共用選擇器：具有本網站存取能力的人可查看清單並切換所有名字。
+
+專案設定
+1. Authentication > Sign-in method 啟用 Anonymous（匿名登入）。
+2. Cloud Firestore 使用 (default) 資料庫。
+3. 將隨附 firestore.rules 中的集合規則合併到專案現有規則並發布。
+   此次已實測在目前專案規則下可讀寫；未取得管理員權限，未更改或審查專案全部既有安全規則。
+   若有其他應用，保留其必要規則。避免另有涵蓋此路徑的所有人可讀寫規則；重疊規則任一允許即可通過。
+4. 若使用自訂 __app_id，同步修改規則中的 forest-app-default；所有裝置的值必須一致。
+5. 將網站檔案放在 HTTPS 靜態主機，所有家人使用同一網站網址。依專案設定加入對應授權網域。
+
+資料處理
+每個名字保存一份帳本：已讀、錯題、成績、題序、答案與暫停時間。
+作答後约1.2秒安排同步，畫面開啟時每20秒檢查更新。
+離線及伺服器拒絕寫入均保留待同步資料；重新連線或下次選同名重試。
+兩台裝置的版本不同時，不直接覆蓋，讓家長／孩子選接續雲端或改用本機。
+處理前保存衝突備份；帳本中可取出JSON並匯入還原。
+清除瀏覽器資料會刪除尚未同步的資料，請先匯出備份。
+
+官方說明
+https://firebase.google.com/docs/auth/web/anonymous-auth
+https://firebase.google.com/docs/firestore/manage-data/transactions
+https://firebase.google.com/docs/rules/basics
+
+發布狀態
+此版已完成本機網站與Firebase連線，但未發布正式网站。
+先前自動核准審查阻擋網站原始檔上傳所需的沙箱核准，因此此次提供完整更新檔案。
